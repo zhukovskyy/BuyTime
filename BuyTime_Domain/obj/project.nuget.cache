@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "WUT4pOrSwc7sL2tn2ON2qdI6MgS+jtVNHguy7ycam4ASwy63s/p3DoAuknNQ95g+OOhH8FZO+cLM6S2DiqL3eA==",
+  "success": true,
+  "projectFilePath": "/Users/PC10/RiderProjects/BuyTime/BuyTime_Server/BuyTime_Domain/BuyTime_Domain.csproj",
+  "expectedPackageFiles": [
+    "/Users/PC10/.nuget/packages/erroror/2.0.1/erroror.2.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}
