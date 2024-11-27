@@ -1,4 +1,7 @@
+using BuyTime_Application.Common.Interfaces.IRepository;
+using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Infrastructure.Common.Persistence;
+using BuyTime_Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +14,7 @@ public static class DependencyInjection
        this IServiceCollection services,
        ConfigurationManager configuration)
     {
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services
             .AddPersistence(configuration)
             .AddRepositories();
@@ -37,6 +41,8 @@ public static class DependencyInjection
 
     private static IServiceCollection AddRepositories(this IServiceCollection services)
     {
+        services.AddScoped<IStudentRepository, StudentRepository>();
+        services.AddScoped<ITeacherRepository, TeacherRepository>();
         return services;
     }
 }

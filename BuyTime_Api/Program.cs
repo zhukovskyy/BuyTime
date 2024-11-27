@@ -1,6 +1,7 @@
 using BuyTime_Api;
 using BuyTime_Application;
 using BuyTime_Infrastructure;
+using BuyTime_Infrastructure.Common.Initializers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +10,6 @@ builder.Services
     .AddPresentation()
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
-
 
 
 var app = builder.Build();
@@ -40,5 +40,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+Seeder.SeedData(app);
 
 app.Run();
