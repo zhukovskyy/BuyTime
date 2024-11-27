@@ -16,3 +16,5 @@
 /Users/PC10/RiderProjects/BuyTime/BuyTime_Server/BuyTime_Infrastructure/obj/Debug/net8.0/refint/BuyTime_Infrastructure.dll
 /Users/PC10/RiderProjects/BuyTime/BuyTime_Server/BuyTime_Infrastructure/obj/Debug/net8.0/BuyTime_Infrastructure.pdb
 /Users/PC10/RiderProjects/BuyTime/BuyTime_Server/BuyTime_Infrastructure/obj/Debug/net8.0/ref/BuyTime_Infrastructure.dll
+/Users/PC10/RiderProjects/BuyTime/BuyTime_Server/BuyTime_Infrastructure/bin/Debug/net8.0/BuyTime_Infrastructure.runtimeconfig.json
+/Users/PC10/RiderProjects/BuyTime/BuyTime_Server/BuyTime_Infrastructure/obj/Debug/net8.0/BuyTime_Infrastructure.genruntimeconfig.cache
