@@ -1,5 +1,5 @@
-using BuyTime_Application.Teacher.GetTeacherByFirstAndLastName;
 using BuyTime_Application.Teacher.Query.GetAll;
+using BuyTime_Application.Teacher.Query.GetTeacherByFirstAndLastName;
 using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

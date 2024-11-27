@@ -2,7 +2,7 @@ using BuyTime_Application.Dto;
 using ErrorOr;
 using MediatR;
 
-namespace BuyTime_Application.Teacher.GetTeacherByFirstAndLastName;
+namespace BuyTime_Application.Teacher.Query.GetTeacherByFirstAndLastName;
 
 public record GetTeacherByFirstAndLastNameQuery(
     string FirstName, 
