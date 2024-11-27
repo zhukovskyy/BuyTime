@@ -16,7 +16,7 @@ public class GetTeacherByFirstAndLastNameQueryHandler(IUnitOfWork unitOfWork)
 
             if (teacher.IsError) 
             {
-                return Error.Failure("Student not found.");
+                return Error.Failure("Teacher not found.");
             }
 
             var teacherDto = new TeacherDto
@@ -35,7 +35,7 @@ public class GetTeacherByFirstAndLastNameQueryHandler(IUnitOfWork unitOfWork)
         }
         catch (Exception ex)
         {
-            return Error.Failure("Error while retrieving student.");
+            return Error.Failure("Error while retrieving teacher.");
         }
     }
 }

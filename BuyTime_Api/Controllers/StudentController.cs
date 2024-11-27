@@ -1,4 +1,5 @@
 using BuyTime_Application.Student.Query.GetAll;
+using BuyTime_Application.Student.Query.GetStudentByEmail;
 using BuyTime_Application.Student.Query.GetStudentByFirstAndLastName;
 using MapsterMapper;
 using MediatR;
@@ -33,6 +34,23 @@ public class StudentController(ISender mediatr) : ApiController
         try
         {
             var query = new GetStudentByFirstAndLastNameQuery(firstName, lastName);
+            var student = await mediatr.Send(query);
+            if (student.IsError)
+                return NotFound();
+            return Ok(student.Value);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while fetching student.");
+        }
+    }
+    
+    [HttpGet("get-by-email")]
+    public async Task<IActionResult> GetByEmail([FromQuery] string email)
+    {
+        try
+        {
+            var query = new GetStudentByEmailQuery(email);
             var student = await mediatr.Send(query);
             if (student.IsError)
                 return NotFound();

@@ -36,7 +36,7 @@ public class GetAllTeachersQueryHandler(IUnitOfWork unitOfWork)
         }
         catch (Exception ex)
         {
-            return Error.Failure($"Error while retrieving users: {ex.Message}");
+            return Error.Failure($"Error while retrieving teachers: {ex.Message}");
         }
     }
 }
