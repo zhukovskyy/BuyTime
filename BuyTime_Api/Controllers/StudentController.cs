@@ -1,4 +1,5 @@
-using BuyTime_Application.User.Query.GetAll;
+using BuyTime_Application.Student.Query.GetAll;
+using BuyTime_Application.Student.Query.GetStudentByFirstAndLastName;
 using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -25,5 +26,21 @@ public class StudentController(ISender mediatr) : ApiController
             return StatusCode(500, "An error occurred while fetching students.");
         }
     }
-
+    
+    [HttpGet("get-by-first-and-last-name")]
+    public async Task<IActionResult> GetByFirstAndLastName([FromQuery] string firstName, [FromQuery] string lastName)
+    {
+        try
+        {
+            var query = new GetStudentByFirstAndLastNameQuery(firstName, lastName);
+            var student = await mediatr.Send(query);
+            if (student.IsError)
+                return NotFound();
+            return Ok(student.Value);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while fetching student.");
+        }
+    }
 }

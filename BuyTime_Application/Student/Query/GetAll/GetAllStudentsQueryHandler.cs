@@ -3,7 +3,7 @@ using BuyTime_Application.Dto;
 using ErrorOr;
 using MediatR;
 
-namespace BuyTime_Application.User.Query.GetAll;
+namespace BuyTime_Application.Student.Query.GetAll;
 
 public class GetAllStudentsQueryHandler(IUnitOfWork unitOfWork)
     : IRequestHandler<GetAllStudentsQuery, ErrorOr<IEnumerable<StudentDto>>>
@@ -32,7 +32,7 @@ public class GetAllStudentsQueryHandler(IUnitOfWork unitOfWork)
         }
         catch (Exception ex)
         {
-            return Error.Failure($"Error while retrieving users: {ex.Message}");
+            return Error.Failure($"Error while retrieving students: {ex.Message}");
         }
     }
 }
