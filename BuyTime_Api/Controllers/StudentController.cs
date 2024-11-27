@@ -7,8 +7,7 @@ namespace BuyTime_Api.Controllers;
 
 [Route("api/student")]
 [ApiController]
-public class StudentController(ISender mediatr, IMapper mapper,
-    IConfiguration configuration) : ApiController
+public class StudentController(ISender mediatr) : ApiController
 {
     [HttpGet("get-all")]
     public async Task<IActionResult> GetAll()
@@ -17,12 +16,8 @@ public class StudentController(ISender mediatr, IMapper mapper,
         {
             var query = new GetAllStudentsQuery();
             var students = await mediatr.Send(query);
-
             if (students.IsError)
-            {
                 return NoContent(); 
-            }
-
             return Ok(students.Value);
         }
         catch (Exception)

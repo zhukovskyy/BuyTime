@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BuyTime_Contracts")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ec7fd366358d25d9feea8e7d2b683f753edf2cbb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+19a2013fbe199ba02436c55f668bb4c77ecc8664")]
 [assembly: System.Reflection.AssemblyProductAttribute("BuyTime_Contracts")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BuyTime_Contracts")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

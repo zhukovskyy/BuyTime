@@ -16,7 +16,7 @@ public class GetAllStudentsQueryHandler(IUnitOfWork unitOfWork)
 
             var studentDtos = users.Value.Select(user => new StudentDto
             {
-                Id = user.Id.ToString(),
+                // Id = user.Id.ToString(),
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email,
