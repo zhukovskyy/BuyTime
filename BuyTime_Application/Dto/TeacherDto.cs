@@ -8,5 +8,6 @@ public class TeacherDto
     public string? Description { get; set; }
     public decimal? Rating { get; set; }
     public string? Tags { get; set; }
+    public string Role { get; set; }
     public List<TimeslotDto> Timeslots { get; set; }
 }

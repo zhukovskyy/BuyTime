@@ -12,14 +12,15 @@ public class GetAllStudentsQueryHandler(IUnitOfWork unitOfWork)
     {
         try
         {
-            var users = await unitOfWork.Student.GetAllStudentsAsync();
+            var students = await unitOfWork.Student.GetAllStudentsAsync();
 
-            var studentDtos = users.Value.Select(user => new StudentDto
+            var studentDtos = students.Value.Select(student => new StudentDto
             {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email,
-                Feedbacks = user.Feedbacks?.Select(fb => new FeedbackDto
+                FirstName = student.FirstName,
+                LastName = student.LastName,
+                Email = student.Email,
+                Role = student.Role,
+                Feedbacks = student.Feedbacks?.Select(fb => new FeedbackDto
                 {
                     Rating = fb.Rating,
                     Comment = fb.Comment,

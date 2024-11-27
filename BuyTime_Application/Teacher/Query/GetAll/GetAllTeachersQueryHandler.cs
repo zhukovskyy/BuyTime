@@ -22,6 +22,7 @@ public class GetAllTeachersQueryHandler(IUnitOfWork unitOfWork)
                 Description = teacher.Description,
                 Rating = teacher.Rating,
                 Tags = teacher.Tags,
+                Role = teacher.Role,
                 Timeslots = teacher.TimeSlots?.Select(ts => new TimeslotDto
                 {
                     StartTime = ts.StartTime,
