@@ -2,6 +2,7 @@ using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Application.Dto;
 using BuyTime_Application.Student.Query.GetStudentByEmail;
 using ErrorOr;
+using Mapster;
 using MediatR;
 
 namespace BuyTime_Application.Teacher.Query.GetTeacherByEmail;
@@ -19,18 +20,10 @@ public class GetTeacherByEmailQueryHandler(IUnitOfWork unitOfWork)
             {
                 return Error.Failure("Teacher not found.");
             }
+            
+            var teacherDto = teacher.Value.Adapt<TeacherDto>();
 
-            var teacherDto = new TeacherDto()
-            {
-                FirstName = teacher.Value.FirstName,
-                LastName = teacher.Value.LastName,
-                Email = teacher.Value.Email,
-                Role = teacher.Value.Role,
-                Rating = teacher.Value.Rating,
-                Description = teacher.Value.Description,
-                Tags = teacher.Value.Tags,
-                Timeslots = new List<TimeslotDto>(), 
-            };
+            teacherDto.Timeslots = new List<TimeslotDto>();
 
             return new List<TeacherDto> { teacherDto };
         }

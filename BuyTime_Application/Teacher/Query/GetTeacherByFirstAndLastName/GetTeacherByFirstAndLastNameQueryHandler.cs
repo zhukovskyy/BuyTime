@@ -1,6 +1,7 @@
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Application.Dto;
 using ErrorOr;
+using Mapster;
 using MediatR;
 
 namespace BuyTime_Application.Teacher.Query.GetTeacherByFirstAndLastName;
@@ -18,18 +19,10 @@ public class GetTeacherByFirstAndLastNameQueryHandler(IUnitOfWork unitOfWork)
             {
                 return Error.Failure("Teacher not found.");
             }
+            
+            var teacherDto = teacher.Value.Adapt<TeacherDto>();
 
-            var teacherDto = new TeacherDto
-            {
-                FirstName = teacher.Value.FirstName,
-                LastName = teacher.Value.LastName,
-                Email = teacher.Value.Email,
-                Role = teacher.Value.Role,
-                Description = teacher.Value.Description,
-                Rating = teacher.Value.Rating,
-                Tags = teacher.Value.Tags,
-                Timeslots = new List<TimeslotDto>(), 
-            };
+            teacherDto.Timeslots = new List<TimeslotDto>();
 
             return new List<TeacherDto> { teacherDto };
         }
