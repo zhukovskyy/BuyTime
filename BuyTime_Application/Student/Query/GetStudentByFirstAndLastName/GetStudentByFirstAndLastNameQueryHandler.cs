@@ -2,6 +2,7 @@ using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Application.Dto;
 using MediatR;
 using ErrorOr;
+using Mapster;
 
 namespace BuyTime_Application.Student.Query.GetStudentByFirstAndLastName;
 
@@ -18,16 +19,11 @@ public class GetStudentByFirstAndLastNameQueryHandler(IUnitOfWork unitOfWork)
             {
                 return Error.Failure("Student not found.");
             }
+            
+            var studentDto = user.Value.Adapt<StudentDto>();
 
-            var studentDto = new StudentDto
-            {
-                FirstName = user.Value.FirstName,
-                LastName = user.Value.LastName,
-                Email = user.Value.Email,
-                Role = user.Value.Role,
-                Feedbacks = new List<FeedbackDto>(), 
-                Bookings = new List<BookingDto>(),  
-            };
+            studentDto.Feedbacks = new List<FeedbackDto>();
+            studentDto.Bookings = new List<BookingDto>();
 
             return new List<StudentDto> { studentDto };
         }

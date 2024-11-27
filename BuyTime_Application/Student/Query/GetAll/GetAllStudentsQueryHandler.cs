@@ -1,6 +1,7 @@
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Application.Dto;
 using ErrorOr;
+using Mapster;
 using MediatR;
 
 namespace BuyTime_Application.Student.Query.GetAll;
@@ -13,20 +14,8 @@ public class GetAllStudentsQueryHandler(IUnitOfWork unitOfWork)
         try
         {
             var students = await unitOfWork.Student.GetAllStudentsAsync();
-
-            var studentDtos = students.Value.Select(student => new StudentDto
-            {
-                FirstName = student.FirstName,
-                LastName = student.LastName,
-                Email = student.Email,
-                Role = student.Role,
-                Feedbacks = student.Feedbacks?.Select(fb => new FeedbackDto
-                {
-                    Rating = fb.Rating,
-                    Comment = fb.Comment,
-                    CreatedAt = fb.CreatedAt
-                }).ToList() ?? new List<FeedbackDto>()
-            }).ToList();
+            
+            var studentDtos = students.Value.Adapt<List<StudentDto>>();
 
             return studentDtos;
         }

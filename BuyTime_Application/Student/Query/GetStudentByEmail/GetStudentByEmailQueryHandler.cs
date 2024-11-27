@@ -1,6 +1,7 @@
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Application.Dto;
 using ErrorOr;
+using Mapster;
 using MediatR;
 
 namespace BuyTime_Application.Student.Query.GetStudentByEmail;
@@ -12,22 +13,17 @@ public class GetStudentByEmailQueryHandler(IUnitOfWork unitOfWork)
     {
         try
         {
-            var user = await unitOfWork.Student.GetByEmailAsync(request.Email);
+            var students = await unitOfWork.Student.GetByEmailAsync(request.Email);
 
-            if (user.IsError) 
+            if (students.IsError) 
             {
                 return Error.Failure("Student not found.");
             }
+            
+            var studentDto = students.Value.Adapt<StudentDto>();
 
-            var studentDto = new StudentDto
-            {
-                FirstName = user.Value.FirstName,
-                LastName = user.Value.LastName,
-                Email = user.Value.Email,
-                Role = user.Value.Role,
-                Feedbacks = new List<FeedbackDto>(), 
-                Bookings = new List<BookingDto>(),  
-            };
+            studentDto.Feedbacks = new List<FeedbackDto>();
+            studentDto.Bookings = new List<BookingDto>();
 
             return new List<StudentDto> { studentDto };
         }
