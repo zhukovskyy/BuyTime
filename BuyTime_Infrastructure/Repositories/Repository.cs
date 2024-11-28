@@ -17,19 +17,6 @@ public class Repository<T> : IRepository<T>
         this.dbSet = _context.Set<T>();
     }
     
-    public async Task<ErrorOr<IEnumerable<T>>> GetAllAsync()
-    {
-        try
-        {
-            var entities = await dbSet.ToListAsync();
-            return entities;
-        }
-        catch (Exception ex)
-        {
-            return Error.Failure(ex.Message);
-        }
-    }
-    
     public async Task<T> GetByIdAsync(Guid id)
     {
         try
