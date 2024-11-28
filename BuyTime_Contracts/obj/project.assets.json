@@ -502,11 +502,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/PC10/RiderProjects/BuyTime/BuyTime_Server/BuyTime_Contracts/BuyTime_Contracts.csproj",
+      "projectUniqueName": "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Contracts/BuyTime_Contracts.csproj",
       "projectName": "BuyTime_Contracts",
-      "projectPath": "/Users/PC10/RiderProjects/BuyTime/BuyTime_Server/BuyTime_Contracts/BuyTime_Contracts.csproj",
+      "projectPath": "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Contracts/BuyTime_Contracts.csproj",
       "packagesPath": "/Users/PC10/.nuget/packages/",
-      "outputPath": "/Users/PC10/RiderProjects/BuyTime/BuyTime_Server/BuyTime_Contracts/obj/",
+      "outputPath": "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Contracts/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/PC10/.nuget/NuGet/NuGet.Config"

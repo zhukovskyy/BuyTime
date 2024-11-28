@@ -3,7 +3,7 @@ namespace BuyTime_Application.Dto
     public class BookingDto
     {
         public string Status { get; set; } 
-        public string Message { get; set; }
+        public string? Message { get; set; }
         public DateTime CreatedAt { get; set; }
         
         public string UserFirstName { get; set; }

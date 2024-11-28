@@ -7,8 +7,12 @@ public class Feedback
     public Guid UserId { get; set; }
     public decimal Rating { get; set; }
     public string? Comment { get; set; }
-    public DateTime CreatedAt { get; set; }
-
+    private DateTime _createdAt;
+    public DateTime CreatedAt
+    {
+        get { return _createdAt; }
+        set {_createdAt = DateTime.SpecifyKind(value, DateTimeKind.Utc); }
+    }
     public Teacher Teacher { get; set; }
     public User User { get; set; }
 }

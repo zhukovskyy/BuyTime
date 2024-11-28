@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "6eR/Qvk4NK3bW6fWDFwpinuI28Gbjo3dDtslDXKhkkJ8loPsstaACSuDlnRd/XDIztrYMFHB+sEtP6o5xYMx3A==",
+  "dgSpecHash": "vghJLMAuPhtGh/aGnL4gikP1vlHbkeMi46GTf+zlOxac6L9BA9jxuFdBKHiE4GsPuWXJSgV17tbsmxk7lbnJzw==",
   "success": true,
-  "projectFilePath": "/Users/PC10/RiderProjects/BuyTime/BuyTime_Server/BuyTime_Contracts/BuyTime_Contracts.csproj",
+  "projectFilePath": "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Contracts/BuyTime_Contracts.csproj",
   "expectedPackageFiles": [
     "/Users/PC10/.nuget/packages/microsoft.aspnetcore.http/2.2.2/microsoft.aspnetcore.http.2.2.2.nupkg.sha512",
     "/Users/PC10/.nuget/packages/microsoft.aspnetcore.http.abstractions/2.2.0/microsoft.aspnetcore.http.abstractions.2.2.0.nupkg.sha512",

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "F8pJP5WiU+CJ8iBgn0j4N0uGr9Nb4w0UAkLw5oWZ3Xuw75yPozTstJacof0O4VsIN22w510VUDhduG50qHM5Rw==",
+  "dgSpecHash": "riIjA8gWXGs/1/qb+BkfzrmKPvNCGRNYf6iCi7kT+MvfhOyzIBcUM3hri7Dh5zi3wdXJiTftZl3KENkZI8+nDA==",
   "success": true,
-  "projectFilePath": "/Users/PC10/RiderProjects/BuyTime/BuyTime_Server/BuyTime_Application/BuyTime_Application.csproj",
+  "projectFilePath": "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Application/BuyTime_Application.csproj",
   "expectedPackageFiles": [
     "/Users/PC10/.nuget/packages/erroror/2.0.1/erroror.2.0.1.nupkg.sha512",
     "/Users/PC10/.nuget/packages/fluentvalidation/11.11.0/fluentvalidation.11.11.0.nupkg.sha512",

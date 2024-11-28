@@ -6,4 +6,7 @@ public interface IUnitOfWork
 {
     IStudentRepository Student { get; }
     ITeacherRepository Teacher { get; }
+    ITimeSlotRepository Timeslot { get; }
+    IBookingRepository Booking { get; }
+    Task CommitAsync();
 }

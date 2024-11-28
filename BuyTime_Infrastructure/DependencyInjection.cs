@@ -1,7 +1,9 @@
 using BuyTime_Application.Common.Interfaces.IRepository;
+using BuyTime_Application.Common.Interfaces.IService;
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Infrastructure.Common.Persistence;
 using BuyTime_Infrastructure.Repositories;
+using BuyTime_Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +19,8 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services
             .AddPersistence(configuration)
-            .AddRepositories();
+            .AddRepositories()
+            .AddServices();
 
         return services;
     }
@@ -39,10 +42,21 @@ public static class DependencyInjection
         return services;
     }
 
+    private static IServiceCollection AddServices(this IServiceCollection services)
+    {
+        services.AddScoped<ITelegramService, TelegramService>();
+        services.AddTransient<TelegramService>();
+        services.AddScoped<IBookingService, BookingService>();
+        services.AddTransient<BookingService>();
+        return services;
+    }
+
     private static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         services.AddScoped<IStudentRepository, StudentRepository>();
         services.AddScoped<ITeacherRepository, TeacherRepository>();
+        services.AddScoped<ITimeSlotRepository, TimeslotRepository>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
         return services;
     }
 }

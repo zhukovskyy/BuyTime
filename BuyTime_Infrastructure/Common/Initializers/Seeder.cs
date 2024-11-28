@@ -32,7 +32,7 @@ namespace BuyTime_Infrastructure.Common.Initializers
                         new User { Id = Guid.NewGuid(), FirstName = "Дмитро", LastName = "Сидоренко", Role = Roles.Teacher, Email = "dmytro.sydorenko@example.com" },
                         new User { Id = Guid.NewGuid(), FirstName = "Анна", LastName = "Левченко", Role = Roles.Student, Email = "anna.levchenko@example.com" },
                         new User { Id = Guid.NewGuid(), FirstName = "Павло", LastName = "Мельник", Role = Roles.Teacher, Email = "pavlo.melnik@example.com" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Юлія", LastName = "Бойко", Role = Roles.Student, Email = "yulia.boyko@example.com" }
+                        new User { Id = Guid.NewGuid(), FirstName = "Юлія", LastName = "Бойко", Role = Roles.Student, Email = "yulia.boyko@example.com" },
                     };
 
                     context.Users.AddRange(users);

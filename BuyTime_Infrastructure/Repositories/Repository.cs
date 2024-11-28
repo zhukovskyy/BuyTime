@@ -29,6 +29,21 @@ public class Repository<T> : IRepository<T>
             return Error.Failure(ex.Message);
         }
     }
+    
+    public async Task<T> GetByIdAsync(Guid id)
+    {
+        try
+        {
+            var entity = await dbSet.FindAsync(id);
+            if (entity == null)
+                throw new Exception("Entity not found");
+            return entity;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
 
     public async Task<ErrorOr<T>> GetByFirstAndLastNameAsync(string firstName, string lastName)
     {
@@ -56,6 +71,21 @@ public class Repository<T> : IRepository<T>
             if (entity == null)
                 return Error.Failure("Entity not found");
             return entity;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure(ex.Message);
+        }
+    }
+
+    public async Task<ErrorOr<Guid>> AddAsync(T entity)
+    {
+        try
+        {
+            dbSet.Add(entity);
+            await _context.SaveChangesAsync();
+            var entityId = (Guid)typeof(T).GetProperty("Id")!.GetValue(entity)!;
+            return entityId;
         }
         catch (Exception ex)
         {

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "3kc15BpaNwpNmt7IawvK9a/52yhm6Rf7/7HYtY18J4UCKoW+d6WzaQMN+KLJUhop64dOeLaE0qiCcV0ekWX38Q==",
+  "dgSpecHash": "gboulARBNVNGtMasLoReuwO5NhyK0fRWs4PNLahMnnVP5bjAt9b6OWBmcwcLCOpbWVHdKPb1l7G1XyuN61JQrw==",
   "success": true,
-  "projectFilePath": "/Users/PC10/RiderProjects/BuyTime/BuyTime_Server/BuyTime_Infrastructure/BuyTime_Infrastructure.csproj",
+  "projectFilePath": "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Infrastructure/BuyTime_Infrastructure.csproj",
   "expectedPackageFiles": [
     "/Users/PC10/.nuget/packages/azure.core/1.38.0/azure.core.1.38.0.nupkg.sha512",
     "/Users/PC10/.nuget/packages/azure.identity/1.11.4/azure.identity.1.11.4.nupkg.sha512",

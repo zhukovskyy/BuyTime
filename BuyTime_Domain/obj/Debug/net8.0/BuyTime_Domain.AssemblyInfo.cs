@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BuyTime_Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+19a2013fbe199ba02436c55f668bb4c77ecc8664")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+80126f0056363e453a3dca03b746ed9c4c09ff84")]
 [assembly: System.Reflection.AssemblyProductAttribute("BuyTime_Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BuyTime_Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
