@@ -1,7 +1,3 @@
-using BuyTime_Application.Booking.Command.ConfirmBooking;
-using BuyTime_Application.Booking.Command.CreateBooking;
-using BuyTime_Application.Booking.Query.GetAll;
-using BuyTime_Application.Booking.Query.GetById;
 using BuyTime_Application.Feedback.Command.Create;
 using BuyTime_Application.Feedback.Query.GetAll;
 using BuyTime_Application.Feedback.Query.GetById;
