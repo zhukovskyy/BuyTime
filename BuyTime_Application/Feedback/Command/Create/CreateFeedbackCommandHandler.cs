@@ -11,6 +11,11 @@ public class CreateFeedbackCommandHandler(IUnitOfWork unitOfWork)
     {
         try
         {
+            if (request.Rating < 1 || request.Rating > 10)
+            {
+                return Error.Validation("InvalidRating", "Rating must be between 1 and 10.");
+            }
+            
             var feedback = new BuyTime_Domain.Entities.Feedback
             {
                 TeacherId = request.TeacherId,
