@@ -7,4 +7,5 @@ public record CreateBookingCommand(
     Guid TeacherId,
     Guid UserId,
     Guid TimeslotId,
+    string Status,
     string Message) : IRequest<ErrorOr<CreateBookingResult>>;

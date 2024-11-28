@@ -14,7 +14,7 @@ public class CreateFeedbackCommandHandler(IUnitOfWork unitOfWork)
             var feedback = new BuyTime_Domain.Entities.Feedback
             {
                 TeacherId = request.TeacherId,
-                UserId = request.UserId,
+                UserId = request.StudentId,
                 Rating = request.Rating,
                 Comment = request.Comment,
                 CreatedAt = request.CreatedAt

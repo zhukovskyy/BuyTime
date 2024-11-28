@@ -1,7 +1,6 @@
 using BuyTime_Application.Common.Interfaces.IService;
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Application.Events;
-using BuyTime_Domain.Constants;
 using BuyTime_Domain.Entities;
 using MediatR;
 using ErrorOr;
@@ -13,7 +12,8 @@ public class BookingService(
     IUnitOfWork unitOfWork,
     IMediator mediator) : IBookingService
 {
-    public async Task<Guid> CreateBookingAsync(Guid userId, Guid teacherId, Guid timeslotId, string message)
+    public async Task<Guid> CreateBookingAsync(Guid userId, Guid teacherId, 
+        Guid timeslotId, string message, string status)
     {
         var user = await unitOfWork.Student.GetByIdAsync(userId);
         var teacher = await unitOfWork.Teacher.GetByIdAsync(teacherId);
@@ -27,7 +27,7 @@ public class BookingService(
                 UserId = userId,
                 TeacherId = teacherId,
                 TimeslotId = timeslotId,
-                Status = Status.Pending,
+                Status = status, 
                 Message = message,
                 CreatedAt = DateTime.UtcNow
             };
@@ -41,12 +41,12 @@ public class BookingService(
 
             if (user.TelegramChatId != null)
             {
-                await telegramService.SendMessageAsync(user.TelegramChatId, "Your booking is pending. Await confirmation from the teacher.");
+                await telegramService.SendMessageAsync(user.TelegramChatId, $"Your booking is {status}. Await further updates.");
             }
 
             if (teacher.TelegramChatId != null)
             {
-                await telegramService.SendMessageAsync(teacher.TelegramChatId, $"You have a new booking from {user.FirstName} {user.LastName}. Please confirm.");
+                await telegramService.SendMessageAsync(teacher.TelegramChatId, $"You have a new booking from {user.FirstName} {user.LastName}. Status: {status}.");
             }
 
             return booking.Id; 

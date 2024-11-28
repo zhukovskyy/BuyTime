@@ -16,8 +16,8 @@ public class CreateBookingCommandHandler(IUnitOfWork unitOfWork, IBookingService
                 userId: request.UserId,
                 teacherId: request.TeacherId,
                 timeslotId: request.TimeslotId,
-                message: request.Message
-            );
+                message: request.Message,
+                status: request.Status);
 
             return new CreateBookingResult
             {
