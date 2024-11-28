@@ -15,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Feedback\" />
       <Folder Include="Timeslot\Command\" />
     </ItemGroup>
 
