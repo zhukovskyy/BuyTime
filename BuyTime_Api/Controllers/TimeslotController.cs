@@ -1,5 +1,6 @@
 using BuyTime_Application.Timeslot.CreateTimeslot;
 using BuyTime_Application.Timeslot.Query.GetAll;
+using BuyTime_Application.Timeslot.Query.GetById;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -37,6 +38,23 @@ public class TimeslotController(ISender mediatr) : ApiController
         catch (Exception)
         {
             return StatusCode(500, "An error occurred while fetching timeslots.");
+        }
+    }
+    
+    [HttpGet("get-by-id")]
+    public async Task<IActionResult> GetById([FromQuery] Guid id)
+    {
+        try
+        {
+            var query = new GetTimeslotByIdQuery(id);
+            var timeslot = await mediatr.Send(query);
+            if (timeslot.IsError)
+                return NotFound();
+            return Ok(timeslot.Value);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while fetching time slot.");
         }
     }
 }
