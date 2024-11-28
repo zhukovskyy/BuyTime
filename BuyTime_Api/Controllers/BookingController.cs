@@ -1,6 +1,7 @@
 using BuyTime_Application.Booking.Command.ConfirmBooking;
 using BuyTime_Application.Booking.Command.CreateBooking;
 using BuyTime_Application.Booking.Query.GetAll;
+using BuyTime_Application.Booking.Query.GetById;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -48,6 +49,23 @@ public class BookingController(ISender mediatr) : ApiController
         catch (Exception)
         {
             return StatusCode(500, "An error occurred while fetching bookings.");
+        }
+    }
+    
+    [HttpGet("get-by-id")]
+    public async Task<IActionResult> GetById([FromQuery] Guid id)
+    {
+        try
+        {
+            var query = new GetBookingByIdQuery(id);
+            var booking = await mediatr.Send(query);
+            if (booking.IsError)
+                return NotFound();
+            return Ok(booking.Value);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while fetching booking.");
         }
     }
 }

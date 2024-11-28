@@ -13,7 +13,7 @@ public class GetAllBookingsQueryHandler(IUnitOfWork unitOfWork)
     {
         try
         {
-            var bookings = await unitOfWork.Timeslot.GetAllAsync();
+            var bookings = await unitOfWork.Booking.GetAllAsync();
             
             var bookingDtos = bookings.Value.Adapt<List<BookingDto>>();
 
