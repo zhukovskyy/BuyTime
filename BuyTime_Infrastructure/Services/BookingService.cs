@@ -65,7 +65,7 @@ public class BookingService(
             return Error.Failure("Booking not found.");
         }
 
-        booking.Status = "Confirmed";
+        booking.Status = "confirmed";
         booking.Message += $"\nTeacher's confirmation: {confirmationMessage}\nContact Link: {contactLink}";
 
         var user = await unitOfWork.Student.GetByIdAsync(booking.UserId);
@@ -82,4 +82,40 @@ public class BookingService(
 
         return Unit.Value;
     }
+    
+    public async Task<ErrorOr<Unit>> CancelBookingAsync(Guid bookingId, string cancellationMessage)
+    {
+        var booking = await unitOfWork.Booking.GetByIdAsync(bookingId);
+        if (booking == null)
+        {
+            return Error.Failure("Booking not found.");
+        }
+
+        booking.Status = "cancelled";
+        booking.Message += $"\nCancellation Message: {cancellationMessage}";
+
+        var user = await unitOfWork.Student.GetByIdAsync(booking.UserId);
+        var teacher = await unitOfWork.Teacher.GetByIdAsync(booking.TeacherId);
+        var timeslot = await unitOfWork.Timeslot.GetByIdAsync(booking.TimeslotId);
+
+        timeslot.IsAvailable = true;
+        await unitOfWork.Timeslot.UpdateAsync(timeslot);
+        await unitOfWork.CommitAsync();
+
+        await unitOfWork.Booking.UpdateAsync(booking);
+        await unitOfWork.CommitAsync();
+
+        if (user.TelegramChatId != null)
+        {
+            await telegramService.SendMessageAsync(user.TelegramChatId, $"Your booking has been cancelled. Reason: {cancellationMessage}");
+        }
+
+        if (teacher.TelegramChatId != null)
+        {
+            await telegramService.SendMessageAsync(teacher.TelegramChatId, $"The booking from {user.FirstName} {user.LastName} has been cancelled. Reason: {cancellationMessage}");
+        }
+
+        return Unit.Value;
+    }
+
 }

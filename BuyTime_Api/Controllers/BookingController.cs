@@ -1,3 +1,4 @@
+using BuyTime_Application.Booking.Command.CancelBooking;
 using BuyTime_Application.Booking.Command.ConfirmBooking;
 using BuyTime_Application.Booking.Command.CreateBooking;
 using BuyTime_Application.Booking.Query.GetAll;
@@ -19,6 +20,16 @@ public class BookingController(ISender mediatr) : ApiController
             return BadRequest(result.Errors);
 
         return Ok("Booking confirmed successfully.");
+    }
+    
+    [HttpPost("cancel")]
+    public async Task<IActionResult> CancelBooking([FromBody] CancelBookingCommand command)
+    {
+        var result = await mediatr.Send(command);
+        if (result.IsError)
+            return BadRequest(result.Errors);
+
+        return Ok("Booking cancelled successfully.");
     }
     
     [HttpPost("create")]
