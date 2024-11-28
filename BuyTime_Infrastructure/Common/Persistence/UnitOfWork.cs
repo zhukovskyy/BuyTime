@@ -12,6 +12,7 @@ public class UnitOfWork : IUnitOfWork
     public ITeacherRepository Teacher { get; private set; }
     public ITimeSlotRepository Timeslot { get; private set; }
     public IBookingRepository Booking { get; private set; }
+    public IFeedbackRepository Feedback { get; private set; }
 
     public UnitOfWork(BuyTimeDbContext context)
     {
@@ -20,6 +21,7 @@ public class UnitOfWork : IUnitOfWork
         Teacher = new TeacherRepository(_context);
         Timeslot = new TimeslotRepository(_context);
         Booking = new BookingRepository(_context);
+        Feedback = new FeedbackRepository(_context);
     }
     
     public async Task CommitAsync()
