@@ -1,5 +1,6 @@
 using BuyTime_Application.Booking.Command.ConfirmBooking;
 using BuyTime_Application.Booking.Command.CreateBooking;
+using BuyTime_Application.Booking.Query.GetAll;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,5 +33,21 @@ public class BookingController(ISender mediatr) : ApiController
 
         return CreatedAtAction(nameof(CreateBooking), new { id = result.Value.BookingId }, result.Value);
     }
-
+    
+    [HttpGet("get-all")]
+    public async Task<IActionResult> GetAll()
+    {
+        try
+        {
+            var query = new GetAllBookingsQuery();
+            var bookings = await mediatr.Send(query);
+            if (bookings.IsError)
+                return NoContent(); 
+            return Ok(bookings.Value);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while fetching bookings.");
+        }
+    }
 }
