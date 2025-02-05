@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "tUE1s6Am1N5vC4kBiPp9uG91RNEN1FQ8i5xcz8ZH5f4UHHydhEGRikqxtlhlbZg3DVmzPWn6ixsaqYc1bK+MmQ==",
+  "dgSpecHash": "m8zyTvclOd1PMic8oOTmNrxRMRYrxaOHbdTavLPtHJFxetmnLVIHpfysHP+cyAhnEhiGQlBTZIivOanYo8N8vg==",
   "success": true,
-  "projectFilePath": "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Domain/BuyTime_Domain.csproj",
+  "projectFilePath": "/Users/PC10/Downloads/BuyTime/BuyTime_Domain/BuyTime_Domain.csproj",
   "expectedPackageFiles": [
     "/Users/PC10/.nuget/packages/erroror/2.0.1/erroror.2.0.1.nupkg.sha512"
   ],

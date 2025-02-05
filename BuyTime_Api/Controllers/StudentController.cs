@@ -1,4 +1,5 @@
 using BuyTime_Application.Student.Query.GetAll;
+using BuyTime_Application.Student.Query.GetStudentByChatId;
 using BuyTime_Application.Student.Query.GetStudentByEmail;
 using BuyTime_Application.Student.Query.GetStudentByFirstAndLastName;
 using MapsterMapper;
@@ -51,6 +52,23 @@ public class StudentController(ISender mediatr) : ApiController
         try
         {
             var query = new GetStudentByEmailQuery(email);
+            var student = await mediatr.Send(query);
+            if (student.IsError)
+                return NotFound();
+            return Ok(student.Value);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while fetching student.");
+        }
+    }
+    
+    [HttpGet("get-by-chat-id")]
+    public async Task<IActionResult> GetByChatId([FromQuery] string chatId)
+    {
+        try
+        {
+            var query = new GetStudentByChatIdQuery(chatId);
             var student = await mediatr.Send(query);
             if (student.IsError)
                 return NotFound();

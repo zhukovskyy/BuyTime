@@ -5571,11 +5571,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Api/BuyTime_Api.csproj",
+      "projectUniqueName": "/Users/PC10/Downloads/BuyTime/BuyTime_Api/BuyTime_Api.csproj",
       "projectName": "BuyTime_Api",
-      "projectPath": "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Api/BuyTime_Api.csproj",
+      "projectPath": "/Users/PC10/Downloads/BuyTime/BuyTime_Api/BuyTime_Api.csproj",
       "packagesPath": "/Users/PC10/.nuget/packages/",
-      "outputPath": "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Api/obj/",
+      "outputPath": "/Users/PC10/Downloads/BuyTime/BuyTime_Api/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/PC10/.nuget/NuGet/NuGet.Config"
@@ -5590,11 +5590,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Application/BuyTime_Application.csproj": {
-              "projectPath": "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Application/BuyTime_Application.csproj"
+            "/Users/PC10/Downloads/BuyTime/BuyTime_Application/BuyTime_Application.csproj": {
+              "projectPath": "/Users/PC10/Downloads/BuyTime/BuyTime_Application/BuyTime_Application.csproj"
             },
-            "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Infrastructure/BuyTime_Infrastructure.csproj": {
-              "projectPath": "/Users/PC10/RiderProjects/BuyTime /BuyTime_Server/BuyTime_Infrastructure/BuyTime_Infrastructure.csproj"
+            "/Users/PC10/Downloads/BuyTime/BuyTime_Infrastructure/BuyTime_Infrastructure.csproj": {
+              "projectPath": "/Users/PC10/Downloads/BuyTime/BuyTime_Infrastructure/BuyTime_Infrastructure.csproj"
             }
           }
         }

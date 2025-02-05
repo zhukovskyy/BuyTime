@@ -23,4 +23,20 @@ public class StudentRepository(BuyTimeDbContext context)
             return Error.Failure(ex.Message);
         }
     }
+
+    public async Task<ErrorOr<User>> GetStudentByChatIdAsync(string chatId)
+    {
+        try
+        {
+            var student = await dbSet.FirstOrDefaultAsync(user => user.TelegramChatId == chatId);
+            if (student == null)
+                return Error.NotFound("Student not found");
+            return student;
+           
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure(ex.Message);
+        }
+    }
 }
