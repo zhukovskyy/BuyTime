@@ -3,6 +3,7 @@ namespace BuyTime_Application.Dto
     public class BookingDto
     {
         public Guid Id { get; set; }
+        public Guid TeacherId { get; set; }
         
         public string Status { get; set; } 
         public string? Message { get; set; }
