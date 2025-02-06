@@ -39,15 +39,15 @@ public class BookingService(
             await unitOfWork.Timeslot.UpdateAsync(timeslot);
             await unitOfWork.CommitAsync();
 
-            if (user.TelegramChatId != null)
-            {
-                await telegramService.SendMessageAsync(user.TelegramChatId, $"Your booking is {status}. Await further updates.");
-            }
-
-            if (teacher.TelegramChatId != null)
-            {
-                await telegramService.SendMessageAsync(teacher.TelegramChatId, $"You have a new booking from {user.FirstName} {user.LastName}. Status: {status}.");
-            }
+            // if (user.TelegramChatId != null)
+            // {
+            //     await telegramService.SendMessageAsync(user.TelegramChatId, $"Your booking is {status}. Await further updates.");
+            // }
+            //
+            // if (teacher.TelegramChatId != null)
+            // {
+            //     await telegramService.SendMessageAsync(teacher.TelegramChatId, $"You have a new booking from {user.FirstName} {user.LastName}. Status: {status}.");
+            // }
 
             return booking.Id; 
         }
