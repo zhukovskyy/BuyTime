@@ -23,16 +23,16 @@ namespace BuyTime_Infrastructure.Common.Initializers
                 {
                     var users = new List<User>
                     {
-                        new User { Id = Guid.NewGuid(), FirstName = "Іван", LastName = "Шевченко", Role = Roles.Student, Email = "ivan.sh@example.com" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Ольга", LastName = "Іванова", Role = Roles.Student, Email = "olga.ivanova@example.com" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Андрій", LastName = "Коваленко", Role = Roles.Teacher, Email = "andriy.kovalenko@example.com" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Марина", LastName = "Данилова", Role = Roles.Teacher, Email = "marina.danilova@example.com" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Тарас", LastName = "Гончаренко", Role = Roles.Student, Email = "taras.goncharenko@example.com" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Наталія", LastName = "Петренко", Role = Roles.Student, Email = "natalia.petrenko@example.com" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Дмитро", LastName = "Сидоренко", Role = Roles.Teacher, Email = "dmytro.sydorenko@example.com" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Анна", LastName = "Левченко", Role = Roles.Student, Email = "anna.levchenko@example.com" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Павло", LastName = "Мельник", Role = Roles.Teacher, Email = "pavlo.melnik@example.com" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Юлія", LastName = "Бойко", Role = Roles.Student, Email = "yulia.boyko@example.com" },
+                        new User { Id = Guid.NewGuid(), FirstName = "Іван", LastName = "Шевченко", Role = Roles.Student, Email = "ivan.sh@example.com", TelegramChatId = "123456" },
+                        new User { Id = Guid.NewGuid(), FirstName = "Ольга", LastName = "Іванова", Role = Roles.Student, Email = "olga.ivanova@example.com",  TelegramChatId = "123456" },
+                        new User { Id = Guid.NewGuid(), FirstName = "Андрій", LastName = "Коваленко", Role = Roles.Teacher, Email = "andriy.kovalenko@example.com",  TelegramChatId = "123456" },
+                        new User { Id = Guid.NewGuid(), FirstName = "Марина", LastName = "Данилова", Role = Roles.Teacher, Email = "marina.danilova@example.com",  TelegramChatId = "123456" },
+                        new User { Id = Guid.NewGuid(), FirstName = "Тарас", LastName = "Гончаренко", Role = Roles.Student, Email = "taras.goncharenko@example.com",  TelegramChatId = "123456" },
+                        new User { Id = Guid.NewGuid(), FirstName = "Наталія", LastName = "Петренко", Role = Roles.Student, Email = "natalia.petrenko@example.com",  TelegramChatId = "123456" },
+                        new User { Id = Guid.NewGuid(), FirstName = "Дмитро", LastName = "Сидоренко", Role = Roles.Teacher, Email = "dmytro.sydorenko@example.com",  TelegramChatId = "123456" },
+                        new User { Id = Guid.NewGuid(), FirstName = "Анна", LastName = "Левченко", Role = Roles.Student, Email = "anna.levchenko@example.com", TelegramChatId = "123456"  },
+                        new User { Id = Guid.NewGuid(), FirstName = "Павло", LastName = "Мельник", Role = Roles.Teacher, Email = "pavlo.melnik@example.com", TelegramChatId = "123456"  },
+                        new User { Id = Guid.NewGuid(), FirstName = "Юлія", LastName = "Бойко", Role = Roles.Student, Email = "yulia.boyko@example.com", TelegramChatId = "123456" },
                     };
 
                     context.Users.AddRange(users);
