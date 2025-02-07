@@ -12,48 +12,53 @@ public class BookingService(
     IUnitOfWork unitOfWork,
     IMediator mediator) : IBookingService
 {
-    public async Task<Guid> CreateBookingAsync(Guid userId, Guid teacherId, 
+    public async Task<Guid> CreateBookingAsync(Guid userId,
         Guid timeslotId, string message, string status)
     {
-        var user = await unitOfWork.Student.GetByIdAsync(userId);
-        var teacher = await unitOfWork.Teacher.GetByIdAsync(teacherId);
-        var timeslot = await unitOfWork.Timeslot.GetByIdAsync(timeslotId);
-
-        if (timeslot.IsAvailable)
+        var user = await unitOfWork.User.GetByIdAsync(userId);
+        if (user.IsTeacher)
         {
-            var booking = new Booking
+            var timeslot = await unitOfWork.Timeslot.GetByIdAsync(timeslotId);
+
+            if (timeslot.IsAvailable)
             {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                TeacherId = teacherId,
-                TimeslotId = timeslotId,
-                Status = status, 
-                Message = message,
-                CreatedAt = DateTime.UtcNow
-            };
+                var booking = new Booking
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    TimeslotId = timeslotId,
+                    Status = status, 
+                    Message = message,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-            await unitOfWork.Booking.AddAsync(booking);
-            await unitOfWork.CommitAsync();
+                await unitOfWork.Booking.AddAsync(booking);
+                await unitOfWork.CommitAsync();
 
-            timeslot.IsAvailable = false;
-            await unitOfWork.Timeslot.UpdateAsync(timeslot);
-            await unitOfWork.CommitAsync();
+                timeslot.IsAvailable = false;
+                await unitOfWork.Timeslot.UpdateAsync(timeslot);
+                await unitOfWork.CommitAsync();
 
-            // if (user.TelegramChatId != null)
-            // {
-            //     await telegramService.SendMessageAsync(user.TelegramChatId, $"Your booking is {status}. Await further updates.");
-            // }
-            //
-            // if (teacher.TelegramChatId != null)
-            // {
-            //     await telegramService.SendMessageAsync(teacher.TelegramChatId, $"You have a new booking from {user.FirstName} {user.LastName}. Status: {status}.");
-            // }
+                // if (user.TelegramChatId != null)
+                // {
+                //     await telegramService.SendMessageAsync(user.TelegramChatId, $"Your booking is {status}. Await further updates.");
+                // }
+                //
+                // if (teacher.TelegramChatId != null)
+                // {
+                //     await telegramService.SendMessageAsync(teacher.TelegramChatId, $"You have a new booking from {user.FirstName} {user.LastName}. Status: {status}.");
+                // }
 
-            return booking.Id; 
+                return booking.Id; 
+            }
+            else
+            {
+                throw new InvalidOperationException("The timeslot is no longer available.");
+            }
         }
         else
         {
-            throw new InvalidOperationException("The timeslot is no longer available.");
+            throw new InvalidOperationException("Only teachers can create bookings.");
         }
     }
     
@@ -68,7 +73,7 @@ public class BookingService(
         booking.Status = "confirmed";
         booking.Message += $"\nTeacher's confirmation: {confirmationMessage}\nContact Link: {contactLink}";
 
-        var user = await unitOfWork.Student.GetByIdAsync(booking.UserId);
+        var user = await unitOfWork.User.GetByIdAsync(booking.UserId);
 
         var timeslot = await unitOfWork.Timeslot.GetByIdAsync(booking.TimeslotId);
         timeslot.IsAvailable = false;
@@ -94,8 +99,7 @@ public class BookingService(
         booking.Status = "cancelled";
         booking.Message += $"\nCancellation Message: {cancellationMessage}";
 
-        var user = await unitOfWork.Student.GetByIdAsync(booking.UserId);
-        var teacher = await unitOfWork.Teacher.GetByIdAsync(booking.TeacherId);
+        var user = await unitOfWork.User.GetByIdAsync(booking.UserId);
         var timeslot = await unitOfWork.Timeslot.GetByIdAsync(booking.TimeslotId);
 
         timeslot.IsAvailable = true;
@@ -108,11 +112,6 @@ public class BookingService(
         if (user.TelegramChatId != null)
         {
             await telegramService.SendMessageAsync(user.TelegramChatId, $"Your booking has been cancelled. Reason: {cancellationMessage}");
-        }
-
-        if (teacher.TelegramChatId != null)
-        {
-            await telegramService.SendMessageAsync(teacher.TelegramChatId, $"The booking from {user.FirstName} {user.LastName} has been cancelled. Reason: {cancellationMessage}");
         }
 
         return Unit.Value;

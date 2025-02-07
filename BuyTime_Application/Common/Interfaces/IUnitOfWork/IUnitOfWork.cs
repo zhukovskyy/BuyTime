@@ -4,8 +4,7 @@ namespace BuyTime_Application.Common.Interfaces.IUnitOfWork;
 
 public interface IUnitOfWork
 {
-    IStudentRepository Student { get; }
-    ITeacherRepository Teacher { get; }
+    IUserRepository User { get; }
     ITimeSlotRepository Timeslot { get; }
     IBookingRepository Booking { get; }
     IFeedbackRepository Feedback { get; }

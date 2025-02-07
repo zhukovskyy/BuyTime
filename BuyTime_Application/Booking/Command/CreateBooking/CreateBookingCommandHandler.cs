@@ -14,7 +14,7 @@ public class CreateBookingCommandHandler(IUnitOfWork unitOfWork, IBookingService
         {
             var bookingId = await bookingService.CreateBookingAsync(
                 userId: request.UserId,
-                teacherId: request.TeacherId,
+                // teacherId: request.TeacherId,
                 timeslotId: request.TimeslotId,
                 message: request.Message,
                 status: request.Status);

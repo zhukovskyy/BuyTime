@@ -7,15 +7,15 @@ using MediatR;
 namespace BuyTime_Application.Student.Query.GetAll;
 
 public class GetAllStudentsQueryHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<GetAllStudentsQuery, ErrorOr<IEnumerable<StudentDto>>>
+    : IRequestHandler<GetAllStudentsQuery, ErrorOr<IEnumerable<UserDto>>>
 {
-    public async Task<ErrorOr<IEnumerable<StudentDto>>> Handle(GetAllStudentsQuery request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<IEnumerable<UserDto>>> Handle(GetAllStudentsQuery request, CancellationToken cancellationToken)
     {
         try
         {
-            var students = await unitOfWork.Student.GetAllStudentsAsync();
+            var students = await unitOfWork.User.GetAllStudentsAsync();
             
-            var studentDtos = students.Value.Adapt<List<StudentDto>>();
+            var studentDtos = students.Value.Adapt<List<UserDto>>();
 
             return studentDtos;
         }

@@ -8,8 +8,7 @@ namespace BuyTime_Infrastructure.Common.Persistence;
 public class UnitOfWork : IUnitOfWork
 {
     private BuyTimeDbContext _context;
-    public IStudentRepository Student { get; private set; }
-    public ITeacherRepository Teacher { get; private set; }
+    public IUserRepository User { get; private set; }
     public ITimeSlotRepository Timeslot { get; private set; }
     public IBookingRepository Booking { get; private set; }
     public IFeedbackRepository Feedback { get; private set; }
@@ -17,8 +16,7 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(BuyTimeDbContext context)
     {
         _context = context;
-        Student = new StudentRepository(_context);
-        Teacher = new TeacherRepository(_context);
+        User = new UserRepository(_context);
         Timeslot = new TimeslotRepository(_context);
         Booking = new BookingRepository(_context);
         Feedback = new FeedbackRepository(_context);

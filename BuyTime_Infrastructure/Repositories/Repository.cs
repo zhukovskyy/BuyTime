@@ -1,6 +1,7 @@
 using BuyTime_Application.Common.Interfaces.IRepository;
 using BuyTime_Infrastructure.Common.Persistence;
 using ErrorOr;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace BuyTime_Infrastructure.Repositories;
@@ -86,6 +87,20 @@ public class Repository<T> : IRepository<T>
             await _context.SaveChangesAsync();
             var entityId = (Guid)typeof(T).GetProperty("Id")!.GetValue(entity)!;
             return entityId;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure(ex.Message);
+        }
+    }
+
+    public async Task<ErrorOr<Unit>> UpdateAsync(T entity)
+    {
+        try
+        {
+            _context.Entry(entity).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return Unit.Value;
         }
         catch (Exception ex)
         {

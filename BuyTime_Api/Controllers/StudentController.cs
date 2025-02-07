@@ -1,8 +1,4 @@
 using BuyTime_Application.Student.Query.GetAll;
-using BuyTime_Application.Student.Query.GetStudentByChatId;
-using BuyTime_Application.Student.Query.GetStudentByEmail;
-using BuyTime_Application.Student.Query.GetStudentByFirstAndLastName;
-using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,57 +22,6 @@ public class StudentController(ISender mediatr) : ApiController
         catch (Exception)
         {
             return StatusCode(500, "An error occurred while fetching students.");
-        }
-    }
-    
-    [HttpGet("get-by-first-and-last-name")]
-    public async Task<IActionResult> GetByFirstAndLastName([FromQuery] string firstName, [FromQuery] string lastName)
-    {
-        try
-        {
-            var query = new GetStudentByFirstAndLastNameQuery(firstName, lastName);
-            var student = await mediatr.Send(query);
-            if (student.IsError)
-                return NotFound();
-            return Ok(student.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching student.");
-        }
-    }
-    
-    [HttpGet("get-by-email")]
-    public async Task<IActionResult> GetByEmail([FromQuery] string email)
-    {
-        try
-        {
-            var query = new GetStudentByEmailQuery(email);
-            var student = await mediatr.Send(query);
-            if (student.IsError)
-                return NotFound();
-            return Ok(student.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching student.");
-        }
-    }
-    
-    [HttpGet("get-by-chat-id")]
-    public async Task<IActionResult> GetByChatId([FromQuery] string chatId)
-    {
-        try
-        {
-            var query = new GetStudentByChatIdQuery(chatId);
-            var student = await mediatr.Send(query);
-            if (student.IsError)
-                return NotFound();
-            return Ok(student.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching student.");
         }
     }
 }

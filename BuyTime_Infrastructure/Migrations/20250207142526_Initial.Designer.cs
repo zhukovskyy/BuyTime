@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BuyTime_Infrastructure.Migrations
 {
     [DbContext(typeof(BuyTimeDbContext))]
-    [Migration("20250206122922_DbUpdateTelegramChatId")]
-    partial class DbUpdateTelegramChatId
+    [Migration("20250207142526_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,22 +41,22 @@ namespace BuyTime_Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("TeacherId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("TimeslotId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("Id");
+                    b.Property<Guid?>("UserId1")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.HasIndex("TeacherId");
+                    b.HasKey("Id");
 
                     b.HasIndex("TimeslotId");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
 
                     b.ToTable("Bookings");
                 });
@@ -76,9 +76,6 @@ namespace BuyTime_Infrastructure.Migrations
                     b.Property<decimal>("Rating")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("TeacherId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -86,8 +83,6 @@ namespace BuyTime_Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("TeacherId");
 
                     b.HasIndex("UserId");
 
@@ -113,12 +108,17 @@ namespace BuyTime_Infrastructure.Migrations
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("TeacherId")
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("UserId1")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TeacherId");
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1");
 
                     b.ToTable("Timeslots");
                 });
@@ -129,6 +129,9 @@ namespace BuyTime_Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -137,33 +140,11 @@ namespace BuyTime_Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsTeacher")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("nvarchar(8)");
-
-                    b.Property<string>("TelegramChatId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Users");
-
-                    b.HasDiscriminator<string>("Role").HasValue("student");
-
-                    b.UseTphMappingStrategy();
-                });
-
-            modelBuilder.Entity("BuyTime_Domain.Entities.Teacher", b =>
-                {
-                    b.HasBaseType("BuyTime_Domain.Entities.User");
-
-                    b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("Rating")
@@ -172,17 +153,20 @@ namespace BuyTime_Infrastructure.Migrations
                     b.Property<string>("Tags")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasDiscriminator().HasValue("teacher");
+                    b.Property<string>("TeacherNickname")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TelegramChatId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("BuyTime_Domain.Entities.Booking", b =>
                 {
-                    b.HasOne("BuyTime_Domain.Entities.Teacher", "Teacher")
-                        .WithMany("Bookings")
-                        .HasForeignKey("TeacherId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("BuyTime_Domain.Entities.Timeslot", "TimeSlot")
                         .WithMany()
                         .HasForeignKey("TimeslotId")
@@ -195,7 +179,9 @@ namespace BuyTime_Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Teacher");
+                    b.HasOne("BuyTime_Domain.Entities.User", null)
+                        .WithMany("Bookings")
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("TimeSlot");
 
@@ -204,12 +190,6 @@ namespace BuyTime_Infrastructure.Migrations
 
             modelBuilder.Entity("BuyTime_Domain.Entities.Feedback", b =>
                 {
-                    b.HasOne("BuyTime_Domain.Entities.Teacher", "Teacher")
-                        .WithMany()
-                        .HasForeignKey("TeacherId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("BuyTime_Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -220,30 +200,29 @@ namespace BuyTime_Infrastructure.Migrations
                         .WithMany("Feedbacks")
                         .HasForeignKey("UserId1");
 
-                    b.Navigation("Teacher");
-
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("BuyTime_Domain.Entities.Timeslot", b =>
                 {
-                    b.HasOne("BuyTime_Domain.Entities.Teacher", "Teacher")
-                        .WithMany("TimeSlots")
-                        .HasForeignKey("TeacherId")
+                    b.HasOne("BuyTime_Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Teacher");
+                    b.HasOne("BuyTime_Domain.Entities.User", null)
+                        .WithMany("TimeSlots")
+                        .HasForeignKey("UserId1");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BuyTime_Domain.Entities.User", b =>
                 {
-                    b.Navigation("Feedbacks");
-                });
-
-            modelBuilder.Entity("BuyTime_Domain.Entities.Teacher", b =>
-                {
                     b.Navigation("Bookings");
+
+                    b.Navigation("Feedbacks");
 
                     b.Navigation("TimeSlots");
                 });

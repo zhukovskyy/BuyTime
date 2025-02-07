@@ -5,4 +5,4 @@ using MediatR;
 namespace BuyTime_Application.Student.Query.GetAll;
 
 public record GetAllStudentsQuery()
-    : IRequest<ErrorOr<IEnumerable<StudentDto>>>;
+    : IRequest<ErrorOr<IEnumerable<UserDto>>>;

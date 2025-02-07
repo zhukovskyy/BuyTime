@@ -19,7 +19,7 @@ public class BookingConfirmedEventHandler : INotificationHandler<BookingConfirme
     public async Task Handle(BookingConfirmedEvent notification, CancellationToken cancellationToken)
     {
         var booking = await _unitOfWork.Booking.GetByIdAsync(notification.BookingId);
-        var user = await _unitOfWork.Student.GetByIdAsync(booking.UserId);
+        var user = await _unitOfWork.User.GetByIdAsync(booking.UserId);
 
         if (user.TelegramChatId != null)
         {

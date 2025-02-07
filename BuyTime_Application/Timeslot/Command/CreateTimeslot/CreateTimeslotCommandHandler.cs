@@ -1,4 +1,5 @@
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+using BuyTime_Application.Timeslot.Command.CreateTimeslot;
 using ErrorOr;
 using MediatR;
 
@@ -18,7 +19,7 @@ public class CreateTimeslotCommandHandler(IUnitOfWork unitOfWork)
         var timeslot = new BuyTime_Domain.Entities.Timeslot
         {
             Id = Guid.NewGuid(),
-            TeacherId = request.TeacherId,
+            UserId = request.UserId,
             StartTime = request.StartTime,
             EndTime = request.EndTime,
             IsAvailable = true
@@ -30,7 +31,7 @@ public class CreateTimeslotCommandHandler(IUnitOfWork unitOfWork)
         return new CreateTimeslotResult
         {
             TimeslotId = timeslot.Id,
-            TeacherId = timeslot.TeacherId,
+            UserId = timeslot.UserId,
             StartTime = timeslot.StartTime,
             EndTime = timeslot.EndTime,
             IsAvailable = timeslot.IsAvailable

@@ -23,46 +23,19 @@ namespace BuyTime_Infrastructure.Common.Initializers
                 {
                     var users = new List<User>
                     {
-                        new User { Id = Guid.NewGuid(), FirstName = "Іван", LastName = "Шевченко", Role = Roles.Student, Email = "ivan.sh@example.com", TelegramChatId = "123456" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Ольга", LastName = "Іванова", Role = Roles.Student, Email = "olga.ivanova@example.com",  TelegramChatId = "123456" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Андрій", LastName = "Коваленко", Role = Roles.Teacher, Email = "andriy.kovalenko@example.com",  TelegramChatId = "123456" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Марина", LastName = "Данилова", Role = Roles.Teacher, Email = "marina.danilova@example.com",  TelegramChatId = "123456" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Тарас", LastName = "Гончаренко", Role = Roles.Student, Email = "taras.goncharenko@example.com",  TelegramChatId = "123456" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Наталія", LastName = "Петренко", Role = Roles.Student, Email = "natalia.petrenko@example.com",  TelegramChatId = "123456" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Дмитро", LastName = "Сидоренко", Role = Roles.Teacher, Email = "dmytro.sydorenko@example.com",  TelegramChatId = "123456" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Анна", LastName = "Левченко", Role = Roles.Student, Email = "anna.levchenko@example.com", TelegramChatId = "123456"  },
-                        new User { Id = Guid.NewGuid(), FirstName = "Павло", LastName = "Мельник", Role = Roles.Teacher, Email = "pavlo.melnik@example.com", TelegramChatId = "123456"  },
-                        new User { Id = Guid.NewGuid(), FirstName = "Юлія", LastName = "Бойко", Role = Roles.Student, Email = "yulia.boyko@example.com", TelegramChatId = "123456" },
+                        new User { Id = Guid.NewGuid(), FirstName = "Іван", LastName = "Шевченко", Email = "ivan.sh@example.com", TelegramChatId = "123456", IsTeacher = false },
+                        new User { Id = Guid.NewGuid(), FirstName = "Ольга", LastName = "Іванова", Email = "olga.ivanova@example.com", TelegramChatId = "123456", IsTeacher = false },
+                        new User { Id = Guid.NewGuid(), FirstName = "Андрій", LastName = "Коваленко", Email = "andriy.kovalenko@example.com", TelegramChatId = "123456", IsTeacher = true, TeacherNickname = "Коваленко Репетитор", Description = "Досвідчений викладач.", Rating = random.Next(1, 6), Tags = "математика, програмування" },
+                        new User { Id = Guid.NewGuid(), FirstName = "Марина", LastName = "Данилова", Email = "marina.danilova@example.com", TelegramChatId = "123456", IsTeacher = true, TeacherNickname = "Марина ІТ", Description = "Сертифікований тренер.", Rating = random.Next(1, 6), Tags = "дизайн, маркетинг" },
                     };
 
                     context.Users.AddRange(users);
                     await context.SaveChangesAsync();
                 }
 
-                if (!context.Teachers.Any())
-                {
-                    var teachers = context.Users.Where(u => u.Role == Roles.Teacher).ToList();
-                    foreach (var teacher in teachers)
-                    {
-                        var teacherEntity = new Teacher
-                        {
-                            Id = teacher.Id,
-                            FirstName = teacher.FirstName,
-                            LastName = teacher.LastName,
-                            Role = teacher.Role,
-                            Email = teacher.Email,
-                            Description = "Досвідчений викладач з великим досвідом роботи.",
-                            Rating = random.Next(1, 6),
-                            Tags = "математика, програмування"
-                        };
-                        context.Teachers.Add(teacherEntity);
-                    }
-                    await context.SaveChangesAsync();
-                }
-
                 if (!context.Timeslots.Any())
                 {
-                    var teachers = context.Teachers.ToList();
+                    var teachers = context.Users.Where(u => u.IsTeacher).ToList();
                     var timeslots = new List<Timeslot>();
                     foreach (var teacher in teachers)
                     {
@@ -73,7 +46,7 @@ namespace BuyTime_Infrastructure.Common.Initializers
                             timeslots.Add(new Timeslot
                             {
                                 Id = Guid.NewGuid(),
-                                TeacherId = teacher.Id,
+                                UserId = teacher.Id,
                                 StartTime = startTime,
                                 EndTime = endTime,
                                 IsAvailable = true
@@ -87,18 +60,17 @@ namespace BuyTime_Infrastructure.Common.Initializers
 
                 if (!context.Bookings.Any())
                 {
-                    var users = context.Users.Where(u => u.Role == Roles.Student).ToList();
+                    var students = context.Users.Where(u => !u.IsTeacher).ToList();
                     var timeslots = context.Timeslots.ToList();
                     var bookings = new List<Booking>();
 
-                    foreach (var user in users)
+                    foreach (var student in students)
                     {
                         var randomTimeslot = timeslots[random.Next(timeslots.Count)];
                         bookings.Add(new Booking
                         {
                             Id = Guid.NewGuid(),
-                            UserId = user.Id,
-                            TeacherId = randomTimeslot.TeacherId,
+                            UserId = student.Id,
                             TimeslotId = randomTimeslot.Id,
                             Status = Status.Pending,
                             Message = "Хочу забронювати цей урок.",
@@ -120,7 +92,6 @@ namespace BuyTime_Infrastructure.Common.Initializers
                         feedbacks.Add(new Feedback
                         {
                             Id = Guid.NewGuid(),
-                            TeacherId = booking.TeacherId,
                             UserId = booking.UserId,
                             Rating = (decimal)(random.Next(1, 6)),
                             Comment = "Чудовий урок!",

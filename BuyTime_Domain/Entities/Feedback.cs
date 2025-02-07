@@ -3,7 +3,6 @@ namespace BuyTime_Domain.Entities;
 public class Feedback
 {
     public Guid Id { get; set; }
-    public Guid TeacherId { get; set; }
     public Guid UserId { get; set; }
     public decimal Rating { get; set; }
     public string? Comment { get; set; }
@@ -13,6 +12,5 @@ public class Feedback
         get { return _createdAt; }
         set {_createdAt = DateTime.SpecifyKind(value, DateTimeKind.Utc); }
     }
-    public Teacher Teacher { get; set; }
     public User User { get; set; }
 }
