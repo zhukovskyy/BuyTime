@@ -9,5 +9,5 @@ public class TimeslotDto
     public DateTime EndTime { get; set; }
 
     public bool IsAvailable { get; set; }
-    public Guid TeacherId { get; set; }
+    public Guid UserId { get; set; }
 }
