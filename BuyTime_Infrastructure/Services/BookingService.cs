@@ -15,50 +15,41 @@ public class BookingService(
     public async Task<Guid> CreateBookingAsync(Guid userId,
         Guid timeslotId, string message, string status)
     {
-        var user = await unitOfWork.User.GetByIdAsync(userId);
-        if (user.IsTeacher)
+        var timeslot = await unitOfWork.Timeslot.GetByIdAsync(timeslotId);
+        if (timeslot.IsAvailable)
         {
-            var timeslot = await unitOfWork.Timeslot.GetByIdAsync(timeslotId);
-
-            if (timeslot.IsAvailable)
+            var booking = new Booking
             {
-                var booking = new Booking
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = userId,
-                    TimeslotId = timeslotId,
-                    Status = status, 
-                    Message = message,
-                    CreatedAt = DateTime.UtcNow
-                };
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                TimeslotId = timeslotId,
+                Status = status, 
+                Message = message,
+                CreatedAt = DateTime.UtcNow
+            };
 
-                await unitOfWork.Booking.AddAsync(booking);
-                await unitOfWork.CommitAsync();
+            await unitOfWork.Booking.AddAsync(booking);
+            await unitOfWork.CommitAsync();
 
-                timeslot.IsAvailable = false;
-                await unitOfWork.Timeslot.UpdateAsync(timeslot);
-                await unitOfWork.CommitAsync();
+            timeslot.IsAvailable = false;
+            await unitOfWork.Timeslot.UpdateAsync(timeslot);
+            await unitOfWork.CommitAsync();
 
-                // if (user.TelegramChatId != null)
-                // {
-                //     await telegramService.SendMessageAsync(user.TelegramChatId, $"Your booking is {status}. Await further updates.");
-                // }
-                //
-                // if (teacher.TelegramChatId != null)
-                // {
-                //     await telegramService.SendMessageAsync(teacher.TelegramChatId, $"You have a new booking from {user.FirstName} {user.LastName}. Status: {status}.");
-                // }
+            // if (user.TelegramChatId != null)
+            // {
+            //     await telegramService.SendMessageAsync(user.TelegramChatId, $"Your booking is {status}. Await further updates.");
+            // }
+            //
+            // if (teacher.TelegramChatId != null)
+            // {
+            //     await telegramService.SendMessageAsync(teacher.TelegramChatId, $"You have a new booking from {user.FirstName} {user.LastName}. Status: {status}.");
+            // }
 
-                return booking.Id; 
-            }
-            else
-            {
-                throw new InvalidOperationException("The timeslot is no longer available.");
-            }
+            return booking.Id; 
         }
         else
         {
-            throw new InvalidOperationException("Only teachers can create bookings.");
+            throw new InvalidOperationException("The timeslot is no longer available.");
         }
     }
     
