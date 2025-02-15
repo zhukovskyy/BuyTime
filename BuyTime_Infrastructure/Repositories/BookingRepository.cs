@@ -3,6 +3,7 @@ using BuyTime_Domain.Entities;
 using BuyTime_Infrastructure.Common.Persistence;
 using ErrorOr;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace BuyTime_Infrastructure.Repositories;
 

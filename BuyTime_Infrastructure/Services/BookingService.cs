@@ -23,8 +23,8 @@ public class BookingService(
                 Id = Guid.NewGuid(),
                 UserId = userId,
                 TimeslotId = timeslotId,
-                Status = status, 
                 Message = message,
+                Status = status, 
                 CreatedAt = DateTime.UtcNow
             };
 
