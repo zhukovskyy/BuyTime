@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BuyTime_Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5ff2986d338574a771404351cf3c567f5cee15e8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+697ce5437e8359863c00c203e26c9a6fd9ebeca1")]
 [assembly: System.Reflection.AssemblyProductAttribute("BuyTime_Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BuyTime_Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

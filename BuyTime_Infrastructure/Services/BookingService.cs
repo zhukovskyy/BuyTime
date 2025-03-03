@@ -13,7 +13,7 @@ public class BookingService(
     IMediator mediator) : IBookingService
 {
     public async Task<Guid> CreateBookingAsync(Guid userId,
-        Guid timeslotId, string message, string status)
+        Guid timeslotId, string message, string status, string urlOfMeeting)
     {
         var timeslot = await unitOfWork.Timeslot.GetByIdAsync(timeslotId);
         if (timeslot.IsAvailable)
@@ -25,6 +25,7 @@ public class BookingService(
                 TimeslotId = timeslotId,
                 Message = message,
                 Status = status, 
+                UrlOfMeeting = urlOfMeeting,
                 CreatedAt = DateTime.UtcNow
             };
 

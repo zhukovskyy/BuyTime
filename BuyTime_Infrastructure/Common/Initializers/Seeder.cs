@@ -74,7 +74,8 @@ namespace BuyTime_Infrastructure.Common.Initializers
                             TimeslotId = randomTimeslot.Id,
                             Status = Status.Pending,
                             Message = "Хочу забронювати цей урок.",
-                            CreatedAt = DateTime.Now
+                            CreatedAt = DateTime.Now,
+                            UrlOfMeeting = "https://meet.google.com/abc-def-ghi"
                         });
                     }
 
