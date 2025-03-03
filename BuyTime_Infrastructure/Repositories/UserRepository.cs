@@ -2,7 +2,6 @@ using BuyTime_Application.Common.Interfaces.IRepository;
 using BuyTime_Domain.Entities;
 using BuyTime_Infrastructure.Common.Persistence;
 using ErrorOr;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace BuyTime_Infrastructure.Repositories;
@@ -62,6 +61,20 @@ public class UserRepository(BuyTimeDbContext context)
         catch (Exception ex)
         {
             return Error.Failure(ex.Message);
+        }
+    }
+
+    public async Task<ErrorOr<User>> AddUserDetailsAsync(User user)
+    {
+        try
+        {
+            await dbSet.AddAsync(user);
+            await context.SaveChangesAsync();
+            return user;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure("Error while adding user details");
         }
     }
 }

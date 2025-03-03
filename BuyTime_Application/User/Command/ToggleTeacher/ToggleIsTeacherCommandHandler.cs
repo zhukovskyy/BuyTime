@@ -2,7 +2,7 @@ using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using ErrorOr;
 using MediatR;
 
-namespace BuyTime_Application.User.Command;
+namespace BuyTime_Application.User.Command.ToggleTeacher;
 
 public class ToggleIsTeacherCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<ToggleIsTeacherCommand, ErrorOr<Unit>>
 {

@@ -1,4 +1,6 @@
 using BuyTime_Application.User.Command;
+using BuyTime_Application.User.Command.AddUserDetails;
+using BuyTime_Application.User.Command.ToggleTeacher;
 using BuyTime_Application.User.Query.GetAll;
 using BuyTime_Application.User.Query.GetUserByChatId;
 using BuyTime_Application.User.Query.GetUserByEmail;
@@ -94,6 +96,22 @@ public class UserController(ISender mediatr) : ApiController
         catch (Exception)
         {
             return StatusCode(500, "An error occurred while toggling user's role.");
+        }
+    }
+    
+    [HttpPost("add-user-details")]
+    public async Task<IActionResult> AddUserDetails([FromBody] AddUserDetailsCommand command)
+    {
+        try
+        {
+            var result = await mediatr.Send(command);
+            if (result.IsError)
+                return StatusCode(409, result.IsError);
+            return Ok(result.Value);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while adding user details.");
         }
     }
 }
