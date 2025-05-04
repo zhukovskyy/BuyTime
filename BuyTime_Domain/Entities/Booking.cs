@@ -7,7 +7,8 @@ public class Booking
     public Guid TimeslotId { get; set; }
     public string Status { get; set; } 
     public string? Message { get; set; }
-    public string UrlOfMeeting { get; set; }
+    public string? UrlOfMeeting { get; set; }
+    public string? Answer { get; set; }
     private DateTime _createdAt;
 
     public DateTime CreatedAt

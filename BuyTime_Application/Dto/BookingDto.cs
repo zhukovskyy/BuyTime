@@ -9,7 +9,7 @@ namespace BuyTime_Application.Dto
         public string Status { get; set; } 
         public string? Message { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string UrlOfMeeting { get; set; }
+        public string? UrlOfMeeting { get; set; }
         
         public string UserFirstName { get; set; }
         public string UserLastName { get; set; }

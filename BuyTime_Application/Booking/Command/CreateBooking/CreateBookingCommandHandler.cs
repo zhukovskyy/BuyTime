@@ -16,12 +16,11 @@ public class CreateBookingCommandHandler(IUnitOfWork unitOfWork, IBookingService
                 userId: request.UserId,
                 timeslotId: request.TimeslotId,
                 message: request.Message,
-                urlOfMeeting: request.UrlOfMeeting,
                 status: request.Status);
 
             return new CreateBookingResult
             {
-                BookingId = bookingId 
+                BookingId = bookingId
             };
         }
         catch (InvalidOperationException ex)

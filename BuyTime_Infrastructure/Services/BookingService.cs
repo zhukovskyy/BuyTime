@@ -13,7 +13,7 @@ public class BookingService(
     IMediator mediator) : IBookingService
 {
     public async Task<Guid> CreateBookingAsync(Guid userId,
-        Guid timeslotId, string message, string status, string urlOfMeeting)
+        Guid timeslotId, string message, string status)
     {
         var timeslot = await unitOfWork.Timeslot.GetByIdAsync(timeslotId);
         if (timeslot.IsAvailable)
@@ -24,9 +24,10 @@ public class BookingService(
                 UserId = userId,
                 TimeslotId = timeslotId,
                 Message = message,
-                Status = status, 
-                UrlOfMeeting = urlOfMeeting,
-                CreatedAt = DateTime.UtcNow
+                Status = status,
+                CreatedAt = DateTime.UtcNow,
+                Answer = null,
+                UrlOfMeeting = null,
             };
 
             await unitOfWork.Booking.AddAsync(booking);
@@ -61,18 +62,24 @@ public class BookingService(
         {
             return Error.Failure("Booking not found.");
         }
+        var timeslot = await unitOfWork.Timeslot.GetByIdAsync(booking.TimeslotId);
+        if (timeslot == null)
+        {
+            return Error.Failure("Timeslot not found.");
+        }
 
         booking.Status = "confirmed";
-        booking.Message += $"\nTeacher's confirmation: {confirmationMessage}\nContact Link: {contactLink}";
+        booking.Answer = confirmationMessage; 
+        booking.UrlOfMeeting = contactLink;
 
         var user = await unitOfWork.User.GetByIdAsync(booking.UserId);
 
-        var timeslot = await unitOfWork.Timeslot.GetByIdAsync(booking.TimeslotId);
+        //var timeslot = await unitOfWork.Timeslot.GetByIdAsync(booking.TimeslotId);
         timeslot.IsAvailable = false;
         await unitOfWork.Timeslot.UpdateAsync(timeslot);
         await unitOfWork.CommitAsync();
 
-        await unitOfWork.Booking.UpdateAsync(booking);
+        await unitOfWork.Booking.UpdateAsync(booking); // answer не записується в бд, url тоже
         await unitOfWork.CommitAsync();
 
         await mediator.Publish(new BookingConfirmedEvent(bookingId, confirmationMessage, contactLink));

@@ -21,6 +21,8 @@ public class BookingRepository(BuyTimeDbContext context)
             existingBooking.Status = booking.Status;
             existingBooking.Message = booking.Message;
             existingBooking.CreatedAt = booking.CreatedAt;
+            existingBooking.Answer = booking.Answer;
+            existingBooking.UrlOfMeeting = booking.UrlOfMeeting;
             
             context.Bookings.Update(existingBooking);
             await context.SaveChangesAsync();

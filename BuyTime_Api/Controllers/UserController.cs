@@ -2,6 +2,7 @@ using BuyTime_Application.User.Command;
 using BuyTime_Application.User.Command.AddUserDetails;
 using BuyTime_Application.User.Command.ToggleTeacher;
 using BuyTime_Application.User.Query.GetAll;
+using BuyTime_Application.User.Query.GetById;
 using BuyTime_Application.User.Query.GetUserByChatId;
 using BuyTime_Application.User.Query.GetUserByEmail;
 using BuyTime_Application.User.Query.GetUserByFirstAndLastName;
@@ -14,6 +15,23 @@ namespace BuyTime_Api.Controllers;
 [Route("api/user")]
 public class UserController(ISender mediatr) : ApiController
 {
+    [HttpGet("get-by-id")]
+    public async Task<IActionResult> GetById([FromQuery] Guid id)
+    {
+        try
+        {
+            var query = new GetUserByIdQuery(id);
+            var result = await mediatr.Send(query);
+            if (result.IsError)
+                return NotFound(result.Errors);
+            return Ok(result.Value);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while fetching user.");
+        }
+    }
+
     [HttpGet("get-all")]
     public async Task<IActionResult> GetAll()
     {

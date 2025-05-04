@@ -9,6 +9,20 @@ namespace BuyTime_Infrastructure.Repositories;
 public class UserRepository(BuyTimeDbContext context)
     : Repository<User>(context), IUserRepository
 {
+    public async Task<ErrorOr<User>> GetUserByIdAsync(Guid id)
+    {
+        try
+        {
+            var user = await dbSet.FirstOrDefaultAsync(user => user.Id == id);
+            if (user == null)
+                return Error.NotFound("User not found");
+            return user;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure(ex.Message);
+        }
+    }
     public async Task<ErrorOr<User>> GetUserByChatIdAsync(string chatId)
     {
         try

@@ -75,7 +75,7 @@ namespace BuyTime_Infrastructure.Common.Initializers
                             Status = Status.Pending,
                             Message = "Хочу забронювати цей урок.",
                             CreatedAt = DateTime.Now,
-                            UrlOfMeeting = "https://meet.google.com/abc-def-ghi"
+                            UrlOfMeeting = null
                         });
                     }
 

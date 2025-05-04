@@ -23,8 +23,8 @@ public class BookingConfirmedEventHandler : INotificationHandler<BookingConfirme
 
         if (user.TelegramChatId != null)
         {
-            await _telegramService.SendMessageAsync(user.TelegramChatId, 
-                $"Your booking has been confirmed! {notification.ConfirmationMessage} Contact link: {notification.ContactLink}");
+            //await _telegramService.SendMessageAsync(user.TelegramChatId, 
+                //$"Your booking has been confirmed! {notification.ConfirmationMessage} Contact link: {notification.ContactLink}");
         }
     }
 }
