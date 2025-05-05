@@ -34,4 +34,19 @@ public class BookingRepository(BuyTimeDbContext context)
             return Error.Failure(ex.Message);
         }
     }
+
+    public async Task<ErrorOr<List<Booking>>> GetBookingsByTimeSlotIdAsync(Guid timeSlotId)
+    {
+        try
+        {
+            var bookings = await dbSet
+                .Where(b => b.TimeslotId == timeSlotId)
+                .ToListAsync();
+            return bookings;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure($"Error while retrieving bookings: {ex.Message}");
+        }
+    }
 }
