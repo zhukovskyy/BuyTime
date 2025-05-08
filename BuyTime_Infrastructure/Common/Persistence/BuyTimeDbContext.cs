@@ -17,7 +17,8 @@ public class BuyTimeDbContext : DbContext
     public DbSet<Timeslot> Timeslots { get; set; }
     public DbSet<Feedback> Feedbacks { get; set; }
     public DbSet<Booking> Bookings { get; set; }
-    
+    public DbSet<Wallet> Wallets { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -67,5 +68,14 @@ public class BuyTimeDbContext : DbContext
         modelBuilder.Entity<Timeslot>()
             .Property(ts => ts.IsAvailable)
             .HasDefaultValue(true);
+
+        modelBuilder.Entity<Wallet>()
+            .HasKey(w => w.Id);
+
+        modelBuilder.Entity<Wallet>()
+            .HasOne(w => w.User)
+            .WithMany(u => u.Wallets)
+            .HasForeignKey(w => w.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

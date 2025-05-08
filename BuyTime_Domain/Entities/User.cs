@@ -15,4 +15,5 @@ public class User
     public ICollection<Timeslot>? TimeSlots { get; set; } 
     public ICollection<Booking>? Bookings { get; set; } 
     public ICollection<Feedback>? Feedbacks { get; set; }
+    public ICollection<Wallet> Wallets { get; set; }
 }

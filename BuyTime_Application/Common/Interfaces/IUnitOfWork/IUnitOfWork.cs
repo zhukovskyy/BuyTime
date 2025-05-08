@@ -8,5 +8,6 @@ public interface IUnitOfWork
     ITimeSlotRepository Timeslot { get; }
     IBookingRepository Booking { get; }
     IFeedbackRepository Feedback { get; }
+    IWalletRepository Wallet { get; }
     Task CommitAsync();
 }

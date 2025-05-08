@@ -1,0 +1,48 @@
+# Build output
+bin/
+obj/
+BuyTime_Application/obj/
+
+# Rider / VS Code / VS
+.idea/
+.vscode/
+*.user
+*.suo
+*.vs
+*.target
+*.props
+
+# Compiled DLLs and executables
+*.dll
+*.exe
+*.pdb
+
+# NuGet
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Logs
+*.log
+
+# JSON artifacts
+*.nuget.cache
+*.nuget.dgspec.json
+*.assets.cache
+*.genruntimeconfig.cache
+*.sourcelink.json
+
+# Backup files
+*.bak
+*.tmp
+*.cache
+
+# Others
+*.GeneratedMSBuildEditorConfig.editorconfig
+*.AssemblyInfo.cs
+*.AssemblyInfoInputs.cache
+*.csproj.FileListAbsolute.txt
+*.csproj.AssemblyReference.cache
+*.csproj.CoreCompileInputs.cache

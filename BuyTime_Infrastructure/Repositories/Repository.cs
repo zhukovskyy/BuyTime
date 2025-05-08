@@ -107,4 +107,21 @@ public class Repository<T> : IRepository<T>
             return Error.Failure(ex.Message);
         }
     }
+
+    public async Task<ErrorOr<Unit>> DeleteAsync(T entity)
+    {
+        try
+        {
+            if (entity == null)
+                return Error.Failure("Entity cannot be null");
+
+            _context.Remove(entity);
+            await _context.SaveChangesAsync();
+            return Unit.Value;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure(ex.Message);
+        }
+    }
 }
