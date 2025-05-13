@@ -4,8 +4,10 @@ namespace BuyTime_Infrastructure.Services;
 
 public class TelegramService : ITelegramService
 {
-    private readonly string _telegramBotToken = "8143691513:AAF8fyc9l-TaaNHXx5VlX8npMz5UgVZjGK4"; 
-    
+    private readonly string _telegramBotToken = "7606255333:AAEP4sV2SbKbaH08Tdd2iCW8msSHK9d9PVo";
+
+
+
     public async Task SendMessageAsync(string? chatId, string message)
     {
         var client = new HttpClient();

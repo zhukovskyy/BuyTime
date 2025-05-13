@@ -1,0 +1,7 @@
+<h2>Надіслати тестовий Telegram Webhook</h2>
+<button (click)="sendWebhook()">Надіслати</button>
+
+<div *ngIf="response">
+  <p>Відповідь від сервера:</p>
+  <pre>{{ response | json }}</pre>
+</div>
