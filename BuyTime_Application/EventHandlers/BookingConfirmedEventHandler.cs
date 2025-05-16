@@ -10,7 +10,7 @@ public class BookingConfirmedEventHandler : INotificationHandler<BookingConfirme
     private readonly ITelegramService _telegramService;
     private readonly IUnitOfWork _unitOfWork;
 
-    public BookingConfirmedEventHandler(ITelegramService telegramService, IUnitOfWork unitOfWork)
+    public BookingConfirmedEventHandler(ITelegramService telegramService, IUnitOfWork unitOfWork) // wtf was that chatgpt
     {
         _telegramService = telegramService;
         _unitOfWork = unitOfWork;

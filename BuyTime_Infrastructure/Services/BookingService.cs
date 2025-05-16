@@ -79,7 +79,7 @@ public class BookingService(
         await unitOfWork.Timeslot.UpdateAsync(timeslot);
         await unitOfWork.CommitAsync();
 
-        await unitOfWork.Booking.UpdateAsync(booking); // answer не записується в бд, url тоже
+        await unitOfWork.Booking.UpdateAsync(booking); 
         await unitOfWork.CommitAsync();
 
         await mediator.Publish(new BookingConfirmedEvent(bookingId, confirmationMessage, contactLink));
@@ -110,7 +110,7 @@ public class BookingService(
 
         if (user.TelegramChatId != null)
         {
-            await telegramService.SendMessageAsync(user.TelegramChatId, $"Your booking has been cancelled. Reason: {cancellationMessage}");
+            //await telegramService.SendMessageAsync(user.TelegramChatId, $"Your booking has been cancelled. Reason: {cancellationMessage}");
         }
 
         return Unit.Value;
