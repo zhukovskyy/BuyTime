@@ -1,11 +1,11 @@
-using MediatR;
+﻿using MediatR;
 
 namespace BuyTime_Application.Events;
 
-public class BookingConfirmedEvent(Guid bookingId, string confirmationMessage, string contactLink)
+public class BookingConfirmedEvent(Guid bookingId, string confirmationMessage, string meetingLink)
     : INotification
 {
     public Guid BookingId { get; set; } = bookingId;
     public string ConfirmationMessage { get; set; } = confirmationMessage;
-    public string ContactLink { get; set; } = contactLink;
+    public string MeetingLink { get; set; } = meetingLink;
 }

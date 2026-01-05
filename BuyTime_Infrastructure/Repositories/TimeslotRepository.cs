@@ -1,4 +1,4 @@
-using BuyTime_Application.Common.Interfaces.IRepository;
+﻿using BuyTime_Application.Common.Interfaces.IRepository;
 using BuyTime_Domain.Entities;
 using BuyTime_Infrastructure.Common.Persistence;
 using ErrorOr;
@@ -16,11 +16,11 @@ public class TimeslotRepository(BuyTimeDbContext context)
             var existingTimeslot = await context.Timeslots.FindAsync(timeslot.Id);
             if(existingTimeslot == null)
                 return Error.Failure("Time slot not found");
-            
+
             existingTimeslot.StartTime = timeslot.StartTime;
             existingTimeslot.EndTime = timeslot.EndTime;
             existingTimeslot.IsAvailable = timeslot.IsAvailable;
-            
+
             context.Timeslots.Update(existingTimeslot);
             await context.SaveChangesAsync();
 

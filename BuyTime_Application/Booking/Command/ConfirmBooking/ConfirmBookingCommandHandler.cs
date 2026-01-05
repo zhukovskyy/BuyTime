@@ -1,4 +1,4 @@
-using BuyTime_Application.Common.Interfaces.IService;
+﻿using BuyTime_Application.Common.Interfaces.IService;
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using MediatR;
 using ErrorOr;
@@ -10,6 +10,8 @@ public class ConfirmBookingCommandHandler(IUnitOfWork unitOfWork, IBookingServic
 {
     public async Task<ErrorOr<Unit>> Handle(ConfirmBookingCommand request, CancellationToken cancellationToken)
     {
-        return await bookingService.ConfirmBookingAsync(request.BookingId, request.ConfirmationMessage, request.ContactLink);
+        return await bookingService.ConfirmBookingAsync(request.BookingId, 
+                                                        request.ConfirmationMessage, 
+                                                        request.MeetingLink);
     }
 }

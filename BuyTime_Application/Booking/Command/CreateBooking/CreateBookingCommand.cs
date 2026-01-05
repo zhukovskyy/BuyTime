@@ -1,12 +1,10 @@
-using MediatR;
+﻿using BuyTime_Application.Booking.Command.CreateBooking;
 using ErrorOr;
-using System.Text.Json.Serialization;
-
-
-namespace BuyTime_Application.Booking.Command.CreateBooking;
+using MediatR;
 
 public record CreateBookingCommand(
-    Guid UserId,
+    Guid StudentId,
     Guid TimeslotId,
-    string Status,
-    string Message) : IRequest<ErrorOr<CreateBookingResult>>;
+    string MessageToExpert,
+    string ContractHash 
+) : IRequest<ErrorOr<CreateBookingResult>>;

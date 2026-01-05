@@ -1,4 +1,4 @@
-using BuyTime_Domain.Entities;
+﻿using BuyTime_Domain.Entities;
 using BuyTime_Domain.Constants;
 using BuyTime_Infrastructure.Common.Persistence;
 using Microsoft.AspNetCore.Builder;
@@ -23,19 +23,22 @@ namespace BuyTime_Infrastructure.Common.Initializers
                 {
                     var users = new List<User>
                     {
-                        new User { Id = Guid.NewGuid(), FirstName = "Іван", LastName = "Шевченко", Email = "ivan.sh@example.com", TelegramChatId = "123456", IsTeacher = false },
-                        new User { Id = Guid.NewGuid(), FirstName = "Ольга", LastName = "Іванова", Email = "olga.ivanova@example.com", TelegramChatId = "123456", IsTeacher = false },
-                        new User { Id = Guid.NewGuid(), FirstName = "Андрій", LastName = "Коваленко", Email = "andriy.kovalenko@example.com", TelegramChatId = "123456", IsTeacher = true, TeacherNickname = "Коваленко Репетитор", Description = "Досвідчений викладач.", Rating = random.Next(1, 6), Tags = "математика, програмування" },
-                        new User { Id = Guid.NewGuid(), FirstName = "Марина", LastName = "Данилова", Email = "marina.danilova@example.com", TelegramChatId = "123456", IsTeacher = true, TeacherNickname = "Марина ІТ", Description = "Сертифікований тренер.", Rating = random.Next(1, 6), Tags = "дизайн, маркетинг" },
-                    };
+                        new User { Id = Guid.NewGuid(), FirstName = "Іван", LastName = "Шевченко", Email = "ivan.sh@example.com", TelegramChatId = "123456", IsExpert = false },
+        
+                        // Юзер без пошти
+                        new User { Id = Guid.NewGuid(), FirstName = "Петро", LastName = "Безим'янний", Email = null, TelegramChatId = "999888", IsExpert = false },
 
+                        // Експерти
+                        new User { Id = Guid.NewGuid(), FirstName = "Андрій", LastName = "Коваленко", Email = "andriy.kovalenko@example.com", TelegramChatId = "123456", IsExpert = true, ExpertNickname = "Коваленко Ментор", Description = "Досвідчений викладач", Rating = random.Next(1, 6), Tags = "математика, програмування" },
+                        new User { Id = Guid.NewGuid(), FirstName = "Марина", LastName = "Данилова", Email = "marina.danilova@example.com", TelegramChatId = "123456", IsExpert = true, ExpertNickname = "Марина ІТ", Description = "Сертифікований тренер", Rating = random.Next(1, 6), Tags = "дизайн, маркетинг" },
+                    };
                     context.Users.AddRange(users);
                     await context.SaveChangesAsync();
                 }
 
                 if (!context.Timeslots.Any())
                 {
-                    var teachers = context.Users.Where(u => u.IsTeacher).ToList();
+                    var teachers = context.Users.Where(u => u.IsExpert).ToList();
                     var timeslots = new List<Timeslot>();
                     foreach (var teacher in teachers)
                     {
@@ -46,10 +49,12 @@ namespace BuyTime_Infrastructure.Common.Initializers
                             timeslots.Add(new Timeslot
                             {
                                 Id = Guid.NewGuid(),
-                                UserId = teacher.Id,
+                                ExpertId = teacher.Id, 
                                 StartTime = startTime,
                                 EndTime = endTime,
-                                IsAvailable = true
+                                IsAvailable = true,
+                                Price = 10.0m,      
+                                Currency = "TON"
                             });
                         }
                     }
@@ -60,7 +65,7 @@ namespace BuyTime_Infrastructure.Common.Initializers
 
                 if (!context.Bookings.Any())
                 {
-                    var students = context.Users.Where(u => !u.IsTeacher).ToList();
+                    var students = context.Users.Where(u => !u.IsExpert).ToList();
                     var timeslots = context.Timeslots.ToList();
                     var bookings = new List<Booking>();
 
@@ -70,12 +75,15 @@ namespace BuyTime_Infrastructure.Common.Initializers
                         bookings.Add(new Booking
                         {
                             Id = Guid.NewGuid(),
-                            UserId = student.Id,
+                            StudentId = student.Id,
                             TimeslotId = randomTimeslot.Id,
                             Status = Status.Pending,
-                            Message = "Хочу забронювати цей урок.",
+                            MessageToExpert = "Хочу забронювати цей урок.",
+                            ContractHash = "fake_hash_" + Guid.NewGuid().ToString().Substring(0, 8),
+                            ConfirmationMessage = null,
+                            Cancellation = null,
                             CreatedAt = DateTime.Now,
-                            UrlOfMeeting = null
+                            MeetingLink = null
                         });
                     }
 
@@ -93,7 +101,7 @@ namespace BuyTime_Infrastructure.Common.Initializers
                         feedbacks.Add(new Feedback
                         {
                             Id = Guid.NewGuid(),
-                            UserId = booking.UserId,
+                            UserId = booking.StudentId,
                             Rating = (decimal)(random.Next(1, 6)),
                             Comment = "Чудовий урок!",
                             CreatedAt = DateTime.Now

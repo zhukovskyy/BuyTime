@@ -1,4 +1,4 @@
-using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+﻿using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Application.Timeslot.Command.CreateTimeslot;
 using ErrorOr;
 using MediatR;
@@ -19,10 +19,13 @@ public class CreateTimeslotCommandHandler(IUnitOfWork unitOfWork)
         var timeslot = new BuyTime_Domain.Entities.Timeslot
         {
             Id = Guid.NewGuid(),
-            UserId = request.UserId,
+            ExpertId = request.ExpertId, 
             StartTime = request.StartTime,
             EndTime = request.EndTime,
-            IsAvailable = true
+            IsAvailable = true,
+
+            Price = request.Price,
+            Currency = request.Currency
         };
 
         await unitOfWork.Timeslot.AddAsync(timeslot);
@@ -31,10 +34,12 @@ public class CreateTimeslotCommandHandler(IUnitOfWork unitOfWork)
         return new CreateTimeslotResult
         {
             TimeslotId = timeslot.Id,
-            UserId = timeslot.UserId,
+            ExpertId = timeslot.ExpertId,
             StartTime = timeslot.StartTime,
             EndTime = timeslot.EndTime,
-            IsAvailable = timeslot.IsAvailable
+            IsAvailable = timeslot.IsAvailable,
+            Price = timeslot.Price,
+            Currency = timeslot.Currency
         };
     }
 }

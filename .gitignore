@@ -2,6 +2,8 @@
 bin/
 obj/
 BuyTime_Application/obj/
+BuyTime_Api/appsettings.json
+BuyTime_Api/appsettings.Development.json
 
 # Rider / VS Code / VS
 .idea/

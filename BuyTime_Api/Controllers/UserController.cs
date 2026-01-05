@@ -1,6 +1,6 @@
-using BuyTime_Application.User.Command;
+﻿using BuyTime_Application.User.Command;
 using BuyTime_Application.User.Command.AddUserDetails;
-using BuyTime_Application.User.Command.ToggleTeacher;
+using BuyTime_Application.User.Command.ToggleExpert;
 using BuyTime_Application.User.Query.GetAll;
 using BuyTime_Application.User.Query.GetById;
 using BuyTime_Application.User.Query.GetUserByChatId;
@@ -100,12 +100,12 @@ public class UserController(ISender mediatr) : ApiController
         }
     }
     
-    [HttpPut("toggle-is-teacher")]
+    [HttpPut("toggle-is-expert")]
     public async Task<IActionResult> ToggleIsTeacher([FromQuery] Guid userId)
     {
         try
         {
-            var command = new ToggleIsTeacherCommand(userId);
+            var command = new ToggleIsExpertCommand(userId);
             var result = await mediatr.Send(command);
             if (result.IsError)
                 return StatusCode(409, result.IsError);

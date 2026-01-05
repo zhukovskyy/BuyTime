@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace BuyTime_Application.User.Command.AddUserDetails;
 
@@ -15,8 +15,9 @@ public class AddUserDetailsCommandValidator : AbstractValidator<AddUserDetailsCo
             .MaximumLength(50).WithMessage("Last name must be at most 50 characters.");
 
         RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email is required.")
-            .EmailAddress().WithMessage("Invalid email format.");
+            .EmailAddress()
+            .When(x => !string.IsNullOrEmpty(x.Email)) 
+            .WithMessage("Invalid email format.");
 
         RuleFor(x => x.Description)
             .MaximumLength(500).WithMessage("Description must be at most 500 characters.");

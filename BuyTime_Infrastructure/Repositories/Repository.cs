@@ -1,4 +1,4 @@
-using BuyTime_Application.Common.Interfaces.IRepository;
+﻿using BuyTime_Application.Common.Interfaces.IRepository;
 using BuyTime_Infrastructure.Common.Persistence;
 using ErrorOr;
 using MediatR;
@@ -31,7 +31,7 @@ public class Repository<T> : IRepository<T>
         }
     }
     
-    public async Task<T> GetByIdAsync(Guid id)
+    virtual public async Task<T> GetByIdAsync(Guid id)
     {
         try
         {

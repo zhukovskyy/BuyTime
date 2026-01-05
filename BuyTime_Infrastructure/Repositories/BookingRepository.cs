@@ -1,4 +1,4 @@
-using BuyTime_Application.Common.Interfaces.IRepository;
+﻿using BuyTime_Application.Common.Interfaces.IRepository;
 using BuyTime_Domain.Entities;
 using BuyTime_Infrastructure.Common.Persistence;
 using ErrorOr;
@@ -15,18 +15,29 @@ public class BookingRepository(BuyTimeDbContext context)
         try
         {
             var existingBooking = await context.Bookings.FindAsync(booking.Id);
-            if(existingBooking == null)
+            if (existingBooking == null)
                 return Error.Failure("Bookings not found");
-            
+
             existingBooking.Status = booking.Status;
-            existingBooking.Message = booking.Message;
+            existingBooking.MessageToExpert = booking.MessageToExpert;
             existingBooking.CreatedAt = booking.CreatedAt;
-            existingBooking.Answer = booking.Answer;
-            existingBooking.UrlOfMeeting = booking.UrlOfMeeting;
-            
+            existingBooking.ConfirmationMessage = booking.ConfirmationMessage;
+            existingBooking.MeetingLink = booking.MeetingLink;
+
+            if (booking.Cancellation != null)
+            {
+                var existingCancellation = await context.BookingCancellations
+                    .FirstOrDefaultAsync(bc => bc.BookingId == booking.Id);
+
+                if (existingCancellation == null)
+                {
+                    await context.BookingCancellations.AddAsync(booking.Cancellation);
+                }
+            }
+
             context.Bookings.Update(existingBooking);
             await context.SaveChangesAsync();
-    
+
             return MediatR.Unit.Value;
         }
         catch (Exception ex)
@@ -41,12 +52,21 @@ public class BookingRepository(BuyTimeDbContext context)
         {
             var bookings = await dbSet
                 .Where(b => b.TimeslotId == timeSlotId)
+                .Include(b => b.Cancellation)
                 .ToListAsync();
+
             return bookings;
         }
         catch (Exception ex)
         {
             return Error.Failure($"Error while retrieving bookings: {ex.Message}");
         }
+    }
+
+    public override async Task<Booking?> GetByIdAsync(Guid id)
+    {
+        return await dbSet
+            .Include(b => b.Cancellation) 
+            .FirstOrDefaultAsync(b => b.Id == id);
     }
 }

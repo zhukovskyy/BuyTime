@@ -1,4 +1,4 @@
-using BuyTime_Application.Common.Interfaces.IService;
+﻿using BuyTime_Application.Common.Interfaces.IService;
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using MediatR;
 using ErrorOr;
@@ -13,10 +13,11 @@ public class CreateBookingCommandHandler(IUnitOfWork unitOfWork, IBookingService
         try
         {
             var bookingId = await bookingService.CreateBookingAsync(
-                userId: request.UserId,
+                studentId: request.StudentId,
                 timeslotId: request.TimeslotId,
-                message: request.Message,
-                status: request.Status);
+                messageToExpert: request.MessageToExpert,
+                contractHash: request.ContractHash 
+            );
 
             return new CreateBookingResult
             {

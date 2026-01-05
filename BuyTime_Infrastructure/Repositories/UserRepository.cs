@@ -1,4 +1,4 @@
-using BuyTime_Application.Common.Interfaces.IRepository;
+﻿using BuyTime_Application.Common.Interfaces.IRepository;
 using BuyTime_Domain.Entities;
 using BuyTime_Infrastructure.Common.Persistence;
 using ErrorOr;
@@ -43,7 +43,7 @@ public class UserRepository(BuyTimeDbContext context)
     {
         try
         {
-            var students = await dbSet.Where(user => user.IsTeacher == false).ToListAsync();
+            var students = await dbSet.Where(user => user.IsExpert == false).ToListAsync();
             return students;
         }
         catch (Exception ex)
@@ -52,12 +52,12 @@ public class UserRepository(BuyTimeDbContext context)
         }
     }
 
-    public async Task<ErrorOr<IEnumerable<User>>> GetAllTeachersAsync()
+    public async Task<ErrorOr<IEnumerable<User>>> GetAllExpertsAsync()
     {
         try
         {
-            var teachers = await dbSet.Where(teacher => teacher.IsTeacher == true).ToListAsync();
-            return teachers;
+            var experts = await dbSet.Where(u => u.IsExpert == true).ToListAsync();
+            return experts;
         }
         catch (Exception ex)
         {
