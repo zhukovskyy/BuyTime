@@ -63,6 +63,27 @@ public class BookingRepository(BuyTimeDbContext context)
         }
     }
 
+    public async Task<ErrorOr<List<Booking>>> GetBookingsByExpertIdAsync(Guid expertId)
+    {
+        try
+        {
+            var bookings = await dbSet
+                .Include(b => b.TimeSlot)        
+                .ThenInclude(t => t.Expert)     
+                .Include(b => b.Student)         
+                .Include(b => b.Cancellation)    
+                .Where(b => b.TimeSlot.ExpertId == expertId) 
+                .OrderByDescending(b => b.TimeSlot.StartTime)
+                .ToListAsync();
+
+            return bookings;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure($"Error while retrieving expert bookings: {ex.Message}");
+        }
+    }
+
     public override async Task<Booking?> GetByIdAsync(Guid id)
     {
         return await dbSet

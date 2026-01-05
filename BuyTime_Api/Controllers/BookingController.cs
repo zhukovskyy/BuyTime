@@ -1,7 +1,8 @@
-using BuyTime_Application.Booking.Command.CancelBooking;
+﻿using BuyTime_Application.Booking.Command.CancelBooking;
 using BuyTime_Application.Booking.Command.ConfirmBooking;
 using BuyTime_Application.Booking.Command.CreateBooking;
 using BuyTime_Application.Booking.Query.GetAll;
+using BuyTime_Application.Booking.Query.GetByExpertId;
 using BuyTime_Application.Booking.Query.GetById;
 using BuyTime_Application.Booking.Query.GetByTimeSlotId;
 using MediatR;
@@ -95,6 +96,25 @@ public class BookingController(ISender mediatr) : ApiController
         catch (Exception)
         {
             return StatusCode(500, "An error occurred while fetching bookings.");
+        }
+    }
+
+    [HttpGet("get-by-expert-id")]
+    public async Task<IActionResult> GetByExpertId([FromQuery] Guid expertId)
+    {
+        try
+        {
+            var query = new GetBookingsByExpertIdQuery(expertId);
+            var result = await mediatr.Send(query);
+
+            if (result.IsError)
+                return Problem(result.Errors);
+
+            return Ok(result.Value);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while fetching expert bookings.");
         }
     }
 }
