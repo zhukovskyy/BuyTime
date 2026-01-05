@@ -1,6 +1,7 @@
-using BuyTime_Application.Common.Interfaces.IRepository;
+﻿using BuyTime_Application.Common.Interfaces.IRepository;
 using BuyTime_Application.Common.Interfaces.IService;
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+using BuyTime_Infrastructure.Common.Settings;
 using BuyTime_Infrastructure.Common.Persistence;
 using BuyTime_Infrastructure.Repositories;
 using BuyTime_Infrastructure.Services;
@@ -16,6 +17,8 @@ public static class DependencyInjection
        this IServiceCollection services,
        ConfigurationManager configuration)
     {
+        services.Configure<ZoomSettings>(configuration.GetSection(ZoomSettings.SectionName));
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services
             .AddPersistence(configuration)
@@ -48,6 +51,7 @@ public static class DependencyInjection
         services.AddTransient<TelegramService>();
         services.AddScoped<IBookingService, BookingService>();
         services.AddTransient<BookingService>();
+        services.AddHttpClient<IZoomService, ZoomService>();
         return services;
     }
 
@@ -57,6 +61,7 @@ public static class DependencyInjection
         services.AddScoped<ITimeSlotRepository, TimeslotRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IWalletRepository, WalletRepository>();
+        services.AddScoped<IFeedbackRepository, FeedbackRepository>();
         return services;
     }
 }

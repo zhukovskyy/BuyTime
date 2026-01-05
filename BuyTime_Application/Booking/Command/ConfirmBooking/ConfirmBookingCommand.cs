@@ -6,4 +6,7 @@ namespace BuyTime_Application.Booking.Command.ConfirmBooking;
 public record ConfirmBookingCommand(
     Guid BookingId,
     string ConfirmationMessage,
-    string MeetingLink) : IRequest<ErrorOr<Unit>>;
+    string? MeetingLink,      // вручну введене посилання
+    string? MeetingTitle,     // назва консультації/зустрічі
+    bool GenerateMeetingLink  // якщо стоїть чекбокс/тоггл на примусове генерування
+) : IRequest<ErrorOr<Unit>>;
