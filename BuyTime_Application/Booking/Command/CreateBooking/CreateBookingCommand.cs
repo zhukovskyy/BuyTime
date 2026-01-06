@@ -6,5 +6,6 @@ public record CreateBookingCommand(
     Guid StudentId,
     Guid TimeslotId,
     string MessageToExpert,
-    string ContractHash 
+    string ContractHash,
+    string StudentWalletAddress
 ) : IRequest<ErrorOr<CreateBookingResult>>;

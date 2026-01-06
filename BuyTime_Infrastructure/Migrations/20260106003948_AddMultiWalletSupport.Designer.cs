@@ -4,6 +4,7 @@ using BuyTime_Infrastructure.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BuyTime_Infrastructure.Migrations
 {
     [DbContext(typeof(BuyTimeDbContext))]
-    partial class BuyTimeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260106003948_AddMultiWalletSupport")]
+    partial class AddMultiWalletSupport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,11 +54,6 @@ namespace BuyTime_Infrastructure.Migrations
 
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("StudentWalletAddress")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
 
                     b.Property<Guid>("TimeslotId")
                         .HasColumnType("uniqueidentifier");
@@ -218,7 +216,9 @@ namespace BuyTime_Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId", "Network")
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("Network", "Address")
                         .IsUnique();
 
                     b.ToTable("Wallets");

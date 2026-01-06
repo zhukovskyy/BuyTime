@@ -1,4 +1,4 @@
-using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+﻿using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Application.Dto;
 using ErrorOr;
 using Mapster;
@@ -19,6 +19,11 @@ public class GetTimeslotByIdQueryHandler(IUnitOfWork unitOfWork)
                 return Error.Failure("Time slot not found."); 
             }
             var timeslotDto = timeslot.Adapt<TimeslotDto>();
+
+            var expertWallet = timeslot.Expert.Wallets 
+                ?.FirstOrDefault(w => w.Network == timeslot.Currency); // TON == TON
+
+            timeslotDto.ExpertWalletAddress = expertWallet?.Address;
             return new List<TimeslotDto> { timeslotDto }; 
         } 
         catch (Exception ex)

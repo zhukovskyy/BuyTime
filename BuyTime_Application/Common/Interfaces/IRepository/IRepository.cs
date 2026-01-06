@@ -1,4 +1,4 @@
-using ErrorOr;
+﻿using ErrorOr;
 using MediatR;
 
 namespace BuyTime_Application.Common.Interfaces.IRepository;
@@ -11,4 +11,5 @@ public interface IRepository<T> where T : class
     Task<ErrorOr<T>> GetByEmailAsync(string email);
     Task<ErrorOr<Guid>> AddAsync(T entity);
     Task<ErrorOr<Unit>> UpdateAsync(T entity);
+    Task<ErrorOr<Unit>> DeleteAsync(T entity);
 }

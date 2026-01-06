@@ -76,6 +76,10 @@ public class BuyTimeDbContext : DbContext
             entity.Property(b => b.MeetingLink) // винести це в таблицю confirmedBookings
                   .IsRequired(false);
 
+            entity.Property(b => b.StudentWalletAddress)
+                  .IsRequired()
+                  .HasMaxLength(150);
+
             // Booking -> Cancellation (1:0..1)
             entity.HasOne(b => b.Cancellation)
                   .WithOne(bc => bc.Booking)
@@ -98,13 +102,25 @@ public class BuyTimeDbContext : DbContext
             .HasKey(bc => bc.BookingId);
 
         // === WALLET ===
-        modelBuilder.Entity<Wallet>()
-            .HasKey(w => w.Id);
+        modelBuilder.Entity<Wallet>(entity =>
+        {
+            entity.HasKey(w => w.Id);
 
-        modelBuilder.Entity<Wallet>()
-            .HasOne(w => w.User)
-            .WithMany(u => u.Wallets)
-            .HasForeignKey(w => w.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            entity.Property(w => w.Network)
+                  .IsRequired()
+                  .HasMaxLength(20); 
+
+            entity.Property(w => w.Address)
+                  .IsRequired()
+                  .HasMaxLength(150);
+
+            entity.HasOne(w => w.User)
+                  .WithMany(u => u.Wallets)
+                  .HasForeignKey(w => w.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // один гаманець на одну мережу
+            entity.HasIndex(w => new { w.UserId, w.Network }).IsUnique();
+        });
     }
 }

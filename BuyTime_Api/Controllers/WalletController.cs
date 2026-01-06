@@ -1,68 +1,45 @@
-﻿using BuyTime_Application.Wallet.Command.SetWalletByUserIdCommand;
-using BuyTime_Application.Wallet.Command.DeleteWalletByUserIdCommand;
-using BuyTime_Application.Wallet.Query;
+﻿using BuyTime_Application.Wallet.Command.AddWallet;
+using BuyTime_Application.Wallet.Command.RemoveWallet;
+using BuyTime_Application.Wallet.Query.GetUserWallets;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 
 namespace BuyTime_Api.Controllers;
 
 [Route("api/wallet")]
 [ApiController]
-public class WalletController : ApiController
+public class WalletController(ISender mediatr) : ApiController
 {
-    private readonly ISender _mediator;
-
-    public WalletController(ISender mediator)
+    [HttpGet("get-all-by-user")]
+    public async Task<IActionResult> GetWallets([FromQuery] Guid userId)
     {
-        _mediator = mediator;
+        var query = new GetUserWalletsQuery(userId);
+        var result = await mediatr.Send(query);
+
+        if (result.IsError) return Problem(result.Errors);
+        return Ok(result.Value);
     }
 
-    [HttpGet("get-by-user-id")]
-    public async Task<IActionResult> GetWalletByUserId([FromQuery] Guid userId)
+    [HttpPost("add")]
+    public async Task<IActionResult> AddWallet([FromBody] AddWalletCommand command)
     {
-        try
-        {
-            var query = new GetWalletByUserIdQuery(userId);
-            var result = await _mediator.Send(query);
-            if (result.IsError)
-                return Problem(result.Errors);
-            return Ok(result.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching the wallet.");
-        }
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var result = await mediatr.Send(command);
+
+        if (result.IsError) return Problem(result.Errors);
+
+        return Ok(result.Value);
     }
 
-    [HttpPost("set-by-user-id")]
-    public async Task<IActionResult> SetWalletByUserId([FromBody] SetWalletByUserIdCommand command)
+    [HttpDelete("remove")]
+    public async Task<IActionResult> RemoveWallet([FromQuery] Guid userId, [FromQuery] Guid walletId)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        var command = new RemoveWalletCommand(UserId: userId, WalletId: walletId);
+        var result = await mediatr.Send(command);
 
-        var result = await _mediator.Send(command);
-        if (result.IsError)
-            return Problem(result.Errors);
+        if (result.IsError) return Problem(result.Errors);
 
-        return Ok("Wallet set successfully.");
-    }
-
-    [HttpDelete("delete-by-user-id")]
-    public async Task<IActionResult> DeleteWalletByUserId([FromQuery] Guid userId)
-    {
-        try
-        {
-            var command = new DeleteWalletByUserIdCommand(userId);
-            var result = await _mediator.Send(command);
-            if (result.IsError)
-                return Problem(result.Errors);
-            return Ok("Wallet deleted successfully.");
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while deleting the wallet.");
-        }
+        return Ok("Wallet disconnected successfully.");
     }
 }

@@ -17,8 +17,8 @@ public class Repository<T> : IRepository<T>
         _context = context;
         this.dbSet = _context.Set<T>();
     }
-    
-    public async Task<ErrorOr<IEnumerable<T>>> GetAllAsync()
+
+    virtual public async Task<ErrorOr<IEnumerable<T>>> GetAllAsync()
     {
         try
         {

@@ -1,5 +1,4 @@
 ﻿using BuyTime_Application.Common.Interfaces.IRepository;
-using BuyTime_Domain.Entities;
 using BuyTime_Infrastructure.Common.Persistence;
 using ErrorOr;
 using Microsoft.EntityFrameworkCore;
@@ -7,48 +6,37 @@ using Microsoft.EntityFrameworkCore;
 namespace BuyTime_Infrastructure.Repositories;
 
 public class WalletRepository(BuyTimeDbContext context)
-    : Repository<Wallet>(context), IWalletRepository
+    : Repository<BuyTime_Domain.Entities.Wallet>(context), IWalletRepository
 {
-    public async Task<ErrorOr<BuyTime_Domain.Entities.Wallet>> GetByUserIdAsync(Guid id)
+    public async Task<ErrorOr<List<BuyTime_Domain.Entities.Wallet>>> GetAllByUserIdAsync(Guid userId)
     {
         try
         {
-            var wallet = await dbSet
-                .Where(x => x.UserId == id)
-                .FirstOrDefaultAsync();
+            var wallets = await dbSet
+                .Where(x => x.UserId == userId)
+                .OrderByDescending(x => x.AddedAt)
+                .ToListAsync();
 
-            if (wallet == null)
-            {
-                return Error.NotFound("Wallet not found for the given user ID.");
-            }
-
-            return wallet;
+            return wallets;
         }
         catch (Exception ex)
         {
-            return Error.Failure($"Error while retrieving wallet: {ex.Message}");
+            return Error.Failure(ex.Message);
         }
     }
 
-    public async Task<ErrorOr<BuyTime_Domain.Entities.Wallet>> DeleteByUserIdAsync(Guid id)
+    public async Task<ErrorOr<BuyTime_Domain.Entities.Wallet>> GetByAddressAsync(string address, string network)
     {
-        try
-        {
-            var wallet = await dbSet
-                .Where(x => x.UserId == id)
-                .FirstOrDefaultAsync();
+        var wallet = await dbSet
+            .FirstOrDefaultAsync(w => w.Address == address && w.Network == network);
 
-            if (wallet == null)
-            {
-                return Error.NotFound("Wallet not found for the given user ID.");
-            }
-            await DeleteAsync(wallet);
-            return wallet;
-        }
-        catch (Exception ex)
-        {
-            return Error.Failure($"Error while deleting wallet: {ex.Message}");
-        }
+        if (wallet == null) return Error.NotFound();
+
+        return wallet;
     }
 
+    public override async Task<BuyTime_Domain.Entities.Wallet?> GetByIdAsync(Guid id)
+    {
+        return await dbSet.FindAsync(id);
+    }
 }

@@ -3,6 +3,7 @@ using BuyTime_Domain.Entities;
 using BuyTime_Infrastructure.Common.Persistence;
 using ErrorOr;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace BuyTime_Infrastructure.Repositories;
 
@@ -30,5 +31,22 @@ public class TimeslotRepository(BuyTimeDbContext context)
         {
             return Error.Failure(ex.Message);
         }
+    }
+
+    public override async Task<Timeslot?> GetByIdAsync(Guid id)
+    {
+        return await dbSet
+            .Include(ts => ts.Expert)          // Грузим эксперта
+            .ThenInclude(u => u.Wallets)       // Грузим его кошельки
+            .FirstOrDefaultAsync(ts => ts.Id == id);
+    }
+
+    public override async Task<ErrorOr<IEnumerable<Timeslot>>> GetAllAsync()
+    {
+        var list = await dbSet
+           .Include(ts => ts.Expert)
+           .ThenInclude(u => u.Wallets)
+           .ToListAsync();
+        return list;
     }
 }

@@ -13,7 +13,7 @@ public class BookingService(
     IMediator mediator) : IBookingService
 {
     public async Task<Guid> CreateBookingAsync(Guid studentId,
-        Guid timeslotId, string message, string? contractHash)
+        Guid timeslotId, string messageToExpert, string contractHash, string studentWalletAddress)
     {
         if (string.IsNullOrEmpty(contractHash))
         {
@@ -30,11 +30,12 @@ public class BookingService(
                 StudentId = studentId,
                 TimeslotId = timeslotId,
                 ContractHash = contractHash,
-                MessageToExpert = message,
+                MessageToExpert = messageToExpert,
                 Status = Status.Pending,
                 CreatedAt = DateTime.UtcNow,
                 ConfirmationMessage = null,
                 MeetingLink = null,
+                StudentWalletAddress = studentWalletAddress
             };
 
             await unitOfWork.Booking.AddAsync(booking);

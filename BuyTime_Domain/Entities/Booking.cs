@@ -6,6 +6,8 @@ public class Booking
     public Guid StudentId { get; set; }
     public User Student { get; set; }
 
+    public string StudentWalletAddress { get; set; }
+
     public Guid TimeslotId { get; set; }
     public Timeslot TimeSlot { get; set; }
 

@@ -16,7 +16,8 @@ public class CreateBookingCommandHandler(IUnitOfWork unitOfWork, IBookingService
                 studentId: request.StudentId,
                 timeslotId: request.TimeslotId,
                 messageToExpert: request.MessageToExpert,
-                contractHash: request.ContractHash 
+                contractHash: request.ContractHash,
+                studentWalletAddress: request.StudentWalletAddress
             );
 
             return new CreateBookingResult
