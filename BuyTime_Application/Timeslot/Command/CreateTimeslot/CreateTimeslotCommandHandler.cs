@@ -18,17 +18,19 @@ public class CreateTimeslotCommandHandler(IUnitOfWork unitOfWork)
 
         var walletsResult = await unitOfWork.Wallet.GetAllByUserIdAsync(request.ExpertId);
 
-        string? targetWalletAddress = null;
-
-        if (!walletsResult.IsError)
+        if (walletsResult.IsError)
         {
-            var matchingWallet = walletsResult.Value
-                .FirstOrDefault(w => w.Network == request.Currency);
-
-            targetWalletAddress = matchingWallet?.Address;
+            return walletsResult.Errors;
         }
 
+        var matchingWallet = walletsResult.Value
+            .FirstOrDefault(w => w.Network == request.Currency);
 
+        if (matchingWallet == null)
+        {
+            return Error.Conflict("ExpertWalletMissing",
+                $"Ви повинні прив'язати {request.Currency} гаманець в профілі перед тим як створювати таймслот.");
+        }
 
         var timeslot = new BuyTime_Domain.Entities.Timeslot
         {
@@ -40,7 +42,7 @@ public class CreateTimeslotCommandHandler(IUnitOfWork unitOfWork)
 
             Price = request.Price,
             Currency = request.Currency,
-            ExpertWalletAddress = targetWalletAddress
+            ExpertWalletAddress = matchingWallet.Address
         };
 
         await unitOfWork.Timeslot.AddAsync(timeslot);
