@@ -16,7 +16,7 @@ public class UserDto
     public string? Description { get; set; }
     public decimal? Rating { get; set; }
     public string? Tags { get; set; }
-    public List<TimeslotDto> Timeslots { get; set; }
+    public List<TimeslotDto> TimeSlots { get; set; }
     public List<FeedbackDto> Feedbacks { get; set; }
     public List<BookingDto> Bookings { get; set; }
 }

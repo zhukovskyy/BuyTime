@@ -26,6 +26,8 @@
         public DateTime TimeSlotStartTime { get; set; }
         public DateTime TimeSlotEndTime { get; set; }
         public bool TimeSlotIsAvailable { get; set; }
+        public decimal TimeSlotPrice { get; set; }
+        public string TimeSlotCurrency { get; set; }
 
         public string ContractHash { get; set; }
 

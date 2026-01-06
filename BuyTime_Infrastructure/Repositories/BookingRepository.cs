@@ -52,6 +52,7 @@ public class BookingRepository(BuyTimeDbContext context)
         {
             var bookings = await dbSet
                 .Where(b => b.TimeslotId == timeSlotId)
+                .Include(b => b.TimeSlot)
                 .Include(b => b.Cancellation)
                 .ToListAsync();
 
@@ -87,7 +88,25 @@ public class BookingRepository(BuyTimeDbContext context)
     public override async Task<Booking?> GetByIdAsync(Guid id)
     {
         return await dbSet
+            .Include(b => b.TimeSlot)
             .Include(b => b.Cancellation) 
             .FirstOrDefaultAsync(b => b.Id == id);
+    }
+
+    public override async Task<ErrorOr<IEnumerable<Booking>>> GetAllAsync()
+    {
+        try
+        {
+            var bookings = await dbSet
+                .Include(b => b.TimeSlot) 
+                .Include(b => b.Student) 
+                .ToListAsync();
+
+            return bookings;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure(ex.Message);
+        }
     }
 }

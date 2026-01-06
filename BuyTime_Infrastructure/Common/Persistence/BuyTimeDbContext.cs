@@ -54,6 +54,11 @@ public class BuyTimeDbContext : DbContext
             .Property(ts => ts.Price)
             .HasColumnType("decimal(18,2)");
 
+        modelBuilder.Entity<Timeslot>()
+            .Property(ts => ts.ExpertWalletAddress)
+            .HasMaxLength(150) 
+            .IsRequired(false);
+
         // === FEEDBACK ===
         modelBuilder.Entity<Feedback>()
             .HasKey(f => f.Id);

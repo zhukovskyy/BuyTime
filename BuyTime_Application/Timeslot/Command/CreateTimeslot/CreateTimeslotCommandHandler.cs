@@ -16,6 +16,20 @@ public class CreateTimeslotCommandHandler(IUnitOfWork unitOfWork)
             return Error.Failure("Invalid timeslot. Start time must be before end time.");
         }
 
+        var walletsResult = await unitOfWork.Wallet.GetAllByUserIdAsync(request.ExpertId);
+
+        string? targetWalletAddress = null;
+
+        if (!walletsResult.IsError)
+        {
+            var matchingWallet = walletsResult.Value
+                .FirstOrDefault(w => w.Network == request.Currency);
+
+            targetWalletAddress = matchingWallet?.Address;
+        }
+
+
+
         var timeslot = new BuyTime_Domain.Entities.Timeslot
         {
             Id = Guid.NewGuid(),
@@ -25,7 +39,8 @@ public class CreateTimeslotCommandHandler(IUnitOfWork unitOfWork)
             IsAvailable = true,
 
             Price = request.Price,
-            Currency = request.Currency
+            Currency = request.Currency,
+            ExpertWalletAddress = targetWalletAddress
         };
 
         await unitOfWork.Timeslot.AddAsync(timeslot);

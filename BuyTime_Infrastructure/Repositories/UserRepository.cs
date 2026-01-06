@@ -56,7 +56,10 @@ public class UserRepository(BuyTimeDbContext context)
     {
         try
         {
-            var experts = await dbSet.Where(u => u.IsExpert == true).ToListAsync();
+            var experts = await dbSet
+                                .Where(u => u.IsExpert == true)
+                                .Include(u => u.TimeSlots)
+                                .ToListAsync();
             return experts;
         }
         catch (Exception ex)
