@@ -1,4 +1,4 @@
-using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+﻿using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using ErrorOr;
 using MediatR;
 
@@ -15,10 +15,17 @@ public class CreateFeedbackCommandHandler(IUnitOfWork unitOfWork)
             {
                 return Error.Validation("InvalidRating", "Rating must be between 1 and 10.");
             }
-            
+
+            if (request.StudentId == request.ExpertId)
+            {
+                return Error.Validation("SelfFeedback", "You cannot rate yourself.");
+            }
+
             var feedback = new BuyTime_Domain.Entities.Feedback
             {
-                UserId = request.UserId,
+                Id = Guid.NewGuid(),
+                StudentId = request.StudentId,
+                ExpertId = request.ExpertId,
                 Rating = request.Rating,
                 Comment = request.Comment,
                 CreatedAt = request.CreatedAt
@@ -34,10 +41,6 @@ public class CreateFeedbackCommandHandler(IUnitOfWork unitOfWork)
             await unitOfWork.CommitAsync();
 
             return new CreateFeedbackResult(result.Value);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Error.Validation("FeedbackCreationError", ex.Message);
         }
         catch (Exception ex)
         {

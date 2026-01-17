@@ -1,4 +1,6 @@
 ﻿using BuyTime_Application.Common.Interfaces.IRepository;
+using BuyTime_Application.Expert.Query.Search;
+using BuyTime_Domain.Constants;
 using BuyTime_Domain.Entities;
 using BuyTime_Infrastructure.Common.Persistence;
 using ErrorOr;
@@ -13,7 +15,10 @@ public class UserRepository(BuyTimeDbContext context)
     {
         try
         {
-            var user = await dbSet.FirstOrDefaultAsync(user => user.Id == id);
+            var user = await dbSet
+                .Include(u => u.LanguageSkills) 
+                .Include(u => u.SocialLinks)    
+                .FirstOrDefaultAsync(user => user.Id == id);
             if (user == null)
                 return Error.NotFound("User not found");
             return user;
@@ -59,6 +64,8 @@ public class UserRepository(BuyTimeDbContext context)
             var experts = await dbSet
                                 .Where(u => u.IsExpert == true)
                                 .Include(u => u.TimeSlots)
+                                .Include(u => u.LanguageSkills) 
+                                .Include(u => u.SocialLinks)    
                                 .ToListAsync();
             return experts;
         }
@@ -92,6 +99,79 @@ public class UserRepository(BuyTimeDbContext context)
         catch (Exception ex)
         {
             return Error.Failure("Error while adding user details");
+        }
+    }
+
+    public async Task<ErrorOr<IEnumerable<User>>> SearchExpertsAsync(SearchExpertRequest filter)
+    {
+        try
+        {
+            var query = dbSet.AsNoTracking()
+                .Where(u => u.IsExpert)
+                .Include(u => u.LanguageSkills)
+                .Include(u => u.SocialLinks)
+                .Include(u => u.ReceivedFeedbacks)
+
+                // 1. Вантажимо слоти (вільні АБО завершені)
+                .Include(u => u.TimeSlots.Where(ts =>
+                    // Якщо урок завершений - вантажимо його ЗАВЖДИ (для статистики TotalHours), ігноруючи валюту
+                    (ts.Booking != null && ts.Booking.Status == Status.Completed)
+                    ||
+                    // Якщо урок доступний - вантажимо тільки якщо він підходить по валюті
+                    (ts.IsAvailable && (string.IsNullOrEmpty(filter.Currency) || ts.Currency == filter.Currency))
+                ))
+
+                .ThenInclude(ts => ts.Booking)
+
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filter.SearchQuery))
+            {
+                var q = filter.SearchQuery.Trim().ToLower();
+                query = query.Where(u =>
+                    u.FirstName.ToLower().Contains(q) ||
+                    u.LastName.ToLower().Contains(q) ||
+                    (u.ExpertNickname != null && u.ExpertNickname.ToLower().Contains(q)) ||
+                    (u.FirstName + " " + u.LastName).ToLower().Contains(q)
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.Language))
+            {
+                query = query.Where(u => u.LanguageSkills.Any(l => l.LanguageName == filter.Language));
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.Specialization))
+            {
+                query = query.Where(u => u.Tags != null && u.Tags.Contains(filter.Specialization));
+            }
+
+            if (filter.MinRating.HasValue && filter.MinRating.Value > 0)
+            {
+                query = query.Where(u => u.Rating >= filter.MinRating.Value);
+            }
+
+            if (!string.IsNullOrEmpty(filter.Currency))
+            {
+                query = query.Where(u =>
+                    u.TimeSlots.Any(ts => ts.IsAvailable && ts.Currency == filter.Currency));
+
+                if (filter.MaxAveragePriceForFilter.HasValue && filter.MaxAveragePriceForFilter.Value > 0)
+                {
+                    query = query.Where(u =>
+                        u.TimeSlots
+                            .Where(ts => ts.IsAvailable && ts.Currency == filter.Currency)
+                            .Average(ts => ts.Price) <= filter.MaxAveragePriceForFilter.Value
+                    );
+                }
+            }
+
+            var experts = await query.ToListAsync();
+            return experts;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure($"Search failed: {ex.Message}");
         }
     }
 }

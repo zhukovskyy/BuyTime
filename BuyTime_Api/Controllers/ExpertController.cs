@@ -1,4 +1,5 @@
 ﻿using BuyTime_Application.Expert.Query.GetAll;
+using BuyTime_Application.Expert.Query.Search;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,6 +23,25 @@ public class ExpertController(ISender mediatr) : ApiController
         catch (Exception)
         {
             return StatusCode(500, "An error occurred while fetching experts.");
+        }
+    }
+
+    [HttpPost("search")]
+    public async Task<IActionResult> Search([FromBody] SearchExpertRequest request)
+    {
+        try
+        {
+            var query = new SearchExpertsQuery(request);
+            var result = await mediatr.Send(query);
+
+            if (result.IsError)
+                return Problem(result.Errors);
+
+            return Ok(result.Value);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "An error occurred while searching experts.");
         }
     }
 }

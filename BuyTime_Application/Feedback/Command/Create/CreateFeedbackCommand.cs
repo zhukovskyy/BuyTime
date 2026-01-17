@@ -1,10 +1,12 @@
-using ErrorOr;
+﻿using ErrorOr;
 using MediatR;
 
 namespace BuyTime_Application.Feedback.Command.Create;
 
 public record CreateFeedbackCommand(
-    Guid UserId,
+    Guid StudentId, 
+    Guid ExpertId,  
     decimal Rating,
-    string Comment,
-    DateTime CreatedAt) : IRequest<ErrorOr<CreateFeedbackResult>>;
+    string? Comment, 
+    DateTime CreatedAt
+) : IRequest<ErrorOr<CreateFeedbackResult>>;

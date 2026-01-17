@@ -31,10 +31,14 @@ public class BuyTimeDbContext : DbContext
             .HasKey(u => u.Id);
 
         modelBuilder.Entity<User>()
-            .HasMany(u => u.Feedbacks)
-            .WithOne(f => f.User)
-            .HasForeignKey(f => f.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .Property(u => u.Rating)
+            .HasColumnType("decimal(18,2)");
+
+        //modelBuilder.Entity<User>()
+        //    .HasMany(u => u.Feedbacks)
+        //    .WithOne(f => f.User)
+        //    .HasForeignKey(f => f.UserId)
+        //    .OnDelete(DeleteBehavior.Cascade);
 
         // === TIMESLOT ===
         modelBuilder.Entity<Timeslot>()
@@ -59,15 +63,54 @@ public class BuyTimeDbContext : DbContext
             .HasMaxLength(150) 
             .IsRequired(false);
 
-        // === FEEDBACK ===
-        modelBuilder.Entity<Feedback>()
-            .HasKey(f => f.Id);
+        // === LANGUAGE SKILL ===
+        modelBuilder.Entity<LanguageSkill>(entity =>
+        {
+            entity.HasKey(ls => ls.Id);
+            entity.Property(ls => ls.LanguageName).IsRequired().HasMaxLength(50);
+            entity.Property(ls => ls.Level).IsRequired().HasMaxLength(50);
 
-        modelBuilder.Entity<Feedback>()
-            .HasOne(f => f.User)
-            .WithMany()
-            .HasForeignKey(f => f.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(ls => ls.User)
+                  .WithMany(u => u.LanguageSkills)
+                  .HasForeignKey(ls => ls.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // === SOCIAL LINK ===
+        modelBuilder.Entity<SocialLink>(entity =>
+        {
+            entity.HasKey(sl => sl.Id);
+            entity.Property(sl => sl.Network).IsRequired().HasMaxLength(50);
+            entity.Property(sl => sl.UrlOrHandle).IsRequired().HasMaxLength(200);
+
+            entity.HasOne(sl => sl.User)
+                  .WithMany(u => u.SocialLinks)
+                  .HasForeignKey(sl => sl.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // === FEEDBACK ===
+        modelBuilder.Entity<Feedback>(entity =>
+        {
+            entity.HasKey(f => f.Id);
+
+            entity.Property(f => f.Rating)
+                  .HasColumnType("decimal(18,2)");
+
+            entity.Property(f => f.Comment)
+                  .IsRequired(false) 
+                  .HasMaxLength(1000);
+
+            entity.HasOne(f => f.Expert)
+                  .WithMany(u => u.ReceivedFeedbacks)
+                  .HasForeignKey(f => f.ExpertId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(f => f.Student)
+                  .WithMany() 
+                  .HasForeignKey(f => f.StudentId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
 
         // === BOOKING ===
         modelBuilder.Entity<Booking>(entity =>
@@ -97,8 +140,8 @@ public class BuyTimeDbContext : DbContext
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(b => b.TimeSlot)
-                  .WithMany()
-                  .HasForeignKey(b => b.TimeslotId)
+                  .WithOne(ts => ts.Booking) 
+                  .HasForeignKey<Booking>(b => b.TimeslotId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
 

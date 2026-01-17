@@ -93,7 +93,10 @@ namespace BuyTime_Infrastructure.Common.Initializers
 
                 if (!context.Feedbacks.Any())
                 {
-                    var bookings = context.Bookings.ToList();
+                    var bookings = context.Bookings
+                        .Include(b => b.TimeSlot)
+                        .ToList();
+
                     var feedbacks = new List<Feedback>();
 
                     foreach (var booking in bookings)
@@ -101,7 +104,11 @@ namespace BuyTime_Infrastructure.Common.Initializers
                         feedbacks.Add(new Feedback
                         {
                             Id = Guid.NewGuid(),
-                            UserId = booking.StudentId,
+
+                            StudentId = booking.StudentId,
+
+                            ExpertId = booking.TimeSlot.ExpertId,
+
                             Rating = (decimal)(random.Next(1, 6)),
                             Comment = "Чудовий урок!",
                             CreatedAt = DateTime.Now

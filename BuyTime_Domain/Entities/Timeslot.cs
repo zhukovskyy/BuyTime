@@ -15,4 +15,6 @@ public class Timeslot
     public bool IsAvailable { get; set; }
 
     public string? ExpertWalletAddress { get; set; }
+
+    public Booking? Booking { get; set; }
 }

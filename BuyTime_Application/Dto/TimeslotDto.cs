@@ -11,7 +11,7 @@ public class TimeslotDto
 
     public string Currency { get; set; }
 
-    public Guid ExpertId { get; set; }
+    //public Guid ExpertId { get; set; }
 
     public string? ExpertWalletAddress { get; set; }
 }

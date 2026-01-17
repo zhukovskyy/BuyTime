@@ -4,6 +4,7 @@ using BuyTime_Infrastructure.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BuyTime_Infrastructure.Migrations
 {
     [DbContext(typeof(BuyTimeDbContext))]
-    partial class BuyTimeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260117032742_FixRelationsAndRating")]
+    partial class FixRelationsAndRating
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,26 +100,25 @@ namespace BuyTime_Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Comment")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("ExpertId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<decimal>("Rating")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("StudentId")
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("UserId1")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ExpertId");
+                    b.HasIndex("UserId");
 
-                    b.HasIndex("StudentId");
+                    b.HasIndex("UserId1");
 
                     b.ToTable("Feedbacks");
                 });
@@ -314,21 +316,17 @@ namespace BuyTime_Infrastructure.Migrations
 
             modelBuilder.Entity("BuyTime_Domain.Entities.Feedback", b =>
                 {
-                    b.HasOne("BuyTime_Domain.Entities.User", "Expert")
-                        .WithMany("ReceivedFeedbacks")
-                        .HasForeignKey("ExpertId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("BuyTime_Domain.Entities.User", "Student")
+                    b.HasOne("BuyTime_Domain.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("StudentId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Expert");
+                    b.HasOne("BuyTime_Domain.Entities.User", null)
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("UserId1");
 
-                    b.Navigation("Student");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BuyTime_Domain.Entities.LanguageSkill", b =>
@@ -389,9 +387,9 @@ namespace BuyTime_Infrastructure.Migrations
                 {
                     b.Navigation("Bookings");
 
-                    b.Navigation("LanguageSkills");
+                    b.Navigation("Feedbacks");
 
-                    b.Navigation("ReceivedFeedbacks");
+                    b.Navigation("LanguageSkills");
 
                     b.Navigation("SocialLinks");
 
