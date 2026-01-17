@@ -12,7 +12,7 @@ public class ExpertProfileDto
     public string? Description { get; set; }
     public string? Email { get; set; }
     public decimal? Rating { get; set; }
-    public string? Tags { get; set; } // спеціалізація
+    //public string? Tags { get; set; } // remove later
     public string? AvatarUrl { get; set; } 
 
     
@@ -23,6 +23,7 @@ public class ExpertProfileDto
     
     public List<LanguageSkillDto> LanguageSkills { get; set; } = new();
     public List<SocialLinkDto> SocialLinks { get; set; } = new();
+    public List<SpecializationDto> Specializations { get; set; } = new();
     public List<FeedbackDto> Feedbacks { get; set; } = new();
     public List<TimeslotDto> TimeSlots { get; set; } = new();
 }

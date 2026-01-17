@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace BuyTime_Domain.Entities;
 
-namespace BuyTime_Domain.Entities
+public class Specialization
 {
-    internal class Specialization
-    {
-    }
+    public Guid Id { get; set; }
+
+    public string Name { get; set; }
+
+    public ICollection<User> Experts { get; set; }
 }

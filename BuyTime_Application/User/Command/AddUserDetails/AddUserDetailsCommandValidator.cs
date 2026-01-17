@@ -21,8 +21,5 @@ public class AddUserDetailsCommandValidator : AbstractValidator<AddUserDetailsCo
 
         RuleFor(x => x.Description)
             .MaximumLength(500).WithMessage("Description must be at most 500 characters.");
-
-        RuleFor(x => x.Tags)
-            .MaximumLength(200).WithMessage("Tags must be at most 200 characters.");
     }
 }

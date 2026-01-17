@@ -14,5 +14,5 @@ public class AddUserDetailsDto
     public List<LanguageSkillDto>? LanguageSkills { get; set; }
     public List<SocialLinkDto>? SocialLinks { get; set; }
     public decimal? Rating { get; set; }
-    public string? Tags { get; set; }
+    //public string? Tags { get; set; }
 }

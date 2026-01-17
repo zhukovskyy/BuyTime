@@ -51,7 +51,8 @@ public static class DependencyInjection
                 : 0)
 
             .Map(dest => dest.Feedbacks, src => src.ReceivedFeedbacks)
-            .Map(dest => dest.TimeSlots, src => src.TimeSlots.Where(ts => ts.IsAvailable));
+            .Map(dest => dest.TimeSlots, src => src.TimeSlots.Where(ts => ts.IsAvailable))
+            .Map(dest => dest.Specializations, src => src.Specializations);
 
         config.Scan(Assembly.GetExecutingAssembly());
 

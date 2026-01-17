@@ -11,5 +11,4 @@ public record AddUserDetailsCommand(
     string TelegramChatId,
     bool IsExpert,    
     string? Description,
-    decimal? Rating,
-    string? Tags) : IRequest<ErrorOr<AddUserDetailsDto>>;
+    decimal? Rating) : IRequest<ErrorOr<AddUserDetailsDto>>;

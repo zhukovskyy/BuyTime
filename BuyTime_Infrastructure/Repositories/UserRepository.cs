@@ -17,7 +17,8 @@ public class UserRepository(BuyTimeDbContext context)
         {
             var user = await dbSet
                 .Include(u => u.LanguageSkills) 
-                .Include(u => u.SocialLinks)    
+                .Include(u => u.SocialLinks)
+                .Include(u => u.Specializations)
                 .FirstOrDefaultAsync(user => user.Id == id);
             if (user == null)
                 return Error.NotFound("User not found");
@@ -65,7 +66,8 @@ public class UserRepository(BuyTimeDbContext context)
                                 .Where(u => u.IsExpert == true)
                                 .Include(u => u.TimeSlots)
                                 .Include(u => u.LanguageSkills) 
-                                .Include(u => u.SocialLinks)    
+                                .Include(u => u.SocialLinks)
+                                .Include(u => u.Specializations)
                                 .ToListAsync();
             return experts;
         }
@@ -111,18 +113,13 @@ public class UserRepository(BuyTimeDbContext context)
                 .Include(u => u.LanguageSkills)
                 .Include(u => u.SocialLinks)
                 .Include(u => u.ReceivedFeedbacks)
+                .Include(u => u.Specializations)
 
-                // 1. Вантажимо слоти (вільні АБО завершені)
                 .Include(u => u.TimeSlots.Where(ts =>
-                    // Якщо урок завершений - вантажимо його ЗАВЖДИ (для статистики TotalHours), ігноруючи валюту
-                    (ts.Booking != null && ts.Booking.Status == Status.Completed)
-                    ||
-                    // Якщо урок доступний - вантажимо тільки якщо він підходить по валюті
+                    (ts.Booking != null && ts.Booking.Status == Status.Completed) ||
                     (ts.IsAvailable && (string.IsNullOrEmpty(filter.Currency) || ts.Currency == filter.Currency))
                 ))
-
                 .ThenInclude(ts => ts.Booking)
-
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(filter.SearchQuery))
@@ -136,21 +133,50 @@ public class UserRepository(BuyTimeDbContext context)
                 );
             }
 
+            // =================================================================================
+            // Мова (ЛОГІКА AND: Експерт має знати ВСІ перелічені мови)
+            // =================================================================================
             if (!string.IsNullOrWhiteSpace(filter.Language))
             {
-                query = query.Where(u => u.LanguageSkills.Any(l => l.LanguageName == filter.Language));
+                var languages = filter.Language
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(l => l.Trim())
+                    .Distinct() 
+                    .ToList();
+
+                foreach (var lang in languages)
+                {
+                    query = query.Where(u => u.LanguageSkills.Any(l => l.LanguageName == lang));
+                }
             }
 
+            // =================================================================================
+            // Спеціалізація (ЛОГІКА AND: Експерт повинен мати ВСІ перелічені спеціалізації)
+            // =================================================================================
             if (!string.IsNullOrWhiteSpace(filter.Specialization))
             {
-                query = query.Where(u => u.Tags != null && u.Tags.Contains(filter.Specialization));
+                var searchSpecs = filter.Specialization.ToLower()
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => s.Trim())
+                    .Distinct()
+                    .ToList();
+
+                // Аналогічно: фільтруємо послідовно.
+                // Якщо запит "дизайн, маркетинг", то спочатку відберемо тих, у кого є "дизайн",
+                // а потім з них залишимо тільки тих, у кого є ще й "маркетинг".
+                foreach (var searchSpec in searchSpecs)
+                {
+                    query = query.Where(u => u.Specializations.Any(s => s.Name.ToLower().Contains(searchSpec)));
+                }
             }
 
+            // Рейтинг (без змін)
             if (filter.MinRating.HasValue && filter.MinRating.Value > 0)
             {
                 query = query.Where(u => u.Rating >= filter.MinRating.Value);
             }
 
+            // Валюта та Ціна (без змін)
             if (!string.IsNullOrEmpty(filter.Currency))
             {
                 query = query.Where(u =>

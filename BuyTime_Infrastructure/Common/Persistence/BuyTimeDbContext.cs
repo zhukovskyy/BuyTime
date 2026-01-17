@@ -17,7 +17,7 @@ public class BuyTimeDbContext : DbContext
     public DbSet<Timeslot> Timeslots { get; set; }
     public DbSet<Feedback> Feedbacks { get; set; }
     public DbSet<Booking> Bookings { get; set; }
-
+    public DbSet<Specialization> Specializations { get; set; }
     public DbSet<BookingCancellation> BookingCancellations { get; set; }
 
     public DbSet<Wallet> Wallets { get; set; }
@@ -34,11 +34,19 @@ public class BuyTimeDbContext : DbContext
             .Property(u => u.Rating)
             .HasColumnType("decimal(18,2)");
 
-        //modelBuilder.Entity<User>()
-        //    .HasMany(u => u.Feedbacks)
-        //    .WithOne(f => f.User)
-        //    .HasForeignKey(f => f.UserId)
-        //    .OnDelete(DeleteBehavior.Cascade);
+        // Налаштування зв'язку Many-to-Many
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Specializations)
+            .WithMany(s => s.Experts)
+            .UsingEntity(j => j.ToTable("ExpertSpecializations"));
+
+        // === SPECIALIZATION ===
+        modelBuilder.Entity<Specialization>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.Property(s => s.Name).IsRequired().HasMaxLength(100);
+            entity.HasIndex(s => s.Name).IsUnique(); // Унікальні назви
+        });
 
         // === TIMESLOT ===
         modelBuilder.Entity<Timeslot>()
