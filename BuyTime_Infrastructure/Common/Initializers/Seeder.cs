@@ -206,6 +206,31 @@ namespace BuyTime_Infrastructure.Common.Initializers
                     context.Feedbacks.AddRange(feedbacks);
                     await context.SaveChangesAsync();
                 }
+
+                if (!context.BlockchainData.Any())
+                {
+                    var blockchainData = new List<BlockchainData>
+                    {
+                        
+                        new BlockchainData
+                        {
+                            Id = Guid.NewGuid(),
+                            Name = "PlatformWallet",
+                            Address = "0QAi1uwqjwAkBPUPhfF6Guk8Qi6O6xQ-LKcdzBLHY1pJE3OR", 
+                            Mnemonic = null
+                        },
+                        
+                        new BlockchainData
+                        {
+                            Id = Guid.NewGuid(),
+                            Name = "ArbiterWallet",
+                            Address = "0xARBITER_ADDRESS_PLACEHOLDER_FOR_DEV", 
+                            Mnemonic = "word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12"
+                        }
+                    };
+                    context.BlockchainData.AddRange(blockchainData);
+                    await context.SaveChangesAsync();
+                }
             }
         }
     }

@@ -24,6 +24,7 @@ public class BuyTimeDbContext : DbContext
     public DbSet<SocialMediaPlatform> SocialMediaPlatforms { get; set; }
     public DbSet<ExpertSocialLink> ExpertSocialLinks { get; set; }
     public DbSet<FavoriteExpert> FavoriteExperts { get; set; }
+    public DbSet<BlockchainData> BlockchainData { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -209,6 +210,23 @@ public class BuyTimeDbContext : DbContext
 
             // один гаманець на одну мережу
             entity.HasIndex(w => new { w.UserId, w.Network }).IsUnique();
+        });
+
+        // === BLOCKCHAIN DATA ===
+        modelBuilder.Entity<BlockchainData>(entity =>
+        {
+            entity.ToTable("BlockchainData", t =>
+            {
+                // SQL перевірка: Або Адреса не NULL, або Мнемоніка не NULL
+                t.HasCheckConstraint("CK_BlockchainData_AddressOrMnemonic", "[Address] IS NOT NULL OR [Mnemonic] IS NOT NULL");
+            });
+
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+            entity.HasIndex(e => e.Name).IsUnique(); 
+
+            entity.Property(e => e.Address).HasMaxLength(150).IsRequired(false);
+            entity.Property(e => e.Mnemonic).HasMaxLength(500).IsRequired(false);
         });
     }
 }
