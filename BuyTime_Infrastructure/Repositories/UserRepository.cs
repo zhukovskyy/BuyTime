@@ -125,6 +125,12 @@ public class UserRepository(BuyTimeDbContext context)
                 .ThenInclude(ts => ts.Booking)
                 .AsQueryable();
 
+            if (filter.OnlyFavorites && filter.CurrentUserId.HasValue)
+            {
+                query = query.Where(expert => context.FavoriteExperts
+                    .Any(fe => fe.ExpertId == expert.Id && fe.StudentId == filter.CurrentUserId.Value));
+            }
+
             if (!string.IsNullOrWhiteSpace(filter.SearchQuery))
             {
                 var q = filter.SearchQuery.Trim().ToLower();

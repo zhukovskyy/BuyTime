@@ -22,7 +22,8 @@ public class BuyTimeDbContext : DbContext
     public DbSet<Specialization> Specializations { get; set; }
 
     public DbSet<SocialMediaPlatform> SocialMediaPlatforms { get; set; }
-    public DbSet<ExpertSocialLink> ExpertSocialLinks { get; set; } 
+    public DbSet<ExpertSocialLink> ExpertSocialLinks { get; set; }
+    public DbSet<FavoriteExpert> FavoriteExperts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -135,6 +136,26 @@ public class BuyTimeDbContext : DbContext
             entity.HasOne(f => f.Student)
                   .WithMany()
                   .HasForeignKey(f => f.StudentId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // === FAVORITE EXPERT ===
+        modelBuilder.Entity<FavoriteExpert>(entity =>
+        {
+            entity.ToTable("FavoriteExperts");
+
+            entity.HasKey(fe => new { fe.StudentId, fe.ExpertId });
+
+            // Зв'язок зі Студентом (у нього є колекція FavoriteExperts)
+            entity.HasOne(fe => fe.Student)
+                  .WithMany(u => u.FavoriteExperts)
+                  .HasForeignKey(fe => fe.StudentId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // Зв'язок з Експертом (у нього НЕМАЄ колекції, тому .WithMany() пустий)
+            entity.HasOne(fe => fe.Expert)
+                  .WithMany()
+                  .HasForeignKey(fe => fe.ExpertId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
 

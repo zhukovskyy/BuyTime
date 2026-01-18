@@ -1,4 +1,4 @@
-using BuyTime_Application.Common.Interfaces.IRepository;
+﻿using BuyTime_Application.Common.Interfaces.IRepository;
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +13,7 @@ public class UnitOfWork : IUnitOfWork
     public IBookingRepository Booking { get; private set; }
     public IFeedbackRepository Feedback { get; private set; }
     public IWalletRepository Wallet { get; private set; }
+    public IFavoriteExpertRepository Favorite { get; private set; }
 
     public UnitOfWork(BuyTimeDbContext context)
     {
@@ -22,6 +23,7 @@ public class UnitOfWork : IUnitOfWork
         Booking = new BookingRepository(_context);
         Feedback = new FeedbackRepository(_context);
         Wallet = new WalletRepository(_context);
+        Favorite = new FavoriteExpertRepository(_context);
     }
     
     public async Task CommitAsync()

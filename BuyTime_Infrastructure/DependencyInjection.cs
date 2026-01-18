@@ -62,6 +62,7 @@ public static class DependencyInjection
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IWalletRepository, WalletRepository>();
         services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+        services.AddScoped<IFavoriteExpertRepository, FavoriteExpertRepository>();
         return services;
     }
 }

@@ -1,4 +1,4 @@
-using BuyTime_Application.Common.Interfaces.IRepository;
+﻿using BuyTime_Application.Common.Interfaces.IRepository;
 
 namespace BuyTime_Application.Common.Interfaces.IUnitOfWork;
 
@@ -9,5 +9,6 @@ public interface IUnitOfWork
     IBookingRepository Booking { get; }
     IFeedbackRepository Feedback { get; }
     IWalletRepository Wallet { get; }
+    IFavoriteExpertRepository Favorite { get; }
     Task CommitAsync();
 }

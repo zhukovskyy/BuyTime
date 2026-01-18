@@ -25,6 +25,7 @@ public class User
 
     // Відгуки, які отримав цей юзер (якщо він Експерт)
     public ICollection<Feedback>? ReceivedFeedbacks { get; set; }
+    public ICollection<FavoriteExpert>? FavoriteExperts { get; set; }
 
     public ICollection<Wallet> Wallets { get; set; }
 

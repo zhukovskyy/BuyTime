@@ -11,23 +11,32 @@ public class SearchExpertsQueryHandler(IUnitOfWork unitOfWork)
 {
     public async Task<ErrorOr<IEnumerable<ExpertProfileDto>>> Handle(SearchExpertsQuery request, CancellationToken cancellationToken)
     {
-        try
+        // 1. Отримуємо експертів з репозиторію
+        var expertsResult = await unitOfWork.User.SearchExpertsAsync(request.Filter);
+
+        if (expertsResult.IsError)
+            return expertsResult.Errors;
+
+        // 2. Мапимо в DTO
+        var dtos = expertsResult.Value.Adapt<List<ExpertProfileDto>>();
+
+        // 3. Додаткова логіка: проставляємо IsFavorite
+        if (request.Filter.CurrentUserId.HasValue)
         {
-            var experts = await unitOfWork.User.SearchExpertsAsync(request.Filter);
+            // Оптимізація: завантажуємо всі лайки цього студента одним запитом
+            var favoriteIds = await unitOfWork.Favorite
+                .GetExpertIdsByStudentIdAsync(request.Filter.CurrentUserId.Value);
 
-            // Mapster config should handle the basic mapping, 
-            // but complex calculations are done in Repository projection or here.
-            // In this case, the Repository returns fully populated Entities with includes.
-
-            // Note: Ideally, projection happens in the Repo to save DB bandwidth, 
-            // but for simplicity with your existing Adapt setup:
-            var dtos = experts.Value.Adapt<List<ExpertProfileDto>>();
-
-            return dtos;
+            // Перевіряємо кожного експерта, чи є він у списку лайкнутих
+            foreach (var dto in dtos)
+            {
+                if (favoriteIds.Contains(dto.Id))
+                {
+                    dto.IsFavorite = true;
+                }
+            }
         }
-        catch (Exception ex)
-        {
-            return Error.Failure(ex.Message);
-        }
+
+        return dtos;
     }
 }

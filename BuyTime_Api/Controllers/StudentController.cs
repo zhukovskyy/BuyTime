@@ -1,3 +1,4 @@
+﻿using BuyTime_Application.Student.Command.ToggleFavorite;
 using BuyTime_Application.Student.Query.GetAll;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -23,5 +24,16 @@ public class StudentController(ISender mediatr) : ApiController
         {
             return StatusCode(500, "An error occurred while fetching students.");
         }
+    }
+
+    [HttpPost("toggle-favorite")]
+    public async Task<IActionResult> ToggleFavorite([FromBody] ToggleFavoriteCommand command)
+    {
+        var result = await mediatr.Send(command);
+
+        if (result.IsError)
+            return Problem(result.Errors);
+
+        return Ok(new { IsFavorite = result.Value });
     }
 }
