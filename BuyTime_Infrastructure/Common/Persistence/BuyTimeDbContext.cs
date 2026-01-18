@@ -17,10 +17,12 @@ public class BuyTimeDbContext : DbContext
     public DbSet<Timeslot> Timeslots { get; set; }
     public DbSet<Feedback> Feedbacks { get; set; }
     public DbSet<Booking> Bookings { get; set; }
-    public DbSet<Specialization> Specializations { get; set; }
     public DbSet<BookingCancellation> BookingCancellations { get; set; }
-
     public DbSet<Wallet> Wallets { get; set; }
+    public DbSet<Specialization> Specializations { get; set; }
+
+    public DbSet<SocialMediaPlatform> SocialMediaPlatforms { get; set; }
+    public DbSet<ExpertSocialLink> ExpertSocialLinks { get; set; } 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,7 +36,7 @@ public class BuyTimeDbContext : DbContext
             .Property(u => u.Rating)
             .HasColumnType("decimal(18,2)");
 
-        // Налаштування зв'язку Many-to-Many
+        // Зв'язок Many-to-Many для спеціалізацій
         modelBuilder.Entity<User>()
             .HasMany(u => u.Specializations)
             .WithMany(s => s.Experts)
@@ -45,7 +47,36 @@ public class BuyTimeDbContext : DbContext
         {
             entity.HasKey(s => s.Id);
             entity.Property(s => s.Name).IsRequired().HasMaxLength(100);
-            entity.HasIndex(s => s.Name).IsUnique(); // Унікальні назви
+            entity.HasIndex(s => s.Name).IsUnique();
+        });
+
+        // === SOCIAL MEDIA PLATFORM ===
+        modelBuilder.Entity<SocialMediaPlatform>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Name).IsRequired().HasMaxLength(50);
+            entity.HasIndex(p => p.Name).IsUnique();
+            entity.Property(p => p.LogoUrl).HasMaxLength(500);
+        });
+
+        // === EXPERT SOCIAL LINK (кол. SocialLink) ===
+        modelBuilder.Entity<ExpertSocialLink>(entity =>
+        {
+            entity.ToTable("ExpertSocialLinks"); // Явна назва таблиці
+            entity.HasKey(sl => sl.Id);
+            entity.Property(sl => sl.UrlOrHandle).IsRequired().HasMaxLength(200);
+
+            // Зв'язок з Юзером
+            entity.HasOne(sl => sl.Expert)
+                  .WithMany(u => u.SocialLinks)
+                  .HasForeignKey(sl => sl.ExpertId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // Зв'язок з Платформою
+            entity.HasOne(sl => sl.Platform)
+                  .WithMany(p => p.ExpertLinks)
+                  .HasForeignKey(sl => sl.PlatformId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // === TIMESLOT ===
@@ -68,7 +99,7 @@ public class BuyTimeDbContext : DbContext
 
         modelBuilder.Entity<Timeslot>()
             .Property(ts => ts.ExpertWalletAddress)
-            .HasMaxLength(150) 
+            .HasMaxLength(150)
             .IsRequired(false);
 
         // === LANGUAGE SKILL ===
@@ -84,19 +115,6 @@ public class BuyTimeDbContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // === SOCIAL LINK ===
-        modelBuilder.Entity<SocialLink>(entity =>
-        {
-            entity.HasKey(sl => sl.Id);
-            entity.Property(sl => sl.Network).IsRequired().HasMaxLength(50);
-            entity.Property(sl => sl.UrlOrHandle).IsRequired().HasMaxLength(200);
-
-            entity.HasOne(sl => sl.User)
-                  .WithMany(u => u.SocialLinks)
-                  .HasForeignKey(sl => sl.UserId)
-                  .OnDelete(DeleteBehavior.Cascade);
-        });
-
         // === FEEDBACK ===
         modelBuilder.Entity<Feedback>(entity =>
         {
@@ -106,7 +124,7 @@ public class BuyTimeDbContext : DbContext
                   .HasColumnType("decimal(18,2)");
 
             entity.Property(f => f.Comment)
-                  .IsRequired(false) 
+                  .IsRequired(false)
                   .HasMaxLength(1000);
 
             entity.HasOne(f => f.Expert)
@@ -115,7 +133,7 @@ public class BuyTimeDbContext : DbContext
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(f => f.Student)
-                  .WithMany() 
+                  .WithMany()
                   .HasForeignKey(f => f.StudentId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
@@ -129,14 +147,13 @@ public class BuyTimeDbContext : DbContext
                   .IsRequired()
                   .HasMaxLength(100);
 
-            entity.Property(b => b.MeetingLink) // винести це в таблицю confirmedBookings
+            entity.Property(b => b.MeetingLink)
                   .IsRequired(false);
 
             entity.Property(b => b.StudentWalletAddress)
                   .IsRequired()
                   .HasMaxLength(150);
 
-            // Booking -> Cancellation (1:0..1)
             entity.HasOne(b => b.Cancellation)
                   .WithOne(bc => bc.Booking)
                   .HasForeignKey<BookingCancellation>(bc => bc.BookingId)
@@ -148,7 +165,7 @@ public class BuyTimeDbContext : DbContext
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(b => b.TimeSlot)
-                  .WithOne(ts => ts.Booking) 
+                  .WithOne(ts => ts.Booking)
                   .HasForeignKey<Booking>(b => b.TimeslotId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
@@ -161,14 +178,8 @@ public class BuyTimeDbContext : DbContext
         modelBuilder.Entity<Wallet>(entity =>
         {
             entity.HasKey(w => w.Id);
-
-            entity.Property(w => w.Network)
-                  .IsRequired()
-                  .HasMaxLength(20); 
-
-            entity.Property(w => w.Address)
-                  .IsRequired()
-                  .HasMaxLength(150);
+            entity.Property(w => w.Network).IsRequired().HasMaxLength(20);
+            entity.Property(w => w.Address).IsRequired().HasMaxLength(150);
 
             entity.HasOne(w => w.User)
                   .WithMany(u => u.Wallets)

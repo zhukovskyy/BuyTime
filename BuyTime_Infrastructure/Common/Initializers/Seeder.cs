@@ -17,7 +17,6 @@ namespace BuyTime_Infrastructure.Common.Initializers
                 Random random = new Random();
                 var context = service.GetRequiredService<BuyTimeDbContext>();
 
-                // Застосовуємо міграції
                 await context.Database.MigrateAsync();
 
                 // ==========================================
@@ -42,15 +41,20 @@ namespace BuyTime_Infrastructure.Common.Initializers
                 // ==========================================
                 if (!context.Users.Any())
                 {
-                    // Отримуємо спеціалізації з БД, щоб прив'язати їх до експертів
+                    // А. Отримуємо спеціалізації
                     var mathSpec = await context.Specializations.FirstAsync(s => s.Name == "Математика");
                     var progSpec = await context.Specializations.FirstAsync(s => s.Name == "Програмування");
                     var designSpec = await context.Specializations.FirstAsync(s => s.Name == "Дизайн");
                     var marketingSpec = await context.Specializations.FirstAsync(s => s.Name == "Маркетинг");
 
+                    // Б. Отримуємо платформи (ВИПРАВЛЕННЯ ТУТ)
+                    // Нам треба знайти їх в базі, щоб прив'язати до юзера
+                    var linkedin = await context.SocialMediaPlatforms.FirstAsync(p => p.Name == "LinkedIn");
+                    var telegram = await context.SocialMediaPlatforms.FirstAsync(p => p.Name == "Telegram");
+
                     var users = new List<User>
                     {
-                        // Звичайні студенти
+                        // Студенти
                         new User { Id = Guid.NewGuid(), FirstName = "Іван", LastName = "Шевченко", Email = "ivan.sh@example.com", TelegramChatId = "123456", IsExpert = false },
                         new User { Id = Guid.NewGuid(), FirstName = "Петро", LastName = "Безим'янний", Email = null, TelegramChatId = "999888", IsExpert = false },
 
@@ -65,7 +69,7 @@ namespace BuyTime_Infrastructure.Common.Initializers
                             IsExpert = true,
                             ExpertNickname = "Коваленко Ментор",
                             Description = "Досвідчений викладач",
-                            Rating = random.Next(4, 6), // 4 або 5
+                            Rating = 5,
                             Specializations = new List<Specialization> { mathSpec, progSpec }
                         },
                         
@@ -80,8 +84,15 @@ namespace BuyTime_Infrastructure.Common.Initializers
                             IsExpert = true,
                             ExpertNickname = "Марина ІТ",
                             Description = "Сертифікований тренер",
-                            Rating = random.Next(4, 6), // 4 або 5
-                            Specializations = new List<Specialization> { designSpec, marketingSpec }
+                            Rating = 5,
+                            Specializations = new List<Specialization> { designSpec, marketingSpec },
+                            
+                            // Тепер linkedin і telegram існують у цьому контексті
+                            SocialLinks = new List<ExpertSocialLink>
+                            {
+                                new ExpertSocialLink { Id = Guid.NewGuid(), Platform = linkedin, UrlOrHandle = "https://linkedin.com/in/marina" },
+                                new ExpertSocialLink { Id = Guid.NewGuid(), Platform = telegram, UrlOrHandle = "@marina_it" }
+                            }
                         },
                     };
                     context.Users.AddRange(users);

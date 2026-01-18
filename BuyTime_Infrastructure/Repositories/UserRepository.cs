@@ -18,6 +18,7 @@ public class UserRepository(BuyTimeDbContext context)
             var user = await dbSet
                 .Include(u => u.LanguageSkills) 
                 .Include(u => u.SocialLinks)
+                    .ThenInclude(sl => sl.Platform)
                 .Include(u => u.Specializations)
                 .FirstOrDefaultAsync(user => user.Id == id);
             if (user == null)
@@ -67,6 +68,7 @@ public class UserRepository(BuyTimeDbContext context)
                                 .Include(u => u.TimeSlots)
                                 .Include(u => u.LanguageSkills) 
                                 .Include(u => u.SocialLinks)
+                                    .ThenInclude(sl => sl.Platform)
                                 .Include(u => u.Specializations)
                                 .ToListAsync();
             return experts;
@@ -112,6 +114,7 @@ public class UserRepository(BuyTimeDbContext context)
                 .Where(u => u.IsExpert)
                 .Include(u => u.LanguageSkills)
                 .Include(u => u.SocialLinks)
+                    .ThenInclude(sl => sl.Platform)
                 .Include(u => u.ReceivedFeedbacks)
                 .Include(u => u.Specializations)
 

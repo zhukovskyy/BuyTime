@@ -4,6 +4,7 @@ using BuyTime_Infrastructure.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BuyTime_Infrastructure.Migrations
 {
     [DbContext(typeof(BuyTimeDbContext))]
-    partial class BuyTimeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260117233212_RenameSocialLinksToExpertSocialLinks")]
+    partial class RenameSocialLinksToExpertSocialLinks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -107,11 +110,16 @@ namespace BuyTime_Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ExpertId");
 
                     b.HasIndex("PlatformId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("ExpertSocialLinks", (string)null);
                 });
@@ -380,6 +388,10 @@ namespace BuyTime_Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("BuyTime_Domain.Entities.User", null)
+                        .WithMany("ExpertSocialLinks")
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Expert");
 
                     b.Navigation("Platform");
@@ -470,6 +482,8 @@ namespace BuyTime_Infrastructure.Migrations
             modelBuilder.Entity("BuyTime_Domain.Entities.User", b =>
                 {
                     b.Navigation("Bookings");
+
+                    b.Navigation("ExpertSocialLinks");
 
                     b.Navigation("LanguageSkills");
 

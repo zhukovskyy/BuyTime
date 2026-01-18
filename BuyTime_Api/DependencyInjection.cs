@@ -54,6 +54,10 @@ public static class DependencyInjection
             .Map(dest => dest.TimeSlots, src => src.TimeSlots.Where(ts => ts.IsAvailable))
             .Map(dest => dest.Specializations, src => src.Specializations);
 
+        TypeAdapterConfig<ExpertSocialLink, SocialLinkDto>.NewConfig()
+            .Map(dest => dest.Platform, src => src.Platform.Name)
+            .Map(dest => dest.LogoUrl, src => src.Platform.LogoUrl);
+
         config.Scan(Assembly.GetExecutingAssembly());
 
         services.AddSingleton(config);
