@@ -14,6 +14,7 @@ public class UnitOfWork : IUnitOfWork
     public IFeedbackRepository Feedback { get; private set; }
     public IWalletRepository Wallet { get; private set; }
     public IFavoriteExpertRepository Favorite { get; private set; }
+    public IUserSettingsRepository UserSettings { get; private set; }
 
     public UnitOfWork(BuyTimeDbContext context)
     {
@@ -24,6 +25,7 @@ public class UnitOfWork : IUnitOfWork
         Feedback = new FeedbackRepository(_context);
         Wallet = new WalletRepository(_context);
         Favorite = new FavoriteExpertRepository(_context);
+        UserSettings = new UserSettingsRepository(_context);
     }
     
     public async Task CommitAsync()

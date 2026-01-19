@@ -53,6 +53,7 @@ public static class DependencyInjection
         services.AddTransient<BookingService>();
         services.AddHttpClient<IZoomService, ZoomService>();
         services.AddScoped<IBlockchainService, BlockchainService>();
+        services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
         return services;
     }
 

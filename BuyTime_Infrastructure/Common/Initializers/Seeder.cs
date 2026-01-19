@@ -99,6 +99,35 @@ namespace BuyTime_Infrastructure.Common.Initializers
                     await context.SaveChangesAsync();
                 }
 
+                if (!context.UserSettings.Any())
+                {
+                    var allUsers = await context.Users.ToListAsync();
+                    var settingsList = new List<UserSettings>();
+
+                    foreach (var user in allUsers)
+                    {
+                        settingsList.Add(new UserSettings
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = user.Id, 
+
+                            Theme = "Light",
+                            Language = "uk",
+                            Currency = "UAH",
+                            ShowCurrencyEquivalent = false,
+
+                            NotifyInTelegram = true,
+                            NotifyOnBooking = true,
+                            NotifyOnFinance = true,
+                            NotifyReminders = true,
+                            NotifyOnNewFeedback = true
+                        });
+                    }
+
+                    context.UserSettings.AddRange(settingsList);
+                    await context.SaveChangesAsync();
+                }
+
                 // ==========================================
                 // 3. Сідінг Таймслотів (Timeslots)
                 // ==========================================

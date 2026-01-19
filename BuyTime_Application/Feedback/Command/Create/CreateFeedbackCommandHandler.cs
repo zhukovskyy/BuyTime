@@ -28,7 +28,7 @@ public class CreateFeedbackCommandHandler(IUnitOfWork unitOfWork)
                 ExpertId = request.ExpertId,
                 Rating = request.Rating,
                 Comment = request.Comment,
-                CreatedAt = request.CreatedAt
+                CreatedAt = DateTime.UtcNow
             };
 
             var result = await unitOfWork.Feedback.AddAsync(feedback);

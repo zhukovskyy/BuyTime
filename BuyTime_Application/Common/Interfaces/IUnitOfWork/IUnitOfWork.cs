@@ -10,5 +10,6 @@ public interface IUnitOfWork
     IFeedbackRepository Feedback { get; }
     IWalletRepository Wallet { get; }
     IFavoriteExpertRepository Favorite { get; }
+    IUserSettingsRepository UserSettings { get; }
     Task CommitAsync();
 }

@@ -7,6 +7,4 @@ public record CreateFeedbackCommand(
     Guid StudentId, 
     Guid ExpertId,  
     decimal Rating,
-    string? Comment, 
-    DateTime CreatedAt
-) : IRequest<ErrorOr<CreateFeedbackResult>>;
+    string? Comment) : IRequest<ErrorOr<CreateFeedbackResult>>;

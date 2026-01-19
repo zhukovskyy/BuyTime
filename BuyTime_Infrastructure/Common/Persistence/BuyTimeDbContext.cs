@@ -25,6 +25,7 @@ public class BuyTimeDbContext : DbContext
     public DbSet<ExpertSocialLink> ExpertSocialLinks { get; set; }
     public DbSet<FavoriteExpert> FavoriteExperts { get; set; }
     public DbSet<BlockchainData> BlockchainData { get; set; }
+    public DbSet<UserSettings> UserSettings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,6 +44,19 @@ public class BuyTimeDbContext : DbContext
             .HasMany(u => u.Specializations)
             .WithMany(s => s.Experts)
             .UsingEntity(j => j.ToTable("ExpertSpecializations"));
+
+        // === USER SETTINGS ===
+        modelBuilder.Entity<UserSettings>(entity =>
+        {
+            entity.ToTable("UserSettings");
+            entity.HasKey(s => s.Id);
+
+            // 1:1
+            entity.HasOne(s => s.User)
+                  .WithOne(u => u.Settings)
+                  .HasForeignKey<UserSettings>(s => s.UserId)
+                  .OnDelete(DeleteBehavior.Cascade); 
+        });
 
         // === SPECIALIZATION ===
         modelBuilder.Entity<Specialization>(entity =>
