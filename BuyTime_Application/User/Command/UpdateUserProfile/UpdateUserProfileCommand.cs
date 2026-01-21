@@ -1,4 +1,5 @@
 ﻿using BuyTime_Application.Dto;
+using BuyTime_Application.User.Command.RegisterUser;
 using ErrorOr;
 using MediatR;
 
@@ -8,12 +9,12 @@ public record UpdateUserProfileCommand(
     Guid UserId,
     string FirstName,
     string LastName,
-    string ExpertNickname,
-    string Email,
-    string Description,
+    string? ExpertNickname,
+    string? Email,
+    string? Description,
     string? AvatarUrl,
 
     List<LanguageSkillDto> LanguageSkills,
-    List<SocialLinkDto> SocialLinks,
+    List<SocialLinkInput> SocialLinks, 
     List<string> SpecializationNames
 ) : IRequest<ErrorOr<UserDto>>;

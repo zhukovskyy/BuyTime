@@ -16,6 +16,7 @@ public class UserDto
     public string? Description { get; set; }
     public List<LanguageSkillDto> LanguageSkills { get; set; }
     public List<SocialLinkDto> SocialLinks { get; set; }
+    public List<SpecializationDto> Specializations { get; set; }
     public decimal? Rating { get; set; }
     public string? AvatarUrl { get; set; }
     public List<TimeslotDto> TimeSlots { get; set; }

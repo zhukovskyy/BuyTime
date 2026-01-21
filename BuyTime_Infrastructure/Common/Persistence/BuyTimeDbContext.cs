@@ -14,6 +14,8 @@ public class BuyTimeDbContext : DbContext
     }
 
     public DbSet<User> Users { get; set; }
+    public DbSet<Language> Languages { get; set; }
+    public DbSet<ExpertLanguage> ExpertLanguages { get; set; }
     public DbSet<Timeslot> Timeslots { get; set; }
     public DbSet<Feedback> Feedbacks { get; set; }
     public DbSet<Booking> Bookings { get; set; }
@@ -118,17 +120,32 @@ public class BuyTimeDbContext : DbContext
             .HasMaxLength(150)
             .IsRequired(false);
 
-        // === LANGUAGE SKILL ===
-        modelBuilder.Entity<LanguageSkill>(entity =>
+        // === LANGUAGE ===
+        modelBuilder.Entity<Language>(entity =>
         {
-            entity.HasKey(ls => ls.Id);
-            entity.Property(ls => ls.LanguageName).IsRequired().HasMaxLength(50);
-            entity.Property(ls => ls.Level).IsRequired().HasMaxLength(50);
+            entity.HasKey(l => l.Id);
+            entity.Property(l => l.Code).IsRequired().HasMaxLength(10);
+            entity.HasIndex(l => l.Code).IsUnique(); 
+        });
 
-            entity.HasOne(ls => ls.User)
-                  .WithMany(u => u.LanguageSkills)
-                  .HasForeignKey(ls => ls.UserId)
+        // === EXPERT LANGUAGE ===
+        modelBuilder.Entity<ExpertLanguage>(entity =>
+        {
+            entity.ToTable("ExpertLanguages");
+
+            entity.HasKey(el => new { el.ExpertId, el.LanguageId });
+
+            entity.Property(el => el.Level).IsRequired().HasMaxLength(50);
+
+            entity.HasOne(el => el.Expert)
+                  .WithMany(u => u.ExpertLanguages)
+                  .HasForeignKey(el => el.ExpertId)
                   .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(el => el.Language)
+                  .WithMany(l => l.ExpertLanguages)
+                  .HasForeignKey(el => el.LanguageId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // === FEEDBACK ===

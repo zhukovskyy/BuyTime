@@ -4,6 +4,7 @@ using BuyTime_Infrastructure.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BuyTime_Infrastructure.Migrations
 {
     [DbContext(typeof(BuyTimeDbContext))]
-    partial class BuyTimeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260121022304_AddLanguagesTable")]
+    partial class AddLanguagesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -120,26 +123,6 @@ namespace BuyTime_Infrastructure.Migrations
                     b.ToTable("BookingCancellations");
                 });
 
-            modelBuilder.Entity("BuyTime_Domain.Entities.ExpertLanguage", b =>
-                {
-                    b.Property<Guid>("ExpertId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("LanguageId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Level")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("ExpertId", "LanguageId");
-
-                    b.HasIndex("LanguageId");
-
-                    b.ToTable("ExpertLanguages", (string)null);
-                });
-
             modelBuilder.Entity("BuyTime_Domain.Entities.ExpertSocialLink", b =>
                 {
                     b.Property<Guid>("Id")
@@ -219,16 +202,46 @@ namespace BuyTime_Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Code")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code")
+                    b.HasIndex("Name")
                         .IsUnique();
 
                     b.ToTable("Languages");
+                });
+
+            modelBuilder.Entity("BuyTime_Domain.Entities.LanguageSkill", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("LanguageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LanguageId");
+
+                    b.HasIndex("UserId", "LanguageId")
+                        .IsUnique();
+
+                    b.ToTable("LanguageSkill");
                 });
 
             modelBuilder.Entity("BuyTime_Domain.Entities.SocialMediaPlatform", b =>
@@ -477,25 +490,6 @@ namespace BuyTime_Infrastructure.Migrations
                     b.Navigation("Booking");
                 });
 
-            modelBuilder.Entity("BuyTime_Domain.Entities.ExpertLanguage", b =>
-                {
-                    b.HasOne("BuyTime_Domain.Entities.User", "Expert")
-                        .WithMany("ExpertLanguages")
-                        .HasForeignKey("ExpertId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BuyTime_Domain.Entities.Language", "Language")
-                        .WithMany("ExpertLanguages")
-                        .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Expert");
-
-                    b.Navigation("Language");
-                });
-
             modelBuilder.Entity("BuyTime_Domain.Entities.ExpertSocialLink", b =>
                 {
                     b.HasOne("BuyTime_Domain.Entities.User", "Expert")
@@ -553,6 +547,25 @@ namespace BuyTime_Infrastructure.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("BuyTime_Domain.Entities.LanguageSkill", b =>
+                {
+                    b.HasOne("BuyTime_Domain.Entities.Language", "Language")
+                        .WithMany("LanguageSkills")
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BuyTime_Domain.Entities.User", "User")
+                        .WithMany("LanguageSkills")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Language");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BuyTime_Domain.Entities.Timeslot", b =>
                 {
                     b.HasOne("BuyTime_Domain.Entities.User", "Expert")
@@ -608,7 +621,7 @@ namespace BuyTime_Infrastructure.Migrations
 
             modelBuilder.Entity("BuyTime_Domain.Entities.Language", b =>
                 {
-                    b.Navigation("ExpertLanguages");
+                    b.Navigation("LanguageSkills");
                 });
 
             modelBuilder.Entity("BuyTime_Domain.Entities.SocialMediaPlatform", b =>
@@ -625,9 +638,9 @@ namespace BuyTime_Infrastructure.Migrations
                 {
                     b.Navigation("Bookings");
 
-                    b.Navigation("ExpertLanguages");
-
                     b.Navigation("FavoriteExperts");
+
+                    b.Navigation("LanguageSkills");
 
                     b.Navigation("ReceivedFeedbacks");
 

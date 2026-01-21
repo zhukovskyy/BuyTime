@@ -14,7 +14,7 @@ public class User
     public string? Description { get; set; }
     public decimal? Rating { get; set; }
 
-    public ICollection<LanguageSkill>? LanguageSkills { get; set; }
+    public ICollection<ExpertLanguage> ExpertLanguages { get; set; }
     public ICollection<ExpertSocialLink>? SocialLinks { get; set; }
     public ICollection<Specialization> Specializations { get; set; } = new List<Specialization>();
     // user as expert

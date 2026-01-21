@@ -17,7 +17,8 @@ public class UserRepository(BuyTimeDbContext context)
         try
         {
             var user = await dbSet
-                .Include(u => u.LanguageSkills) 
+                .Include(u => u.ExpertLanguages)
+                    .ThenInclude(ls => ls.Language)
                 .Include(u => u.SocialLinks)
                     .ThenInclude(sl => sl.Platform)
                 .Include(u => u.Specializations)
@@ -48,37 +49,46 @@ public class UserRepository(BuyTimeDbContext context)
     }
 
     public async Task<ErrorOr<User>> RegisterUserAsync(
-    User userEntity,
-    List<LanguageSkill> languages,
-    List<SocialLinkDto> socialLinks,
-    List<string> specializationNames)
+        User userEntity,
+        List<LanguageSkillDto> languageDtos,
+        List<SocialLinkDto> socialLinks,
+        List<string> specializationNames)
     {
         try
         {
             var exists = await dbSet.AnyAsync(u => u.Id == userEntity.Id);
             if (exists)
-            {
-                return Error.Conflict("User.Exists", "Користувач з таким ID вже існує.");
-            }
+                return Error.Conflict("User.Exists", "Користувач вже існує.");
 
-            if (languages != null)
+            if (languageDtos != null && languageDtos.Any())
             {
-                foreach (var lang in languages)
+                var allDbLanguages = await context.Languages.AsTracking().ToListAsync();
+                var expertLanguages = new List<ExpertLanguage>();
+
+                foreach (var dto in languageDtos)
                 {
-                    lang.Id = Guid.NewGuid();
-                    lang.UserId = userEntity.Id; 
-                                         
-                    await context.Set<LanguageSkill>().AddAsync(lang);
+                    var lang = allDbLanguages.FirstOrDefault(l =>
+                        l.Code.Equals(dto.LanguageCode, StringComparison.OrdinalIgnoreCase));
+
+                    if (lang != null)
+                    {
+                        expertLanguages.Add(new ExpertLanguage
+                        {
+                            ExpertId = userEntity.Id,
+                            LanguageId = lang.Id,
+                            Language = lang,
+                            Level = dto.Level
+                        });
+                    }
                 }
-                
-                userEntity.LanguageSkills = languages;
+                userEntity.ExpertLanguages = expertLanguages;
             }
 
-            var allPlatforms = await context.SocialMediaPlatforms.ToListAsync();
-            var expertLinks = new List<ExpertSocialLink>();
-
-            if (socialLinks != null)
+            if (socialLinks != null && socialLinks.Any())
             {
+                var allPlatforms = await context.SocialMediaPlatforms.AsTracking().ToListAsync();
+                var expertLinks = new List<ExpertSocialLink>();
+
                 foreach (var linkDto in socialLinks)
                 {
                     var platform = allPlatforms.FirstOrDefault(p =>
@@ -91,26 +101,22 @@ public class UserRepository(BuyTimeDbContext context)
                             Id = Guid.NewGuid(),
                             ExpertId = userEntity.Id,
                             PlatformId = platform.Id,
+                            Platform = platform,
                             UrlOrHandle = linkDto.UrlOrHandle
                         });
                     }
                 }
-                await context.ExpertSocialLinks.AddRangeAsync(expertLinks);
                 userEntity.SocialLinks = expertLinks;
             }
 
             if (specializationNames != null && specializationNames.Any())
             {
                 var specs = await context.Specializations
+                    .AsTracking()
                     .Where(s => specializationNames.Contains(s.Name))
                     .ToListAsync();
 
-                userEntity.Specializations ??= new List<Specialization>();
-
-                foreach (var spec in specs)
-                {
-                    userEntity.Specializations.Add(spec);
-                }
+                userEntity.Specializations = specs;
             }
 
             var defaultSettings = new UserSettings
@@ -126,38 +132,40 @@ public class UserRepository(BuyTimeDbContext context)
                 NotifyReminders = true,
                 NotifyOnNewFeedback = true
             };
-            await context.UserSettings.AddAsync(defaultSettings);
             userEntity.Settings = defaultSettings;
 
             await dbSet.AddAsync(userEntity);
-
             await context.SaveChangesAsync();
 
             return userEntity;
         }
         catch (Exception ex)
         {
-            return Error.Failure("CreateUserError", $"Не вдалося створити профіль: {ex.Message}");
+            var msg = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
+            return Error.Failure("RegisterUserError", msg);
         }
     }
 
     public async Task<ErrorOr<User>> UpdateUserProfileAsync(
     User userChanges,
-    List<LanguageSkill> newLanguages,
+    List<LanguageSkillDto> languageDtos,
     List<SocialLinkDto> newSocials,
     List<string> newSpecializationNames)
     {
+        using var transaction = await context.Database.BeginTransactionAsync();
+
         try
         {
+            // 1. Завантажуємо юзера
             var user = await dbSet
-                .Include(u => u.LanguageSkills)
-                .Include(u => u.SocialLinks)
-                .Include(u => u.Specializations) 
+                .AsTracking()
+                .Include(u => u.Specializations)
                 .FirstOrDefaultAsync(u => u.Id == userChanges.Id);
 
             if (user == null)
                 return Error.NotFound("User.NotFound", "Користувача не знайдено.");
 
+            // 2. Оновлюємо скалярні поля
             user.FirstName = userChanges.FirstName;
             user.LastName = userChanges.LastName;
             user.ExpertNickname = userChanges.ExpertNickname;
@@ -165,57 +173,151 @@ public class UserRepository(BuyTimeDbContext context)
             user.Description = userChanges.Description;
             user.AvatarUrl = userChanges.AvatarUrl;
 
+            // =========================================================
+            // ЕТАП 1: МОВИ
+            // =========================================================
+            var oldLanguages = await context.ExpertLanguages
+                .Where(el => el.ExpertId == user.Id)
+                .ToListAsync();
 
-            if (user.LanguageSkills != null && user.LanguageSkills.Any())
-                context.Set<LanguageSkill>().RemoveRange(user.LanguageSkills);
+            if (oldLanguages.Any()) context.ExpertLanguages.RemoveRange(oldLanguages);
 
-            user.LanguageSkills = newLanguages;
-            foreach (var lang in user.LanguageSkills) lang.UserId = user.Id;
+            var currentExpertLanguages = new List<ExpertLanguage>();
 
-            if (user.SocialLinks != null && user.SocialLinks.Any())
-                context.ExpertSocialLinks.RemoveRange(user.SocialLinks);
-
-            var newExpertLinks = new List<ExpertSocialLink>();
-            var allPlatforms = await context.SocialMediaPlatforms.ToListAsync();
-
-            foreach (var linkDto in newSocials)
+            if (languageDtos != null && languageDtos.Any())
             {
-                var platform = allPlatforms.FirstOrDefault(p => p.Name.Equals(linkDto.Platform, StringComparison.OrdinalIgnoreCase));
-                if (platform != null)
+                var allDbLanguages = await context.Languages.AsNoTracking().ToListAsync();
+                foreach (var dto in languageDtos)
                 {
-                    newExpertLinks.Add(new ExpertSocialLink
+                    var lang = allDbLanguages.FirstOrDefault(l =>
+                        l.Code.Equals(dto.LanguageCode, StringComparison.OrdinalIgnoreCase));
+
+                    if (lang != null)
                     {
-                        Id = Guid.NewGuid(),
-                        ExpertId = user.Id,
-                        PlatformId = platform.Id,
-                        UrlOrHandle = linkDto.UrlOrHandle
-                    });
+                        currentExpertLanguages.Add(new ExpertLanguage
+                        {
+                            ExpertId = user.Id,
+                            LanguageId = lang.Id,
+                            Level = dto.Level,
+                            Language = null
+                        });
+                    }
                 }
+                await context.ExpertLanguages.AddRangeAsync(currentExpertLanguages);
             }
-            user.SocialLinks = newExpertLinks;
 
+            // =========================================================
+            // ЕТАП 2: СОЦМЕРЕЖІ
+            // =========================================================
+            var oldSocials = await context.ExpertSocialLinks
+                .Where(sl => sl.ExpertId == user.Id)
+                .ToListAsync();
 
-            user.Specializations.Clear();
+            if (oldSocials.Any()) context.ExpertSocialLinks.RemoveRange(oldSocials);
 
-            if (newSpecializationNames != null && newSpecializationNames.Any())
+            var currentSocialLinks = new List<ExpertSocialLink>();
+
+            if (newSocials != null && newSocials.Any())
             {
-                var specsToAdd = await context.Specializations
-                    .Where(s => newSpecializationNames.Contains(s.Name))
-                    .ToListAsync();
-
-                foreach (var spec in specsToAdd)
+                var allPlatforms = await context.SocialMediaPlatforms.AsNoTracking().ToListAsync();
+                foreach (var linkDto in newSocials)
                 {
-                    user.Specializations.Add(spec);
+                    var platform = allPlatforms.FirstOrDefault(p =>
+                        p.Name.Equals(linkDto.Platform, StringComparison.OrdinalIgnoreCase));
+
+                    if (platform != null)
+                    {
+                        currentSocialLinks.Add(new ExpertSocialLink
+                        {
+                            Id = Guid.NewGuid(),
+                            ExpertId = user.Id,
+                            PlatformId = platform.Id,
+                            UrlOrHandle = linkDto.UrlOrHandle,
+                            Platform = null
+                        });
+                    }
+                }
+                await context.ExpertSocialLinks.AddRangeAsync(currentSocialLinks);
+            }
+
+            // =========================================================
+            // ЕТАП 3: СПЕЦІАЛІЗАЦІЇ (ВИПРАВЛЕНО)
+            // =========================================================
+
+            if (newSpecializationNames != null)
+            {
+                // 1. Видаляємо ті, яких більше немає в списку
+                // Використовуємо .ToList(), щоб створити копію для ітерації
+                var specsToRemove = user.Specializations
+                    .Where(s => !newSpecializationNames.Contains(s.Name))
+                    .ToList();
+
+                foreach (var specToRemove in specsToRemove)
+                {
+                    user.Specializations.Remove(specToRemove);
+                }
+
+                // 2. Додаємо нові, яких ще немає в юзера
+                var currentSpecNames = user.Specializations.Select(s => s.Name).ToList();
+                var namesToAdd = newSpecializationNames
+                    .Except(currentSpecNames) // Тільки ті, що нові
+                    .ToList();
+
+                if (namesToAdd.Any())
+                {
+                    // Завантажуємо тільки ті, яких не вистачає
+                    var specsToAdd = await context.Specializations
+                        .Where(s => namesToAdd.Contains(s.Name))
+                        .ToListAsync();
+
+                    foreach (var spec in specsToAdd)
+                    {
+                        user.Specializations.Add(spec);
+                    }
+                }
+            }
+            else
+            {
+                // Якщо прийшов null, очищаємо все
+                user.Specializations.Clear();
+            }
+
+            // Зберігаємо зміни
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            // =========================================================
+            // ЕТАП 4: ВІДНОВЛЕННЯ ДЛЯ DTO
+            // =========================================================
+
+            if (currentExpertLanguages.Any())
+            {
+                var allDbLanguages = await context.Languages.AsNoTracking().ToListAsync();
+                foreach (var item in currentExpertLanguages)
+                {
+                    item.Language = allDbLanguages.First(l => l.Id == item.LanguageId);
                 }
             }
 
-            await context.SaveChangesAsync();
+            if (currentSocialLinks.Any())
+            {
+                var allPlatforms = await context.SocialMediaPlatforms.AsNoTracking().ToListAsync();
+                foreach (var item in currentSocialLinks)
+                {
+                    item.Platform = allPlatforms.First(p => p.Id == item.PlatformId);
+                }
+            }
+
+            user.ExpertLanguages = currentExpertLanguages;
+            user.SocialLinks = currentSocialLinks;
 
             return user;
         }
         catch (Exception ex)
         {
-            return Error.Failure("UpdateError", $"Помилка: {ex.Message}");
+            await transaction.RollbackAsync();
+            var msg = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
+            return Error.Failure("UpdateError", $"Помилка: {msg}");
         }
     }
 
@@ -239,7 +341,8 @@ public class UserRepository(BuyTimeDbContext context)
             var experts = await dbSet
                                 .Where(u => u.IsExpert == true)
                                 .Include(u => u.TimeSlots)
-                                .Include(u => u.LanguageSkills) 
+                                .Include(u => u.ExpertLanguages)
+                                    .ThenInclude(el => el.Language)
                                 .Include(u => u.SocialLinks)
                                     .ThenInclude(sl => sl.Platform)
                                 .Include(u => u.Specializations)
@@ -285,7 +388,8 @@ public class UserRepository(BuyTimeDbContext context)
         {
             var query = dbSet.AsNoTracking()
                 .Where(u => u.IsExpert)
-                .Include(u => u.LanguageSkills)
+                .Include(u => u.ExpertLanguages)
+                    .ThenInclude(el => el.Language)
                 .Include(u => u.SocialLinks)
                     .ThenInclude(sl => sl.Platform)
                 .Include(u => u.ReceivedFeedbacks)
@@ -316,25 +420,22 @@ public class UserRepository(BuyTimeDbContext context)
             }
 
             // =================================================================================
-            // Мова (ЛОГІКА AND: Експерт має знати ВСІ перелічені мови)
+            // Мова 
             // =================================================================================
             if (!string.IsNullOrWhiteSpace(filter.Language))
             {
                 var languages = filter.Language
                     .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(l => l.Trim())
-                    .Distinct() 
+                    .Select(l => l.Trim().ToLower()) 
+                    .Distinct()
                     .ToList();
 
-                foreach (var lang in languages)
+                foreach (var langCode in languages)
                 {
-                    query = query.Where(u => u.LanguageSkills.Any(l => l.LanguageName == lang));
+                    query = query.Where(u => u.ExpertLanguages.Any(l => l.Language.Code == langCode));
                 }
             }
 
-            // =================================================================================
-            // Спеціалізація (ЛОГІКА AND: Експерт повинен мати ВСІ перелічені спеціалізації)
-            // =================================================================================
             if (!string.IsNullOrWhiteSpace(filter.Specialization))
             {
                 var searchSpecs = filter.Specialization.ToLower()
@@ -343,22 +444,17 @@ public class UserRepository(BuyTimeDbContext context)
                     .Distinct()
                     .ToList();
 
-                // Аналогічно: фільтруємо послідовно.
-                // Якщо запит "дизайн, маркетинг", то спочатку відберемо тих, у кого є "дизайн",
-                // а потім з них залишимо тільки тих, у кого є ще й "маркетинг".
                 foreach (var searchSpec in searchSpecs)
                 {
                     query = query.Where(u => u.Specializations.Any(s => s.Name.ToLower().Contains(searchSpec)));
                 }
             }
 
-            // Рейтинг (без змін)
             if (filter.MinRating.HasValue && filter.MinRating.Value > 0)
             {
                 query = query.Where(u => u.Rating >= filter.MinRating.Value);
             }
 
-            // Валюта та Ціна (без змін)
             if (!string.IsNullOrEmpty(filter.Currency))
             {
                 query = query.Where(u =>

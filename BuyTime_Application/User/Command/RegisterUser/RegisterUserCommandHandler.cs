@@ -25,16 +25,19 @@ public class RegisterUserCommandHandler(IUnitOfWork unitOfWork)
             IsExpert = request.IsExpert 
         };
 
-        var languageEntities = request.LanguageSkills.Select(l => new LanguageSkill
-        {
-            LanguageName = l.LanguageName,
-            Level = l.Level
-        }).ToList();
+        var socialLinkDtos = request.SocialLinks?   // може все таки треба було зробити окремий дто для інпута чим оце
+            .Select(s => new SocialLinkDto
+            {
+                Platform = s.Platform,
+                UrlOrHandle = s.UrlOrHandle,
+                LogoUrl = null 
+            })
+            .ToList() ?? new List<SocialLinkDto>();
 
         var result = await unitOfWork.User.RegisterUserAsync(
             userEntity,
-            languageEntities,
-            request.SocialLinks ?? new List<SocialLinkDto>(),
+            request.LanguageSkills ?? new List<LanguageSkillDto>(),
+            socialLinkDtos, 
             request.SpecializationNames ?? new List<string>()
         );
 

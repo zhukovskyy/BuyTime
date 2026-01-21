@@ -4,6 +4,7 @@ using MediatR;
 
 namespace BuyTime_Application.User.Command.RegisterUser;
 
+public record SocialLinkInput(string Platform, string UrlOrHandle);
 public record RegisterUserCommand(        
     string FirstName,
     string LastName,
@@ -15,6 +16,6 @@ public record RegisterUserCommand(
     bool IsExpert,           
 
     List<LanguageSkillDto>? LanguageSkills,
-    List<SocialLinkDto>? SocialLinks,
+    List<SocialLinkInput>? SocialLinks,
     List<string>? SpecializationNames 
 ) : IRequest<ErrorOr<UserDto>>;

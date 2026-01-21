@@ -52,11 +52,21 @@ public static class DependencyInjection
 
             .Map(dest => dest.Feedbacks, src => src.ReceivedFeedbacks)
             .Map(dest => dest.TimeSlots, src => src.TimeSlots.Where(ts => ts.IsAvailable))
-            .Map(dest => dest.Specializations, src => src.Specializations);
+            .Map(dest => dest.Specializations, src => src.Specializations)
+            .Map(dest => dest.LanguageSkills, src => src.ExpertLanguages);
 
         TypeAdapterConfig<ExpertSocialLink, SocialLinkDto>.NewConfig()
             .Map(dest => dest.Platform, src => src.Platform.Name)
             .Map(dest => dest.LogoUrl, src => src.Platform.LogoUrl);
+
+        TypeAdapterConfig<ExpertLanguage, LanguageSkillDto>.NewConfig()
+            .Map(dest => dest.LanguageCode, src => src.Language.Code)
+            .Map(dest => dest.Level, src => src.Level);
+
+        TypeAdapterConfig<User, UserDto>.NewConfig()
+            .Map(dest => dest.LanguageSkills, src => src.ExpertLanguages)
+            .Map(dest => dest.Specializations, src => src.Specializations)
+            .Map(dest => dest.SocialLinks, src => src.SocialLinks);
 
         config.Scan(Assembly.GetExecutingAssembly());
 

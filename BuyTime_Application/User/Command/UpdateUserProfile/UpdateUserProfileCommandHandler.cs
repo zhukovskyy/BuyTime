@@ -23,18 +23,20 @@ public class UpdateUserProfileCommandHandler(IUnitOfWork unitOfWork)
             AvatarUrl = request.AvatarUrl
         };
 
-        var languageEntities = request.LanguageSkills.Select(l => new BuyTime_Domain.Entities.LanguageSkill
-        {
-            Id = Guid.NewGuid(),
-            LanguageName = l.LanguageName,
-            Level = l.Level
-        }).ToList();
+        var socialLinkDtos = request.SocialLinks?
+            .Select(s => new SocialLinkDto
+            {
+                Platform = s.Platform,
+                UrlOrHandle = s.UrlOrHandle,
+                LogoUrl = null 
+            })
+            .ToList() ?? new List<SocialLinkDto>();
 
         var result = await unitOfWork.User.UpdateUserProfileAsync(
             userEntity,
-            languageEntities,
-            request.SocialLinks,
-            request.SpecializationNames 
+            request.LanguageSkills,
+            socialLinkDtos, 
+            request.SpecializationNames
         );
 
         if (result.IsError)

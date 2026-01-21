@@ -1,5 +1,6 @@
 ﻿using BuyTime_Application.Common.Interfaces.IRepository;
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+using BuyTime_Domain.Entities;
 using BuyTime_Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,10 @@ public class UnitOfWork : IUnitOfWork
     public IWalletRepository Wallet { get; private set; }
     public IFavoriteExpertRepository Favorite { get; private set; }
     public IUserSettingsRepository UserSettings { get; private set; }
+    public IRepository<Language> Languages { get; private set; }
+    public IRepository<Specialization> Specializations { get; private set; }
+    public IRepository<SocialMediaPlatform> SocialMediaPlatforms { get; private set; }
+
 
     public UnitOfWork(BuyTimeDbContext context)
     {
@@ -26,6 +31,9 @@ public class UnitOfWork : IUnitOfWork
         Wallet = new WalletRepository(_context);
         Favorite = new FavoriteExpertRepository(_context);
         UserSettings = new UserSettingsRepository(_context);
+        Languages = new Repository<Language>(_context);
+        Specializations = new Repository<Specialization>(_context);
+        SocialMediaPlatforms = new Repository<SocialMediaPlatform>(_context);
     }
     
     public async Task CommitAsync()

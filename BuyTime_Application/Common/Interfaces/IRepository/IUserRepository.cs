@@ -21,13 +21,13 @@ public interface IUserRepository : IRepository<BuyTime_Domain.Entities.User>
 
     Task<ErrorOr<BuyTime_Domain.Entities.User>> RegisterUserAsync(
         BuyTime_Domain.Entities.User userEntity,
-        List<LanguageSkill> languages,
+        List<LanguageSkillDto> languageDtos,
         List<SocialLinkDto> socialLinks,
         List<string> specializationNames);
 
     Task<ErrorOr<BuyTime_Domain.Entities.User>> UpdateUserProfileAsync(
         BuyTime_Domain.Entities.User userChanges,
-        List<LanguageSkill> newLanguages,
+        List<LanguageSkillDto> languageDtos,
         List<SocialLinkDto> newSocials,
         List<string> newSpecializationNames);
 }

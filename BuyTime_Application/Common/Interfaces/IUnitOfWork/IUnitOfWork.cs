@@ -1,4 +1,5 @@
 ﻿using BuyTime_Application.Common.Interfaces.IRepository;
+using BuyTime_Domain.Entities;
 
 namespace BuyTime_Application.Common.Interfaces.IUnitOfWork;
 
@@ -11,5 +12,8 @@ public interface IUnitOfWork
     IWalletRepository Wallet { get; }
     IFavoriteExpertRepository Favorite { get; }
     IUserSettingsRepository UserSettings { get; }
+    IRepository<Language> Languages { get; }
+    IRepository<Specialization> Specializations { get; }
+    IRepository<SocialMediaPlatform> SocialMediaPlatforms { get; }
     Task CommitAsync();
 }

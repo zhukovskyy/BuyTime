@@ -2,6 +2,6 @@
 
 public class LanguageSkillDto
 {
-    public string LanguageName { get; set; }
+    public string LanguageCode { get; set; }
     public string Level { get; set; }
 }
