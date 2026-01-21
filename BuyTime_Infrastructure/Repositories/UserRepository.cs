@@ -1,4 +1,5 @@
 ﻿using BuyTime_Application.Common.Interfaces.IRepository;
+using BuyTime_Application.Dto;
 using BuyTime_Application.Expert.Query.Search;
 using BuyTime_Domain.Constants;
 using BuyTime_Domain.Entities;
@@ -43,6 +44,84 @@ public class UserRepository(BuyTimeDbContext context)
         catch (Exception ex)
         {
             return Error.Failure(ex.Message);
+        }
+    }
+
+    public async Task<ErrorOr<User>> UpdateUserProfileAsync(
+    User userChanges,
+    List<LanguageSkill> newLanguages,
+    List<SocialLinkDto> newSocials,
+    List<string> newSpecializationNames)
+    {
+        try
+        {
+            var user = await dbSet
+                .Include(u => u.LanguageSkills)
+                .Include(u => u.SocialLinks)
+                .Include(u => u.Specializations) 
+                .FirstOrDefaultAsync(u => u.Id == userChanges.Id);
+
+            if (user == null)
+                return Error.NotFound("User.NotFound", "Користувача не знайдено.");
+
+            user.FirstName = userChanges.FirstName;
+            user.LastName = userChanges.LastName;
+            user.ExpertNickname = userChanges.ExpertNickname;
+            user.Email = userChanges.Email;
+            user.Description = userChanges.Description;
+            user.AvatarUrl = userChanges.AvatarUrl;
+
+
+            if (user.LanguageSkills != null && user.LanguageSkills.Any())
+                context.Set<LanguageSkill>().RemoveRange(user.LanguageSkills);
+
+            user.LanguageSkills = newLanguages;
+            foreach (var lang in user.LanguageSkills) lang.UserId = user.Id;
+
+            if (user.SocialLinks != null && user.SocialLinks.Any())
+                context.ExpertSocialLinks.RemoveRange(user.SocialLinks);
+
+            var newExpertLinks = new List<ExpertSocialLink>();
+            var allPlatforms = await context.SocialMediaPlatforms.ToListAsync();
+
+            foreach (var linkDto in newSocials)
+            {
+                var platform = allPlatforms.FirstOrDefault(p => p.Name.Equals(linkDto.Platform, StringComparison.OrdinalIgnoreCase));
+                if (platform != null)
+                {
+                    newExpertLinks.Add(new ExpertSocialLink
+                    {
+                        Id = Guid.NewGuid(),
+                        ExpertId = user.Id,
+                        PlatformId = platform.Id,
+                        UrlOrHandle = linkDto.UrlOrHandle
+                    });
+                }
+            }
+            user.SocialLinks = newExpertLinks;
+
+
+            user.Specializations.Clear();
+
+            if (newSpecializationNames != null && newSpecializationNames.Any())
+            {
+                var specsToAdd = await context.Specializations
+                    .Where(s => newSpecializationNames.Contains(s.Name))
+                    .ToListAsync();
+
+                foreach (var spec in specsToAdd)
+                {
+                    user.Specializations.Add(spec);
+                }
+            }
+
+            await context.SaveChangesAsync();
+
+            return user;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure("UpdateError", $"Помилка: {ex.Message}");
         }
     }
 

@@ -17,7 +17,7 @@ public class UserDto
     public List<LanguageSkillDto> LanguageSkills { get; set; }
     public List<SocialLinkDto> SocialLinks { get; set; }
     public decimal? Rating { get; set; }
-    //public string? Tags { get; set; }
+    public string? AvatarUrl { get; set; }
     public List<TimeslotDto> TimeSlots { get; set; }
     public List<FeedbackDto> Feedbacks { get; set; }
     public List<BookingDto> Bookings { get; set; }

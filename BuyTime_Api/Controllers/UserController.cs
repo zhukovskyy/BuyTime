@@ -1,6 +1,7 @@
 ﻿using BuyTime_Application.User.Command;
 using BuyTime_Application.User.Command.AddUserDetails;
 using BuyTime_Application.User.Command.ToggleExpert;
+using BuyTime_Application.User.Command.UpdateUserProfile;
 using BuyTime_Application.User.Query.GetAll;
 using BuyTime_Application.User.Query.GetById;
 using BuyTime_Application.User.Query.GetUserByChatId;
@@ -130,6 +131,28 @@ public class UserController(ISender mediatr) : ApiController
         catch (Exception)
         {
             return StatusCode(500, "An error occurred while adding user details.");
+        }
+    }
+
+    [HttpPost("update-profile")]
+
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserProfileCommand command)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var result = await mediatr.Send(command);
+
+            if (result.IsError)
+                return Problem(result.Errors);
+
+            return Ok(result.Value);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred: {ex.Message}");
         }
     }
 }

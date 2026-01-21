@@ -8,7 +8,7 @@ public class User
     public string LastName { get; set; }
     public string? Email { get; set; }
     public string TelegramChatId { get; set; }
-
+    public string? AvatarUrl { get; set; }
     public bool IsExpert { get; set; } = false;
     public string? ExpertNickname { get; set; }
     public string? Description { get; set; }
