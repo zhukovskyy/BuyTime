@@ -1,5 +1,5 @@
 ﻿using BuyTime_Application.User.Command;
-using BuyTime_Application.User.Command.AddUserDetails;
+using BuyTime_Application.User.Command.RegisterUser;
 using BuyTime_Application.User.Command.ToggleExpert;
 using BuyTime_Application.User.Command.UpdateUserProfile;
 using BuyTime_Application.User.Query.GetAll;
@@ -117,20 +117,25 @@ public class UserController(ISender mediatr) : ApiController
             return StatusCode(500, "An error occurred while toggling user's role.");
         }
     }
-    
-    [HttpPost("add-user-details")]
-    public async Task<IActionResult> AddUserDetails([FromBody] AddUserDetailsCommand command)
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterUserCommand command)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         try
         {
             var result = await mediatr.Send(command);
-            if (result.IsError)
-                return StatusCode(409, result.IsError);
-            return Ok(result.Value);
+
+            return result.Match(
+                user => CreatedAtAction(nameof(GetById), new { id = user.Id }, user),
+                errors => Problem(errors)
+            );
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500, "An error occurred while adding user details.");
+            return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
 

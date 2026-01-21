@@ -19,6 +19,12 @@ public interface IUserRepository : IRepository<BuyTime_Domain.Entities.User>
 
     Task<ErrorOr<IEnumerable<BuyTime_Domain.Entities.User>>> SearchExpertsAsync(SearchExpertRequest filter);
 
+    Task<ErrorOr<BuyTime_Domain.Entities.User>> RegisterUserAsync(
+        BuyTime_Domain.Entities.User userEntity,
+        List<LanguageSkill> languages,
+        List<SocialLinkDto> socialLinks,
+        List<string> specializationNames);
+
     Task<ErrorOr<BuyTime_Domain.Entities.User>> UpdateUserProfileAsync(
         BuyTime_Domain.Entities.User userChanges,
         List<LanguageSkill> newLanguages,

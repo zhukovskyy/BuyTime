@@ -47,6 +47,100 @@ public class UserRepository(BuyTimeDbContext context)
         }
     }
 
+    public async Task<ErrorOr<User>> RegisterUserAsync(
+    User userEntity,
+    List<LanguageSkill> languages,
+    List<SocialLinkDto> socialLinks,
+    List<string> specializationNames)
+    {
+        try
+        {
+            var exists = await dbSet.AnyAsync(u => u.Id == userEntity.Id);
+            if (exists)
+            {
+                return Error.Conflict("User.Exists", "Користувач з таким ID вже існує.");
+            }
+
+            if (languages != null)
+            {
+                foreach (var lang in languages)
+                {
+                    lang.Id = Guid.NewGuid();
+                    lang.UserId = userEntity.Id; 
+                                         
+                    await context.Set<LanguageSkill>().AddAsync(lang);
+                }
+                
+                userEntity.LanguageSkills = languages;
+            }
+
+            var allPlatforms = await context.SocialMediaPlatforms.ToListAsync();
+            var expertLinks = new List<ExpertSocialLink>();
+
+            if (socialLinks != null)
+            {
+                foreach (var linkDto in socialLinks)
+                {
+                    var platform = allPlatforms.FirstOrDefault(p =>
+                        p.Name.Equals(linkDto.Platform, StringComparison.OrdinalIgnoreCase));
+
+                    if (platform != null)
+                    {
+                        expertLinks.Add(new ExpertSocialLink
+                        {
+                            Id = Guid.NewGuid(),
+                            ExpertId = userEntity.Id,
+                            PlatformId = platform.Id,
+                            UrlOrHandle = linkDto.UrlOrHandle
+                        });
+                    }
+                }
+                await context.ExpertSocialLinks.AddRangeAsync(expertLinks);
+                userEntity.SocialLinks = expertLinks;
+            }
+
+            if (specializationNames != null && specializationNames.Any())
+            {
+                var specs = await context.Specializations
+                    .Where(s => specializationNames.Contains(s.Name))
+                    .ToListAsync();
+
+                userEntity.Specializations ??= new List<Specialization>();
+
+                foreach (var spec in specs)
+                {
+                    userEntity.Specializations.Add(spec);
+                }
+            }
+
+            var defaultSettings = new UserSettings
+            {
+                Id = Guid.NewGuid(),
+                UserId = userEntity.Id,
+                Theme = "Light",
+                Language = "uk",
+                Currency = "UAH",
+                NotifyInTelegram = true,
+                NotifyOnBooking = true,
+                NotifyOnFinance = true,
+                NotifyReminders = true,
+                NotifyOnNewFeedback = true
+            };
+            await context.UserSettings.AddAsync(defaultSettings);
+            userEntity.Settings = defaultSettings;
+
+            await dbSet.AddAsync(userEntity);
+
+            await context.SaveChangesAsync();
+
+            return userEntity;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure("CreateUserError", $"Не вдалося створити профіль: {ex.Message}");
+        }
+    }
+
     public async Task<ErrorOr<User>> UpdateUserProfileAsync(
     User userChanges,
     List<LanguageSkill> newLanguages,
