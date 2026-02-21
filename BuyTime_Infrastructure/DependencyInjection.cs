@@ -53,7 +53,7 @@ public static class DependencyInjection
         services.AddTransient<BookingService>();
         services.AddHttpClient<IZoomService, ZoomService>();
         services.AddScoped<IBlockchainService, BlockchainService>();
-        services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
+        services.AddScoped<IImageService, ImageService>(); 
         return services;
     }
 
@@ -65,6 +65,7 @@ public static class DependencyInjection
         services.AddScoped<IWalletRepository, WalletRepository>();
         services.AddScoped<IFeedbackRepository, FeedbackRepository>();
         services.AddScoped<IFavoriteExpertRepository, FavoriteExpertRepository>();
+        services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
         return services;
     }
 }
