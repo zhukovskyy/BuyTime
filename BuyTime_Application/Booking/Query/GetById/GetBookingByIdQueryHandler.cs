@@ -1,6 +1,5 @@
-using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+﻿using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Application.Dto;
-using BuyTime_Application.Timeslot.Query.GetById;
 using ErrorOr;
 using Mapster;
 using MediatR;

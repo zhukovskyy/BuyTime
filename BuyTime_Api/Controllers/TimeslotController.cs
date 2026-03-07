@@ -1,7 +1,8 @@
-using BuyTime_Application.Timeslot.Command.CreateTimeslot;
+﻿using BuyTime_Application.Timeslot.Command.CreateTimeslot;
 using BuyTime_Application.Timeslot.CreateTimeslot;
-using BuyTime_Application.Timeslot.Query.GetAll;
-using BuyTime_Application.Timeslot.Query.GetById;
+using BuyTime_Application.Timeslot.Query.GetByExpertId;
+using BuyTime_Application.Timeslot.Command.UpdateTimeslot;
+using BuyTime_Application.Timeslot.Command.DeleteTimeslot;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,38 +25,49 @@ public class TimeslotController(ISender mediatr) : ApiController
 
         return CreatedAtAction(nameof(CreateTimeslot), new { id = result.Value.TimeslotId }, result.Value);
     }
-    
-    [HttpGet("get-all")]
-    public async Task<IActionResult> GetAll()
+
+    [HttpGet("get-by-expert-id")]
+    public async Task<IActionResult> GetByExpertId([FromQuery] Guid expertId)
     {
         try
         {
-            var query = new GetAllTimeslotsQuery();
-            var timeslots = await mediatr.Send(query);
-            if (timeslots.IsError)
-                return NoContent(); 
-            return Ok(timeslots.Value);
+            var query = new GetTimeslotsByExpertIdQuery(expertId);
+            var result = await mediatr.Send(query);
+
+            if (result.IsError)
+                return Problem(result.Errors);
+
+            return Ok(result.Value);
         }
         catch (Exception)
         {
-            return StatusCode(500, "An error occurred while fetching timeslots.");
+            return StatusCode(500, "An error occurred while fetching time slots.");
         }
     }
-    
-    [HttpGet("get-by-id")]
-    public async Task<IActionResult> GetById([FromQuery] Guid id)
+
+    [HttpPut("update")]
+    public async Task<IActionResult> UpdateTimeslot([FromBody] UpdateTimeslotCommand command)
     {
-        try
-        {
-            var query = new GetTimeslotByIdQuery(id);
-            var timeslot = await mediatr.Send(query);
-            if (timeslot.IsError)
-                return NotFound();
-            return Ok(timeslot.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching time slot.");
-        }
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await mediatr.Send(command);
+
+        if (result.IsError)
+            return Problem(result.Errors);
+
+        return Ok(new { message = "Таймслот успішно оновлено." });
+    }
+
+    [HttpDelete("delete")]
+    public async Task<IActionResult> DeleteTimeslot([FromQuery] Guid id, [FromQuery] Guid expertId)
+    {
+        var command = new DeleteTimeslotCommand(id, expertId);
+        var result = await mediatr.Send(command);
+
+        if (result.IsError)
+            return Problem(result.Errors);
+
+        return Ok(new { message = "Таймслот успішно видалено." });
     }
 }

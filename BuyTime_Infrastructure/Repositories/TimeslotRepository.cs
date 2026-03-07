@@ -15,12 +15,16 @@ public class TimeslotRepository(BuyTimeDbContext context)
         try
         {
             var existingTimeslot = await context.Timeslots.FindAsync(timeslot.Id);
-            if(existingTimeslot == null)
+            if (existingTimeslot == null)
                 return Error.Failure("Time slot not found");
 
             existingTimeslot.StartTime = timeslot.StartTime;
             existingTimeslot.EndTime = timeslot.EndTime;
             existingTimeslot.IsAvailable = timeslot.IsAvailable;
+
+            existingTimeslot.Price = timeslot.Price;
+            existingTimeslot.Currency = timeslot.Currency;
+            existingTimeslot.ExpertWalletAddress = timeslot.ExpertWalletAddress;
 
             context.Timeslots.Update(existingTimeslot);
             await context.SaveChangesAsync();
@@ -33,20 +37,22 @@ public class TimeslotRepository(BuyTimeDbContext context)
         }
     }
 
-    public override async Task<Timeslot?> GetByIdAsync(Guid id)
+    public async Task<ErrorOr<IEnumerable<Timeslot>>> GetByExpertIdAsync(Guid expertId)
     {
-        return await dbSet
-            .Include(ts => ts.Expert)          // Грузим эксперта
-            .ThenInclude(u => u.Wallets)       // Грузим его кошельки
-            .FirstOrDefaultAsync(ts => ts.Id == id);
-    }
+        try
+        {
+            var timeslots = await dbSet
+                .Where(ts => ts.ExpertId == expertId)
+                .Include(ts => ts.Booking)
+                    .ThenInclude(b => b.Student)
+                .OrderBy(ts => ts.StartTime)
+                .ToListAsync();
 
-    public override async Task<ErrorOr<IEnumerable<Timeslot>>> GetAllAsync()
-    {
-        var list = await dbSet
-           .Include(ts => ts.Expert)
-           .ThenInclude(u => u.Wallets)
-           .ToListAsync();
-        return list;
+            return timeslots;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure(ex.Message);
+        }
     }
 }
