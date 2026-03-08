@@ -1,4 +1,5 @@
 ﻿using BuyTime_Application.Common.Interfaces.IRepository;
+using BuyTime_Domain.Constants;
 using BuyTime_Domain.Entities;
 using BuyTime_Infrastructure.Common.Persistence;
 using ErrorOr;
@@ -42,7 +43,8 @@ public class TimeslotRepository(BuyTimeDbContext context)
         try
         {
             var timeslots = await dbSet
-                .Where(ts => ts.ExpertId == expertId)
+                .Where(ts => ts.ExpertId == expertId &&
+                            (ts.Booking == null || ts.Booking.Status != Status.Completed))
                 .Include(ts => ts.Booking)
                     .ThenInclude(b => b.Student)
                 .OrderBy(ts => ts.StartTime)

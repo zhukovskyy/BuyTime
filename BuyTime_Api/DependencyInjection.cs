@@ -68,6 +68,10 @@ public static class DependencyInjection
             .Map(dest => dest.Specializations, src => src.Specializations)
             .Map(dest => dest.SocialLinks, src => src.SocialLinks);
 
+        TypeAdapterConfig<Booking, TimeslotBookingSummaryDto>.NewConfig()
+            .Map(dest => dest.StudentFirstName, src => src.Student.FirstName)
+            .Map(dest => dest.StudentLastName, src => src.Student.LastName);
+
         config.Scan(Assembly.GetExecutingAssembly());
 
         services.AddSingleton(config);
