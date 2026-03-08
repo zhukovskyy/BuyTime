@@ -5,6 +5,7 @@ using BuyTime_Application.Booking.Query.GetAll;
 using BuyTime_Application.Booking.Query.GetByExpertId;
 using BuyTime_Application.Booking.Query.GetById;
 using BuyTime_Application.Booking.Query.GetByTimeSlotId;
+using BuyTime_Application.Booking.Command.RejectBooking;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,7 +34,18 @@ public class BookingController(ISender mediatr) : ApiController
 
         return Ok("Booking cancelled successfully.");
     }
-    
+
+    [HttpPost("reject")]
+    public async Task<IActionResult> RejectBooking([FromBody] RejectBookingCommand command)
+    {
+        var result = await mediatr.Send(command);
+
+        if (result.IsError)
+            return Problem(result.Errors);
+
+        return Ok(new { message = "Booking rejected successfully." });
+    }
+
     [HttpPost("create")]
     public async Task<IActionResult> CreateBooking([FromBody] CreateBookingCommand command)
     {

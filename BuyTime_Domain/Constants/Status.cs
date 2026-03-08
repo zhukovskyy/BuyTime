@@ -5,6 +5,7 @@ public class Status
     public const string Pending = "pending";
     public const string Confirmed = "confirmed";
     public const string Cancelled = "cancelled";
+    public const string Rejected = "rejected";
     public const string Completed = "completed";
-    public static readonly string[] All = new[] { Pending, Confirmed, Cancelled, Completed };
+    public static readonly string[] All = new[] { Pending, Confirmed, Cancelled, Rejected, Completed };
 }
