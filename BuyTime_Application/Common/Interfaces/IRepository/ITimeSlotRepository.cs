@@ -9,4 +9,5 @@ public interface ITimeSlotRepository : IRepository<BuyTime_Domain.Entities.Times
     Task<ErrorOr<Unit>> UpdateAsync(BuyTime_Domain.Entities.Timeslot timeslot);
 
     Task<ErrorOr<IEnumerable<BuyTime_Domain.Entities.Timeslot>>> GetByExpertIdAsync(Guid expertId);
+    Task<bool> HasOverlappingAsync(Guid expertId, DateTime startTime, DateTime endTime, Guid? excludeTimeslotId = null);
 }

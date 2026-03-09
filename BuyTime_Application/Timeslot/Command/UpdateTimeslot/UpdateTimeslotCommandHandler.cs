@@ -31,6 +31,12 @@ public class UpdateTimeslotCommandHandler(IUnitOfWork unitOfWork)
             return Error.Conflict("TimeslotBooked", "Неможливо редагувати таймслот, який вже заброньовано.");
         }
 
+        bool hasOverlap = await unitOfWork.Timeslot.HasOverlappingAsync(request.ExpertId, request.StartTime, request.EndTime, request.TimeslotId);
+        if (hasOverlap)
+        {
+            return Error.Conflict("Timeslot.Overlap", "Вибраний час перетинається з іншим вашим таймслотом.");
+        }
+
         if (timeslot.Currency != request.Currency)
         {
             var walletsResult = await unitOfWork.Wallet.GetAllByUserIdAsync(request.ExpertId);

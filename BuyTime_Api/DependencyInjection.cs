@@ -87,6 +87,12 @@ public static class DependencyInjection
                     ? (src.Cancellation.CancelledByUserId == src.StudentId ? "student" : "expert")
                     : null);
 
+        TypeAdapterConfig<Timeslot, TimeslotDto>.NewConfig()
+            .Map(dest => dest.Booking, src =>
+                src.Booking != null && (src.Booking.Status == Status.Pending || src.Booking.Status == Status.Confirmed)
+                    ? src.Booking
+                    : null);
+
         config.Scan(Assembly.GetExecutingAssembly());
 
         services.AddSingleton(config);

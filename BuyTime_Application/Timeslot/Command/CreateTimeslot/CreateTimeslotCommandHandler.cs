@@ -16,6 +16,13 @@ public class CreateTimeslotCommandHandler(IUnitOfWork unitOfWork)
             return Error.Failure("Invalid timeslot. Start time must be before end time.");
         }
 
+        bool hasOverlap = await unitOfWork.Timeslot.HasOverlappingAsync(request.ExpertId, request.StartTime, request.EndTime);
+        if (hasOverlap)
+        {
+            // TODO: передавати інфу про той створений слот
+            return Error.Conflict("Timeslot.Overlap", "У вас вже є створений таймслот, який перетинається з цим часом.");
+        }
+
         var walletsResult = await unitOfWork.Wallet.GetAllByUserIdAsync(request.ExpertId);
 
         if (walletsResult.IsError)

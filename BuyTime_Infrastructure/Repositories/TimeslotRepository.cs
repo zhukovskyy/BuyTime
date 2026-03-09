@@ -57,4 +57,16 @@ public class TimeslotRepository(BuyTimeDbContext context)
             return Error.Failure(ex.Message);
         }
     }
+
+    public async Task<bool> HasOverlappingAsync(Guid expertId, DateTime startTime, DateTime endTime, Guid? excludeTimeslotId = null)
+    {
+        var query = dbSet.Where(ts => ts.ExpertId == expertId);
+
+        if (excludeTimeslotId.HasValue)
+        {
+            query = query.Where(ts => ts.Id != excludeTimeslotId.Value);
+        }
+
+        return await query.AnyAsync(ts => ts.StartTime < endTime && startTime < ts.EndTime);
+    }
 }
