@@ -72,6 +72,21 @@ public static class DependencyInjection
             .Map(dest => dest.StudentFirstName, src => src.Student.FirstName)
             .Map(dest => dest.StudentLastName, src => src.Student.LastName);
 
+        TypeAdapterConfig<Booking, StudentBookingSummaryDto>.NewConfig()
+            .Map(dest => dest.ExpertFirstName, src => src.TimeSlot.Expert.FirstName)
+            .Map(dest => dest.ExpertLastName, src => src.TimeSlot.Expert.LastName)
+
+            .Map(dest => dest.TimeSlotStartTime, src => src.TimeSlot.StartTime)
+            .Map(dest => dest.TimeSlotEndTime, src => src.TimeSlot.EndTime)
+            .Map(dest => dest.TimeSlotPrice, src => src.TimeSlot.Price)
+            .Map(dest => dest.TimeSlotCurrency, src => src.TimeSlot.Currency)
+
+            .Map(dest => dest.CancellationReason, src => src.Cancellation != null ? src.Cancellation.Reason : null)
+            .Map(dest => dest.CancelledByRole, src =>
+                src.Cancellation != null
+                    ? (src.Cancellation.CancelledByUserId == src.StudentId ? "student" : "expert")
+                    : null);
+
         config.Scan(Assembly.GetExecutingAssembly());
 
         services.AddSingleton(config);

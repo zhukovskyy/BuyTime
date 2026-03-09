@@ -109,4 +109,25 @@ public class BookingRepository(BuyTimeDbContext context)
             return Error.Failure(ex.Message);
         }
     }
+
+    public async Task<ErrorOr<List<Booking>>> GetBookingsByStudentIdAsync(Guid studentId)
+    {
+        try
+        {
+            var bookings = await dbSet
+                .Include(b => b.TimeSlot)
+                    .ThenInclude(ts => ts.Expert)
+                .Include(b => b.Student)
+                .Include(b => b.Cancellation)
+                .Where(b => b.StudentId == studentId)
+                .OrderByDescending(b => b.TimeSlot.StartTime)
+                .ToListAsync();
+
+            return bookings;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure($"Error while retrieving student bookings: {ex.Message}");
+        }
+    }
 }
