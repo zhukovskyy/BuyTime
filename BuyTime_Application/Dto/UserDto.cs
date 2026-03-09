@@ -7,6 +7,7 @@ public class UserDto
     public bool IsExpert { get; set; } = false;
     public string? ExpertNickname { get; set; }
     public string TelegramChatId { get; set; }
+    public string? DiscordId { get; set; }
 
     public string FirstName { get; set; }
     public string LastName { get; set; }

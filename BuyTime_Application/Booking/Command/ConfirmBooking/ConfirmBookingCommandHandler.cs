@@ -8,49 +8,46 @@ namespace BuyTime_Application.Booking.Command.ConfirmBooking;
 public class ConfirmBookingCommandHandler(
     IUnitOfWork unitOfWork,
     IBookingService bookingService,
-    IZoomService zoomService) 
+    IDiscordService discordService) 
     : IRequestHandler<ConfirmBookingCommand, ErrorOr<Unit>>
 {
     public async Task<ErrorOr<Unit>> Handle(ConfirmBookingCommand request, CancellationToken cancellationToken)
     {
-        // TODO: зробити зміщення UTC по локалі, бо зараз по базі UTC+0, або це фронтенд має робити скоріше всього
         var booking = await unitOfWork.Booking.GetByIdAsync(request.BookingId);
         if (booking == null) return Error.NotFound("Booking not found");
 
         var timeslot = await unitOfWork.Timeslot.GetByIdAsync(booking.TimeslotId);
         if (timeslot == null) return Error.NotFound("Timeslot not found");
 
-        string finalMeetingLink = request.MeetingLink?.Trim() ?? string.Empty;
+        var student = await unitOfWork.User.GetByIdAsync(booking.StudentId);
+        var expert = await unitOfWork.User.GetByIdAsync(timeslot.ExpertId);
 
+        string finalMeetingLink = request.MeetingLink?.Trim() ?? string.Empty;
         bool shouldGenerateLink = request.GenerateMeetingLink || string.IsNullOrEmpty(finalMeetingLink);
 
         if (shouldGenerateLink)
         {
-            string topic;
-            if (!string.IsNullOrWhiteSpace(request.MeetingTitle))
-            {
-                topic = request.MeetingTitle;
-            }
-            else
-            {
-                topic = $"Зустріч: {timeslot.StartTime:dd.MM.yyyy HH:mm}";
-            }
+            string topic = !string.IsNullOrWhiteSpace(request.MeetingTitle)
+                ? request.MeetingTitle
+                : $"Зустріч: {timeslot.StartTime:dd.MM.yyyy HH:mm}";
 
-            var duration = (int)(timeslot.EndTime - timeslot.StartTime).TotalMinutes;
-            if (duration < 2) duration = 60;
+            var discordIds = new List<string>();
+            if (!string.IsNullOrEmpty(student?.DiscordId)) discordIds.Add(student.DiscordId);
+            if (!string.IsNullOrEmpty(expert?.DiscordId)) discordIds.Add(expert.DiscordId);
 
-            var zoomResult = await zoomService.CreateMeetingAsync(
-                topic: topic,
-                startTime: timeslot.StartTime,
-                durationMinutes: duration
-            );
-
-            if (zoomResult.IsError)
+            if (discordIds.Count == 0)
             {
-                return zoomResult.Errors;
+                return Error.Validation("DiscordIdMissing", "Neither the student nor the expert has a linked Discord ID.");
             }
 
-            finalMeetingLink = zoomResult.Value;
+            var discordResult = await discordService.CreateMeetingAsync(topic, discordIds);
+
+            if (discordResult.IsError)
+            {
+                return discordResult.Errors;
+            }
+
+            finalMeetingLink = discordResult.Value;
         }
 
         //if (string.IsNullOrEmpty(finalMeetingLink))

@@ -18,6 +18,7 @@ public static class DependencyInjection
        ConfigurationManager configuration)
     {
         services.Configure<ZoomSettings>(configuration.GetSection(ZoomSettings.SectionName));
+        services.Configure<DiscordSettings>(configuration.GetSection(DiscordSettings.SectionName));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services
@@ -53,7 +54,11 @@ public static class DependencyInjection
         services.AddTransient<BookingService>();
         services.AddHttpClient<IZoomService, ZoomService>();
         services.AddScoped<IBlockchainService, BlockchainService>();
-        services.AddScoped<IImageService, ImageService>(); 
+        services.AddScoped<IImageService, ImageService>();
+
+        services.AddSingleton<DiscordBotService>();
+        services.AddHostedService(provider => provider.GetRequiredService<DiscordBotService>());
+        services.AddSingleton<IDiscordService>(provider => provider.GetRequiredService<DiscordBotService>());
         return services;
     }
 

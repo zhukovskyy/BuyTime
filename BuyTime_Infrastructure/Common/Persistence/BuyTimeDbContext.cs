@@ -41,11 +41,17 @@ public class BuyTimeDbContext : DbContext
             .Property(u => u.Rating)
             .HasColumnType("decimal(18,2)");
 
+        modelBuilder.Entity<User>()
+            .Property(u => u.DiscordId)
+            .HasMaxLength(100)
+            .IsRequired(false);
+
         // Зв'язок Many-to-Many для спеціалізацій
         modelBuilder.Entity<User>()
             .HasMany(u => u.Specializations)
             .WithMany(s => s.Experts)
             .UsingEntity(j => j.ToTable("ExpertSpecializations"));
+
 
         // === USER SETTINGS ===
         modelBuilder.Entity<UserSettings>(entity =>

@@ -20,6 +20,7 @@ public class RegisterUserCommandHandler(IUnitOfWork unitOfWork)
             ExpertNickname = request.ExpertNickname,
             Email = request.Email,
             TelegramChatId = request.TelegramChatId,
+            DiscordId = request.DiscordId,
             Description = request.Description,
             AvatarUrl = request.AvatarUrl,
             IsExpert = request.IsExpert 
