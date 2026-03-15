@@ -1,12 +1,13 @@
 ﻿using BuyTime_Application.Booking.Command.CancelBooking;
 using BuyTime_Application.Booking.Command.ConfirmBooking;
 using BuyTime_Application.Booking.Command.CreateBooking;
+using BuyTime_Application.Booking.Command.RejectBooking;
+using BuyTime_Application.Booking.Command.ResolveByArbiter;
 using BuyTime_Application.Booking.Query.GetAll;
 using BuyTime_Application.Booking.Query.GetByExpertId;
 using BuyTime_Application.Booking.Query.GetById;
-using BuyTime_Application.Booking.Query.GetByTimeSlotId;
-using BuyTime_Application.Booking.Command.RejectBooking;
 using BuyTime_Application.Booking.Query.GetByStudentId;
+using BuyTime_Application.Booking.Query.GetByTimeSlotId;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,15 +26,16 @@ public class BookingController(ISender mediatr) : ApiController
 
         return Ok("Booking confirmed successfully.");
     }
-    
+
     [HttpPost("cancel")]
     public async Task<IActionResult> CancelBooking([FromBody] CancelBookingCommand command)
     {
         var result = await mediatr.Send(command);
+
         if (result.IsError)
             return BadRequest(result.Errors);
 
-        return Ok("Booking cancelled successfully.");
+        return Ok(result.Value);
     }
 
     [HttpPost("reject")]
@@ -148,5 +150,16 @@ public class BookingController(ISender mediatr) : ApiController
         {
             return StatusCode(500, "An error occurred while fetching expert bookings.");
         }
+    }
+
+    [HttpPost("arbiter-resolve")]
+    public async Task<IActionResult> ArbiterResolve([FromBody] ResolveBookingByArbiterCommand command)
+    {
+        var result = await mediatr.Send(command);
+
+        if (result.IsError)
+            return Problem(result.Errors);
+
+        return Ok(new { message = "Зустріч успішно вирішена Арбітром, кошти переказано." });
     }
 }

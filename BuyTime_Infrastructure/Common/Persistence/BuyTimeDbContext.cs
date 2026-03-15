@@ -202,7 +202,7 @@ public class BuyTimeDbContext : DbContext
         {
             entity.HasKey(b => b.Id);
 
-            entity.Property(b => b.ContractHash)
+            entity.Property(b => b.ContractAddress)
                   .IsRequired()
                   .HasMaxLength(100);
 

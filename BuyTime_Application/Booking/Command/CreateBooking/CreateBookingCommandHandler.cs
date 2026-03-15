@@ -5,29 +5,52 @@ using ErrorOr;
 
 namespace BuyTime_Application.Booking.Command.CreateBooking;
 
-public class CreateBookingCommandHandler(IUnitOfWork unitOfWork, IBookingService bookingService)
+public class CreateBookingCommandHandler(
+    IUnitOfWork unitOfWork,
+    IBookingService bookingService,
+    ITonContractService tonContractService)
     : IRequestHandler<CreateBookingCommand, ErrorOr<CreateBookingResult>>
 {
     public async Task<ErrorOr<CreateBookingResult>> Handle(CreateBookingCommand request, CancellationToken cancellationToken)
     {
-        try
-        {
-            var bookingId = await bookingService.CreateBookingAsync(
-                studentId: request.StudentId,
-                timeslotId: request.TimeslotId,
-                messageToExpert: request.MessageToExpert,
-                contractHash: request.ContractHash,
-                studentWalletAddress: request.StudentWalletAddress
-            );
+        var timeslot = await unitOfWork.Timeslot.GetByIdAsync(request.TimeslotId);
+        if (timeslot == null) return Error.NotFound("Timeslot.NotFound", "Таймслот не знайдено.");
 
-            return new CreateBookingResult
-            {
-                BookingId = bookingId
-            };
-        }
-        catch (InvalidOperationException ex)
+        var studentWalletsResult = await unitOfWork.Wallet.GetAllByUserIdAsync(request.StudentId);
+        if (studentWalletsResult.IsError)
+            return studentWalletsResult.Errors;
+
+        var studentWallet = studentWalletsResult.Value.FirstOrDefault(w => w.Network == timeslot.Currency);
+
+        if (studentWallet == null)
+            return Error.Validation("StudentWallet.Missing", $"У вас не прив'язаний гаманець для мережі {timeslot.Currency}. Будь ласка, додайте його в налаштуваннях гаманцч.");
+
+        string studentWalletAddress = studentWallet.Address;
+
+        var payloadResult = await tonContractService.GenerateCreateBookingPayloadAsync(
+            studentWalletAddress,
+            timeslot.ExpertWalletAddress,
+            timeslot.StartTime,
+            timeslot.EndTime,
+            timeslot.Price
+        );
+
+        if (payloadResult.IsError) return payloadResult.Errors;
+
+        var payload = payloadResult.Value;
+
+        var bookingId = await bookingService.CreateBookingAsync(
+            studentId: request.StudentId,
+            timeslotId: request.TimeslotId,
+            messageToExpert: request.MessageToExpert,
+            contractAddress: payload.ContractAddress,
+            studentWalletAddress: studentWalletAddress
+        );
+
+        return new CreateBookingResult
         {
-            return Error.Validation("BookingCreationError", ex.Message);
-        }
+            BookingId = bookingId,
+            TonPayload = payload
+        };
     }
 }

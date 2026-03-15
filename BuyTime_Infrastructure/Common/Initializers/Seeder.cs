@@ -242,7 +242,7 @@ namespace BuyTime_Infrastructure.Common.Initializers
                                 TimeslotId = slot.Id,
                                 Status = Status.Completed,
                                 MessageToExpert = "Хочу забронювати цей урок.",
-                                ContractHash = "fake_hash_" + Guid.NewGuid().ToString().Substring(0, 8),
+                                ContractAddress = "fake_hash_" + Guid.NewGuid().ToString().Substring(0, 8),
                                 ConfirmationMessage = "Ок, підтверджую",
                                 Cancellation = null,
                                 CreatedAt = DateTime.UtcNow.AddDays(-1),

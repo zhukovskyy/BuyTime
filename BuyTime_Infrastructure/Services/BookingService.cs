@@ -13,9 +13,9 @@ public class BookingService(
     IMediator mediator) : IBookingService
 {
     public async Task<Guid> CreateBookingAsync(Guid studentId,
-        Guid timeslotId, string messageToExpert, string contractHash, string studentWalletAddress)
+        Guid timeslotId, string messageToExpert, string contractAddress, string studentWalletAddress)
     {
-        if (string.IsNullOrEmpty(contractHash))
+        if (string.IsNullOrEmpty(contractAddress))
         {
             throw new ArgumentException("Contract hash is required for booking.");
         }
@@ -29,7 +29,7 @@ public class BookingService(
                 Id = Guid.NewGuid(),
                 StudentId = studentId,
                 TimeslotId = timeslotId,
-                ContractHash = contractHash,
+                ContractAddress = contractAddress,
                 MessageToExpert = messageToExpert,
                 Status = Status.Pending,
                 CreatedAt = DateTime.UtcNow,

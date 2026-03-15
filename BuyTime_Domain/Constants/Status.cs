@@ -7,5 +7,6 @@ public class Status
     public const string Cancelled = "cancelled";
     public const string Rejected = "rejected";
     public const string Completed = "completed";
-    public static readonly string[] All = new[] { Pending, Confirmed, Cancelled, Rejected, Completed };
+    public const string Refunded = "refunded";
+    public static readonly string[] All = new[] { Pending, Confirmed, Cancelled, Rejected, Completed, Refunded };
 }

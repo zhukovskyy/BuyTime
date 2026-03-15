@@ -9,27 +9,27 @@ namespace BuyTime_Api.Controllers;
 [ApiController]
 public class BlockchainController(ISender mediatr) : ApiController
 {
-    [HttpGet("platform-address")]
-    public async Task<IActionResult> GetPlatformAddress()
-    {
-        var query = new GetPlatformAddressQuery();
-        var result = await mediatr.Send(query);
+    //[HttpGet("platform-address")]
+    //public async Task<IActionResult> GetPlatformAddress()
+    //{
+    //    var query = new GetPlatformAddressQuery();
+    //    var result = await mediatr.Send(query);
 
-        if (result.IsError)
-            return Problem(result.Errors);
+    //    if (result.IsError)
+    //        return Problem(result.Errors);
 
-        return Ok(new { address = result.Value });
-    }
+    //    return Ok(new { address = result.Value });
+    //}
 
-    [HttpGet("arbiter-address")]
-    public async Task<IActionResult> GetArbiterAddress()
-    {
-        var query = new GetArbiterAddressQuery();
-        var result = await mediatr.Send(query);
+    //[HttpGet("arbiter-address")]
+    //public async Task<IActionResult> GetArbiterAddress()
+    //{
+    //    var query = new GetArbiterAddressQuery();
+    //    var result = await mediatr.Send(query);
 
-        if (result.IsError)
-            return Problem(result.Errors);
+    //    if (result.IsError)
+    //        return Problem(result.Errors);
 
-        return Ok(new { address = result.Value });
-    }
+    //    return Ok(new { address = result.Value });
+    //}
 }

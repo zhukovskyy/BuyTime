@@ -19,6 +19,7 @@ public static class DependencyInjection
     {
         services.Configure<ZoomSettings>(configuration.GetSection(ZoomSettings.SectionName));
         services.Configure<DiscordSettings>(configuration.GetSection(DiscordSettings.SectionName));
+        services.Configure<TonSettings>(configuration.GetSection(TonSettings.SectionName));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services
@@ -59,6 +60,8 @@ public static class DependencyInjection
         services.AddSingleton<DiscordBotService>();
         services.AddHostedService(provider => provider.GetRequiredService<DiscordBotService>());
         services.AddSingleton<IDiscordService>(provider => provider.GetRequiredService<DiscordBotService>());
+        services.AddScoped<ITonContractService, TonContractService>();
+
         return services;
     }
 

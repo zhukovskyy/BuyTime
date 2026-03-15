@@ -20,7 +20,7 @@ public class Booking
     public string? ConfirmationMessage { get; set; }
 
     public string? MeetingLink { get; set; }
-    public string ContractHash { get; set; }
+    public string ContractAddress { get; set; }
 
     // звязок з скасуванням (буде null, якщо не відмінено)
     public BookingCancellation? Cancellation { get; set; }

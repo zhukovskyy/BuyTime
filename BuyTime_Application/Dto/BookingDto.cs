@@ -29,7 +29,7 @@
         public decimal TimeSlotPrice { get; set; }
         public string TimeSlotCurrency { get; set; }
 
-        public string ContractHash { get; set; }
+        public string ContractAddress { get; set; }
 
         public string? CancellationReason { get; set; }
         public string? CancelledByRole { get; set; }

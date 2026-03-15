@@ -5,7 +5,5 @@ using MediatR;
 public record CreateBookingCommand(
     Guid StudentId,
     Guid TimeslotId,
-    string MessageToExpert,
-    string ContractHash,
-    string StudentWalletAddress
+    string MessageToExpert
 ) : IRequest<ErrorOr<CreateBookingResult>>;
