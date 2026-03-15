@@ -396,10 +396,10 @@ public class UserRepository(BuyTimeDbContext context)
                 .Include(u => u.Specializations)
 
                 .Include(u => u.TimeSlots.Where(ts =>
-                    (ts.Booking != null && ts.Booking.Status == Status.Completed) ||
+                    (ts.Bookings != null && ts.Bookings.Any(b=>b.Status == Status.Completed)) ||
                     (ts.IsAvailable && (string.IsNullOrEmpty(filter.Currency) || ts.Currency == filter.Currency))
                 ))
-                .ThenInclude(ts => ts.Booking)
+                .ThenInclude(ts => ts.Bookings)
                 .AsQueryable();
 
             if (filter.OnlyFavorites && filter.CurrentUserId.HasValue)

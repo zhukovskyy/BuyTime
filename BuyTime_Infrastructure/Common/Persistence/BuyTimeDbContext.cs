@@ -224,8 +224,8 @@ public class BuyTimeDbContext : DbContext
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(b => b.TimeSlot)
-                  .WithOne(ts => ts.Booking)
-                  .HasForeignKey<Booking>(b => b.TimeslotId)
+                  .WithMany(ts => ts.Bookings)
+                  .HasForeignKey(b => b.TimeslotId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
 

@@ -16,5 +16,5 @@ public class Timeslot
 
     public string? ExpertWalletAddress { get; set; }
 
-    public Booking? Booking { get; set; }
+    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 }

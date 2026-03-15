@@ -46,7 +46,7 @@ public static class DependencyInjection
 
             .Map(dest => dest.TotalHoursConducted, src => src.TimeSlots != null
                 ? src.TimeSlots
-                    .Where(ts => ts.Booking != null && ts.Booking.Status == Status.Completed)
+                    .Where(ts => ts.Bookings != null && ts.Bookings.Any(b => b.Status == Status.Completed))
                     .Sum(ts => (ts.EndTime - ts.StartTime).TotalHours)
                 : 0)
 
@@ -89,8 +89,8 @@ public static class DependencyInjection
 
         TypeAdapterConfig<Timeslot, TimeslotDto>.NewConfig()
             .Map(dest => dest.Booking, src =>
-                src.Booking != null && (src.Booking.Status == Status.Pending || src.Booking.Status == Status.Confirmed)
-                    ? src.Booking
+                src.Bookings != null
+                    ? src.Bookings.FirstOrDefault(b => b.Status == Status.Pending || b.Status == Status.Confirmed)
                     : null);
 
         config.Scan(Assembly.GetExecutingAssembly());

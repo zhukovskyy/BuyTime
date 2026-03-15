@@ -43,9 +43,8 @@ public class TimeslotRepository(BuyTimeDbContext context)
         try
         {
             var timeslots = await dbSet
-                .Where(ts => ts.ExpertId == expertId &&
-                            (ts.Booking == null || ts.Booking.Status != Status.Completed))
-                .Include(ts => ts.Booking)
+                .Where(ts => ts.ExpertId == expertId && !ts.Bookings.Any(b=>b.Status == Status.Completed))
+                .Include(ts => ts.Bookings)
                     .ThenInclude(b => b.Student)
                 .OrderBy(ts => ts.StartTime)
                 .ToListAsync();
