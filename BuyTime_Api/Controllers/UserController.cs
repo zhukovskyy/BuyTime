@@ -33,57 +33,57 @@ public class UserController(ISender mediatr) : ApiController
         }
     }
 
-    [HttpGet("get-all")]
-    public async Task<IActionResult> GetAll()
-    {
-        try
-        {
-            var query = new GetAllUsersQuery();
-            var users = await mediatr.Send(query);
-            if (users.IsError)
-                return NoContent(); 
-            return Ok(users.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching users.");
-        }
-    }
-    
-    [HttpGet("get-by-first-and-last-name")]
-    public async Task<IActionResult> GetByFirstAndLastName([FromQuery] string firstName, [FromQuery] string lastName)
-    {
-        try
-        {
-            var query = new GetUserByFirstAndLastNameQuery(firstName, lastName);
-            var student = await mediatr.Send(query);
-            if (student.IsError)
-                return NotFound();
-            return Ok(student.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching user.");
-        }
-    }
-    
-    [HttpGet("get-by-email")]
-    public async Task<IActionResult> GetByEmail([FromQuery] string email)
-    {
-        try
-        {
-            var query = new GetUserByEmailQuery(email);
-            var student = await mediatr.Send(query);
-            if (student.IsError)
-                return NotFound();
-            return Ok(student.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching user.");
-        }
-    }
-    
+    //[HttpGet("get-all")]
+    //public async Task<IActionResult> GetAll()
+    //{
+    //    try
+    //    {
+    //        var query = new GetAllUsersQuery();
+    //        var users = await mediatr.Send(query);
+    //        if (users.IsError)
+    //            return NoContent(); 
+    //        return Ok(users.Value);
+    //    }
+    //    catch (Exception)
+    //    {
+    //        return StatusCode(500, "An error occurred while fetching users.");
+    //    }
+    //}
+
+    //[HttpGet("get-by-first-and-last-name")]
+    //public async Task<IActionResult> GetByFirstAndLastName([FromQuery] string firstName, [FromQuery] string lastName)
+    //{
+    //    try
+    //    {
+    //        var query = new GetUserByFirstAndLastNameQuery(firstName, lastName);
+    //        var student = await mediatr.Send(query);
+    //        if (student.IsError)
+    //            return NotFound();
+    //        return Ok(student.Value);
+    //    }
+    //    catch (Exception)
+    //    {
+    //        return StatusCode(500, "An error occurred while fetching user.");
+    //    }
+    //}
+
+    //[HttpGet("get-by-email")]
+    //public async Task<IActionResult> GetByEmail([FromQuery] string email)
+    //{
+    //    try
+    //    {
+    //        var query = new GetUserByEmailQuery(email);
+    //        var student = await mediatr.Send(query);
+    //        if (student.IsError)
+    //            return NotFound();
+    //        return Ok(student.Value);
+    //    }
+    //    catch (Exception)
+    //    {
+    //        return StatusCode(500, "An error occurred while fetching user.");
+    //    }
+    //}
+
     [HttpGet("get-by-chat-id")]
     public async Task<IActionResult> GetByChatId([FromQuery] string chatId)
     {

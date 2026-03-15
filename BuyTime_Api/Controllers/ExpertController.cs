@@ -9,22 +9,22 @@ namespace BuyTime_Api.Controllers;
 [ApiController]
 public class ExpertController(ISender mediatr) : ApiController
 {
-    [HttpGet("get-all")]
-    public async Task<IActionResult> GetAll()
-    {
-        try
-        {
-            var query = new GetAllExpertsQuery();
-            var experts = await mediatr.Send(query);
-            if (experts.IsError)
-                return NoContent();
-            return Ok(experts.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching experts.");
-        }
-    }
+    //[HttpGet("get-all")]
+    //public async Task<IActionResult> GetAll()
+    //{
+    //    try
+    //    {
+    //        var query = new GetAllExpertsQuery();
+    //        var experts = await mediatr.Send(query);
+    //        if (experts.IsError)
+    //            return NoContent();
+    //        return Ok(experts.Value);
+    //    }
+    //    catch (Exception)
+    //    {
+    //        return StatusCode(500, "An error occurred while fetching experts.");
+    //    }
+    //}
 
     [HttpPost("search")]
     public async Task<IActionResult> Search([FromBody] SearchExpertRequest request)

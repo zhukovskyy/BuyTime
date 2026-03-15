@@ -63,39 +63,39 @@ public class BookingController(ISender mediatr) : ApiController
         return CreatedAtAction(nameof(CreateBooking), new { id = result.Value.BookingId }, result.Value);
     }
     
-    [HttpGet("get-all")]
-    public async Task<IActionResult> GetAll()
-    {
-        try
-        {
-            var query = new GetAllBookingsQuery();
-            var bookings = await mediatr.Send(query);
-            if (bookings.IsError)
-                return NoContent(); 
-            return Ok(bookings.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching bookings.");
-        }
-    }
+    //[HttpGet("get-all")]
+    //public async Task<IActionResult> GetAll()
+    //{
+    //    try
+    //    {
+    //        var query = new GetAllBookingsQuery();
+    //        var bookings = await mediatr.Send(query);
+    //        if (bookings.IsError)
+    //            return NoContent(); 
+    //        return Ok(bookings.Value);
+    //    }
+    //    catch (Exception)
+    //    {
+    //        return StatusCode(500, "An error occurred while fetching bookings.");
+    //    }
+    //}
     
-    [HttpGet("get-by-id")]
-    public async Task<IActionResult> GetById([FromQuery] Guid id)
-    {
-        try
-        {
-            var query = new GetBookingByIdQuery(id);
-            var booking = await mediatr.Send(query);
-            if (booking.IsError)
-                return NotFound();
-            return Ok(booking.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching booking.");
-        }
-    }
+    //[HttpGet("get-by-id")]
+    //public async Task<IActionResult> GetById([FromQuery] Guid id)
+    //{
+    //    try
+    //    {
+    //        var query = new GetBookingByIdQuery(id);
+    //        var booking = await mediatr.Send(query);
+    //        if (booking.IsError)
+    //            return NotFound();
+    //        return Ok(booking.Value);
+    //    }
+    //    catch (Exception)
+    //    {
+    //        return StatusCode(500, "An error occurred while fetching booking.");
+    //    }
+    //}
 
     [HttpGet("get-by-student-id")]
     public async Task<IActionResult> GetByStudentId([FromQuery] Guid studentId)
@@ -116,41 +116,41 @@ public class BookingController(ISender mediatr) : ApiController
         }
     }
 
-    [HttpGet("get-by-timeslot-id")]
-    public async Task<IActionResult> GetByTimeSlotId([FromQuery] Guid timeSlotId)
-    {
-        try
-        {
-            var query = new GetBookingsByTimeSlotIdQuery(timeSlotId);
-            var bookings = await mediatr.Send(query);
-            if (bookings.IsError)
-                return Problem(bookings.Errors);
-            return Ok(bookings.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching bookings.");
-        }
-    }
+    //[HttpGet("get-by-timeslot-id")]
+    //public async Task<IActionResult> GetByTimeSlotId([FromQuery] Guid timeSlotId)
+    //{
+    //    try
+    //    {
+    //        var query = new GetBookingsByTimeSlotIdQuery(timeSlotId);
+    //        var bookings = await mediatr.Send(query);
+    //        if (bookings.IsError)
+    //            return Problem(bookings.Errors);
+    //        return Ok(bookings.Value);
+    //    }
+    //    catch (Exception)
+    //    {
+    //        return StatusCode(500, "An error occurred while fetching bookings.");
+    //    }
+    //}
 
-    [HttpGet("get-by-expert-id")]
-    public async Task<IActionResult> GetByExpertId([FromQuery] Guid expertId)
-    {
-        try
-        {
-            var query = new GetBookingsByExpertIdQuery(expertId);
-            var result = await mediatr.Send(query);
+    //[HttpGet("get-by-expert-id")]
+    //public async Task<IActionResult> GetByExpertId([FromQuery] Guid expertId)
+    //{
+    //    try
+    //    {
+    //        var query = new GetBookingsByExpertIdQuery(expertId);
+    //        var result = await mediatr.Send(query);
 
-            if (result.IsError)
-                return Problem(result.Errors);
+    //        if (result.IsError)
+    //            return Problem(result.Errors);
 
-            return Ok(result.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching expert bookings.");
-        }
-    }
+    //        return Ok(result.Value);
+    //    }
+    //    catch (Exception)
+    //    {
+    //        return StatusCode(500, "An error occurred while fetching expert bookings.");
+    //    }
+    //}
 
     [HttpPost("arbiter-resolve")]
     public async Task<IActionResult> ArbiterResolve([FromBody] ResolveBookingByArbiterCommand command)
