@@ -1,6 +1,7 @@
 ﻿using BuyTime_Application.Common.Interfaces.IService;
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Application.Dto;
+using BuyTime_Domain.Constants;
 using ErrorOr;
 using MediatR;
 
@@ -8,7 +9,6 @@ namespace BuyTime_Application.Booking.Command.CancelBooking;
 
 public class CancelBookingCommandHandler(
     IUnitOfWork unitOfWork,
-    IBookingService bookingService,
     ITonContractService tonContractService)
     : IRequestHandler<CancelBookingCommand, ErrorOr<TonConnectPayloadDto>>
 {
@@ -24,16 +24,20 @@ public class CancelBookingCommandHandler(
         bool isStudent = request.TriggeredByUserId == booking.StudentId;
 
         var payloadResult = await tonContractService.GenerateCancelBookingPayloadAsync(isStudent, booking.ContractAddress);
-
         if (payloadResult.IsError) return payloadResult.Errors;
 
-        var dbResult = await bookingService.CancelBookingAsync(
-            request.BookingId,
-            request.CancellationMessage,
-            request.TriggeredByUserId
-        );
+        booking.Status = Status.CancelPending;
 
-        if (dbResult.IsError) return dbResult.Errors;
+        booking.Cancellation = new BuyTime_Domain.Entities.BookingCancellation
+        {
+            BookingId = request.BookingId,
+            Reason = request.CancellationMessage,
+            CancelledAt = DateTime.UtcNow,
+            CancelledByUserId = request.TriggeredByUserId
+        };
+
+        await unitOfWork.Booking.UpdateAsync(booking);
+        await unitOfWork.CommitAsync();
 
         return payloadResult.Value;
     }

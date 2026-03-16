@@ -60,7 +60,9 @@ public static class DependencyInjection
         services.AddSingleton<DiscordBotService>();
         services.AddHostedService(provider => provider.GetRequiredService<DiscordBotService>());
         services.AddSingleton<IDiscordService>(provider => provider.GetRequiredService<DiscordBotService>());
+
         services.AddScoped<ITonContractService, TonContractService>();
+        services.AddHostedService<TonContractMonitorService>();
 
         return services;
     }
