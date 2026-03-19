@@ -1,4 +1,5 @@
 ﻿using BuyTime_Application.Booking.Command.CancelBooking;
+using BuyTime_Application.Booking.Command.ClaimRefund;
 using BuyTime_Application.Booking.Command.ConfirmBooking;
 using BuyTime_Application.Booking.Command.CreateBooking;
 using BuyTime_Application.Booking.Command.RejectBooking;
@@ -151,6 +152,17 @@ public class BookingController(ISender mediatr) : ApiController
     //        return StatusCode(500, "An error occurred while fetching expert bookings.");
     //    }
     //}
+
+    [HttpPost("claim-refund")]
+    public async Task<IActionResult> ClaimRefund([FromBody] ClaimRefundCommand command)
+    {
+        var result = await mediatr.Send(command);
+
+        if (result.IsError)
+            return Problem(result.Errors);
+
+        return Ok(result.Value);
+    }
 
     [HttpPost("arbiter-resolve")]
     public async Task<IActionResult> ArbiterResolve([FromBody] ResolveBookingByArbiterCommand command)

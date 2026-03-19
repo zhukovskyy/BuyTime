@@ -10,6 +10,7 @@ using TonSdk.Core;
 using TonSdk.Core.Block;
 using TonSdk.Core.Boc;
 using TonSdk.Core.Crypto;
+using Chaos.NaCl;
 
 namespace BuyTime_Infrastructure.Services;
 
@@ -44,10 +45,10 @@ public class TonContractService : ITonContractService
     {
         try
         {
-            var platformAddressStr = await _blockchainService.GetPlatformAddressAsync();
-            var arbiterAddressStr = await _blockchainService.GetArbiterAddressAsync();
-
             var arbiterAddress = new Address(_settings.ArbiterAddress.Trim());
+            var mnemonic = new Mnemonic(_settings.ArbiterMnemonic.Split(' '));
+            var keys = mnemonic.Keys;
+
             var platformAddress = new Address(_settings.PlatformAddress.Trim());
             var expertAddress = new Address(expertWalletAddress.Trim());
             var studentAddress = new Address(studentWalletAddress.Trim());
@@ -55,8 +56,9 @@ public class TonContractService : ITonContractService
             uint ctxId = (uint)new Random().Next(100000, 999999);
 
             // для деплою
-            Cell detailsCell = new CellBuilder()
+            Cell initDetailsCell = new CellBuilder()
                 .StoreAddress(arbiterAddress)
+                .StoreBytes(keys.PublicKey)
                 .StoreAddress(platformAddress)
                 .StoreUInt(0, 64)
                 .StoreUInt(0, 64)
@@ -68,7 +70,7 @@ public class TonContractService : ITonContractService
                 .StoreAddress(studentAddress)
                 .StoreAddress(expertAddress)
                 .StoreCoins(new Coins(0))
-                .StoreRef(detailsCell)
+                .StoreRef(initDetailsCell)
                 .Build();
 
             Cell codeCell = Cell.From(_settings.ContractCodeHex);
@@ -89,16 +91,22 @@ public class TonContractService : ITonContractService
             // збірка Payload
             long startUnix = ((DateTimeOffset)startTime).ToUnixTimeSeconds();
             long endUnix = ((DateTimeOffset)endTime).ToUnixTimeSeconds();
+
+            Cell payloadDetailsCell = new CellBuilder()
+                .StoreAddress(arbiterAddress)
+                .StoreBytes(keys.PublicKey)
+                .StoreAddress(platformAddress)
+                .StoreUInt((ulong)startUnix, 64)
+                .StoreUInt((ulong)endUnix, 64)
+                .StoreUInt(ctxId, 32)
+                .Build();
+
             uint OP_CREATE_BOOKING = 0xA1B2C3D1;
 
             Cell payloadCell = new CellBuilder()
                 .StoreUInt(OP_CREATE_BOOKING, 32)
                 .StoreAddress(expertAddress)
-                .StoreAddress(arbiterAddress)
-                .StoreUInt((ulong)startUnix, 64)
-                .StoreUInt((ulong)endUnix, 64)
-                .StoreUInt(ctxId, 32)
-                .StoreAddress(platformAddress)
+                .StoreRef(payloadDetailsCell)
                 .Build();
 
             decimal totalAmount = priceAmount + 0.1m;
@@ -182,7 +190,7 @@ public class TonContractService : ITonContractService
             var msgInfoOptions = new IntMsgInfoOptions
             {
                 Dest = new Address(contractAddress),
-                Value = new Coins("0.02"),
+                Value = new Coins("0.01"),
                 Bounce = true,
             };
 
@@ -225,7 +233,7 @@ public class TonContractService : ITonContractService
                 ContractAddress = contractAddress,
                 StateInitBase64 = null,
                 PayloadBase64 = payloadCell.ToString("base64"),
-                AmountNanoTon = new Coins("0.02").ToNano()
+                AmountNanoTon = new Coins("0.01").ToNano()
             };
 
             return Task.FromResult<ErrorOr<TonConnectPayloadDto>>(dto);
@@ -233,6 +241,54 @@ public class TonContractService : ITonContractService
         catch (Exception ex)
         {
             return Task.FromResult<ErrorOr<TonConnectPayloadDto>>(Error.Failure("TonContract.CancelPayloadFailed", ex.Message));
+        }
+    }
+
+    public Task<ErrorOr<TonConnectPayloadDto>> GenerateClaimRefundPayloadAsync(string contractAddressStr)
+    {
+        try
+        {
+            var contractAddress = new Address(contractAddressStr);
+            var mnemonic = new Mnemonic(_settings.ArbiterMnemonic.Split(' '));
+            var keys = mnemonic.Keys;
+
+            uint OP_CLAIM_REFUND = 0xA1B2C3D6;
+
+            var cellToSign = new CellBuilder()
+                .StoreUInt(OP_CLAIM_REFUND, 32)
+                .StoreAddress(contractAddress)
+                .Build();
+
+            byte[] hashToSign = cellToSign.Hash.ToBytes();
+            byte[] privateKey64 = new byte[64];
+            Buffer.BlockCopy(keys.PrivateKey, 0, privateKey64, 0, 32);
+            Buffer.BlockCopy(keys.PublicKey, 0, privateKey64, 32, 32);
+
+            // Підписуємо розширеним 64-байтним ключем
+            byte[] signature = Ed25519.Sign(hashToSign, privateKey64);
+
+            Cell signatureCell = new CellBuilder()
+                .StoreBytes(signature)
+                .Build();
+
+            Cell payloadCell = new CellBuilder()
+                .StoreUInt(OP_CLAIM_REFUND, 32)
+                .StoreRef(signatureCell)
+                .Build();
+
+            var dto = new TonConnectPayloadDto
+            {
+                ContractAddress = contractAddressStr,
+                StateInitBase64 = null,
+                PayloadBase64 = payloadCell.ToString("base64"),
+                AmountNanoTon = new Coins("0.01").ToNano()
+            };
+
+            return Task.FromResult<ErrorOr<TonConnectPayloadDto>>(dto);
+        }
+        catch (Exception ex)
+        {
+            return Task.FromResult<ErrorOr<TonConnectPayloadDto>>(Error.Failure("TonContract.ClaimRefundPayloadFailed", ex.Message));
         }
     }
 }

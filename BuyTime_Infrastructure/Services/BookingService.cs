@@ -31,7 +31,7 @@ public class BookingService(
                 TimeslotId = timeslotId,
                 ContractAddress = contractAddress,
                 MessageToExpert = messageToExpert,
-                Status = Status.Pending,
+                Status = Status.PaymentPending,
                 CreatedAt = DateTime.UtcNow,
                 ConfirmationMessage = null,
                 MeetingLink = null,

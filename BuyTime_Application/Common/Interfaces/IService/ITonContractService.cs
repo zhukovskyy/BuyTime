@@ -19,4 +19,7 @@ public interface ITonContractService
     Task<ErrorOr<TonConnectPayloadDto>> GenerateCancelBookingPayloadAsync(
         bool isStudent, 
         string contractAddress);
+
+    Task<ErrorOr<TonConnectPayloadDto>> GenerateClaimRefundPayloadAsync(
+        string contractAddressStr);
 }
