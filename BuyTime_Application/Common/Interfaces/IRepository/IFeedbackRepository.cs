@@ -1,5 +1,6 @@
-namespace BuyTime_Application.Common.Interfaces.IRepository;
+﻿namespace BuyTime_Application.Common.Interfaces.IRepository;
 
 public interface IFeedbackRepository : IRepository<BuyTime_Domain.Entities.Feedback>
 {
+    Task<decimal> GetAverageRatingForExpertAsync(Guid expertId);
 }

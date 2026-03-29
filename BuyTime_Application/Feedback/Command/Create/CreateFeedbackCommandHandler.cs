@@ -40,6 +40,16 @@ public class CreateFeedbackCommandHandler(IUnitOfWork unitOfWork, ITelegramServi
             }
 
             await unitOfWork.CommitAsync();
+
+            var newAverageRating = await unitOfWork.Feedback.GetAverageRatingForExpertAsync(request.ExpertId);
+            var expert = await unitOfWork.User.GetByIdAsync(request.ExpertId);
+            if (expert != null)
+            {
+                expert.Rating = newAverageRating;
+                await unitOfWork.User.UpdateAsync(expert);
+                await unitOfWork.CommitAsync();
+            }
+
             var student = await unitOfWork.User.GetByIdAsync(request.StudentId);
             _ = telegramService.NotifyNewFeedbackAsync(request.ExpertId, student.FirstName, student.LastName, request.Rating, request.Comment);
 
