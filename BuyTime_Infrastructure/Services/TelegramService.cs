@@ -1,29 +1,128 @@
-using BuyTime_Application.Common.Interfaces.IService;
+﻿using BuyTime_Application.Common.Interfaces.IService;
+using BuyTime_Infrastructure.Common.Persistence;
+using BuyTime_Infrastructure.Common.Settings;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace BuyTime_Infrastructure.Services;
 
 public class TelegramService : ITelegramService
 {
-    private readonly string _telegramBotToken = "8143691513:AAF8fyc9l-TaaNHXx5VlX8npMz5UgVZjGK4"; 
-    
+    private readonly string _telegramBotToken;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<TelegramService> _logger;
+
+    public TelegramService(
+        IServiceScopeFactory scopeFactory,
+        ILogger<TelegramService> logger,
+        IOptions<TelegramSettings> telegramSettings)
+    {
+        _scopeFactory = scopeFactory;
+        _logger = logger;
+        _telegramBotToken = telegramSettings.Value.BotToken;
+    }
+
     public async Task SendMessageAsync(string? chatId, string message)
     {
-        var client = new HttpClient();
-        var url = $"https://api.telegram.org/bot{_telegramBotToken}/sendMessage";
-        var parameters = new Dictionary<string, string>
+        if (string.IsNullOrEmpty(chatId)) return;
+
+        try
         {
-            { "chat_id", chatId },
-            { "text", message }
-        };
-        var content = new FormUrlEncodedContent(parameters);
-    
-        var response = await client.PostAsync(url, content);
-        var responseString = await response.Content.ReadAsStringAsync();
-    
-        if (!response.IsSuccessStatusCode)
+            var client = new HttpClient();
+            var url = $"https://api.telegram.org/bot{_telegramBotToken}/sendMessage";
+            var parameters = new Dictionary<string, string>
+            {
+                { "chat_id", chatId },
+                { "text", message },
+                { "parse_mode", "HTML" }
+            };
+            var content = new FormUrlEncodedContent(parameters);
+
+            var response = await client.PostAsync(url, content);
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError($"Telegram API error: {responseString}");
+            }
+        }
+        catch (Exception ex)
         {
-            throw new Exception($"Telegram API error: {responseString}");
+            _logger.LogError($"Failed to send Telegram message: {ex.Message}");
         }
     }
 
+    private async Task TrySendNotificationAsync(Guid userId, string message, Func<BuyTime_Domain.Entities.UserSettings, bool> settingPredicate)
+    {
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<BuyTimeDbContext>();
+
+            var user = await dbContext.Users
+                .Include(u => u.Settings)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null || string.IsNullOrEmpty(user.TelegramChatId)) return;
+
+            if (user.Settings != null)
+            {
+                if (!user.Settings.NotifyInTelegram) return;
+                if (!settingPredicate(user.Settings)) return;
+            }
+
+            await SendMessageAsync(user.TelegramChatId, message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error in TrySendNotificationAsync: {ex.Message}");
+        }
+    }
+
+    public Task NotifyBookingCreatedAsync(Guid expertId, string studentFirstName, string studentLastName, DateTime startTime)
+    {
+        var msg = $"📅 <b>Нове бронювання!</b>\nСтудент <b>{studentFirstName} {studentLastName}</b> забронював зустріч на {startTime:dd.MM HH:mm} (UTC).";
+        return TrySendNotificationAsync(expertId, msg, s => s.NotifyOnBooking);
+    }
+
+    public Task NotifyBookingCancelledAsync(Guid targetUserId, string cancelledByRole, string cancelledByName, DateTime startTime, string reason, decimal? refundAmount = null, string? currency = null)
+    {
+        var roleName = cancelledByRole.ToLower() == "student" ? "Студент" : "Експерт";
+
+        var msg = $"⚠️ <b>Бронювання скасовано</b>\n{roleName} <b>{cancelledByName}</b> скасував зустріч на {startTime:dd.MM HH:mm} (UTC).\nПричина: {reason}";
+
+        if (refundAmount.HasValue && !string.IsNullOrEmpty(currency))
+        {
+            msg += $"\n\n💸 <b>Повернення коштів:</b> {refundAmount.Value} {currency} успішно повернуто на ваш гаманець.";
+        }
+
+        return TrySendNotificationAsync(targetUserId, msg, s => s.NotifyOnBooking);
+    }
+
+    public Task NotifyBookingRejectedAsync(Guid studentId, string expertFirstName, string expertLastName, DateTime startTime)
+    {
+        var msg = $"❌ <b>Зустріч відхилено</b>\nЕксперт <b>{expertFirstName} {expertLastName}</b> не зміг підтвердити зустріч на {startTime:dd.MM HH:mm} (UTC). Ви можете повернути кошти в деталях цієї зустрічі.";
+        return TrySendNotificationAsync(studentId, msg, s => s.NotifyOnBooking);
+    }
+
+    public Task NotifyBookingConfirmedAsync(Guid studentId, string expertFirstName, string expertLastName, DateTime startTime, string? meetingLink)
+    {
+        var linkText = string.IsNullOrEmpty(meetingLink) ? "Посилання буде надано пізніше." : $"Посилання: {meetingLink}";
+        var msg = $"✅ <b>Зустріч підтверджено!</b>\nЕксперт <b>{expertFirstName} {expertLastName}</b> підтвердив зустріч на {startTime:dd.MM HH:mm} (UTC).\n{linkText}";
+        return TrySendNotificationAsync(studentId, msg, s => s.NotifyOnBooking);
+    }
+
+    public Task NotifyRefundReceivedAsync(Guid studentId, decimal amount, string currency)
+    {
+        var msg = $"💸 <b>Повернення коштів</b>\nСума <b>{amount} {currency}</b> була успішно повернута на ваш гаманець.";
+        return TrySendNotificationAsync(studentId, msg, s => s.NotifyOnFinance);
+    }
+
+    public Task NotifyNewFeedbackAsync(Guid expertId, string studentFirstName, string studentLastName, decimal rating, string? comment)
+    {
+        var msg = $"⭐ <b>Новий відгук!</b>\nСтудент <b>{studentFirstName} {studentLastName}</b> залишив вам відгук.\nОцінка: {rating}/5\nКоментар: {comment ?? "Без коментаря"}";
+        return TrySendNotificationAsync(expertId, msg, s => s.NotifyOnNewFeedback);
+    }
 }

@@ -1,4 +1,6 @@
-﻿using BuyTime_Domain.Constants;
+﻿using BuyTime_Application.Common.Interfaces.IService;
+using BuyTime_Domain.Constants;
+using BuyTime_Domain.Entities;
 using BuyTime_Infrastructure.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,8 +37,14 @@ public class TonContractMonitorService(
 
                 var pendingBookings = await dbContext.Bookings
                     .Include(b => b.Cancellation)
+                    .Include(b => b.TimeSlot)
+                        .ThenInclude(ts => ts.Expert)
+                    .Include(b => b.Student)
                     .Where(b => b.Status == Status.CancelPending || b.Status == Status.RefundPending)
                     .ToListAsync(stoppingToken);
+
+                var bookingsToNotifyCancel = new List<Booking>();
+                var bookingsToNotifyRefund = new List<Booking>();
 
                 foreach (var booking in pendingBookings)
                 {
@@ -59,12 +67,16 @@ public class TonContractMonitorService(
                         if (booking.Status == Status.RefundPending)
                         {
                             booking.Status = Status.Refunded;
+                            bookingsToNotifyRefund.Add(booking);
                         }
                         else
                         {
                             booking.Status = Status.Cancelled;
+                            bookingsToNotifyCancel.Add(booking);
                         }
 
+                        booking.TimeSlot.IsAvailable = true;
+                        dbContext.Timeslots.Update(booking.TimeSlot);
                         dbContext.Bookings.Update(booking);
                     }
                     else
@@ -89,6 +101,44 @@ public class TonContractMonitorService(
                 if (pendingBookings.Any())
                 {
                     await dbContext.SaveChangesAsync(stoppingToken);
+
+                    var telegramService = scope.ServiceProvider.GetRequiredService<ITelegramService>();
+
+                    foreach (var b in bookingsToNotifyRefund)
+                    {
+                        _ = telegramService.NotifyRefundReceivedAsync(b.StudentId, b.TimeSlot.Price, b.TimeSlot.Currency);
+                    }
+
+                    foreach (var b in bookingsToNotifyCancel)
+                    {
+                        if (b.Cancellation != null)
+                        {
+                            bool isStudent = b.Cancellation.CancelledByUserId == b.StudentId;
+                            var targetUserId = isStudent ? b.TimeSlot.ExpertId : b.StudentId;
+                            var roleStr = isStudent ? "student" : "expert";
+
+                            var cancelledByName = isStudent
+                                ? $"{b.Student.FirstName} {b.Student.LastName}"
+                                : $"{b.TimeSlot.Expert.FirstName} {b.TimeSlot.Expert.LastName}";
+
+                            decimal? refundToStudent = !isStudent ? b.TimeSlot.Price : null;
+                            string? currency = !isStudent ? b.TimeSlot.Currency : null;
+
+                            _ = telegramService.NotifyBookingCancelledAsync(
+                                targetUserId,
+                                roleStr,
+                                cancelledByName,
+                                b.TimeSlot.StartTime,
+                                b.Cancellation.Reason,
+                                refundToStudent,
+                                currency);
+                        }
+                    }
+                }
+
+                if (pendingBookings.Any())
+                {
+                    await dbContext.SaveChangesAsync(stoppingToken);
                 }
 
                 // =========================================================
@@ -96,6 +146,7 @@ public class TonContractMonitorService(
                 // =========================================================
                 var unpaidBookings = await dbContext.Bookings
                     .Include(b => b.TimeSlot)
+                    .Include(b => b.Student)
                     .Where(b => b.Status == Status.PaymentPending)
                     .ToListAsync(stoppingToken);
 
@@ -119,7 +170,15 @@ public class TonContractMonitorService(
                             booking.Status = Status.Pending;
                             dbContext.Bookings.Update(booking);
 
-                            // TODO: сповіщення
+                            await dbContext.SaveChangesAsync(stoppingToken);
+
+                            var telegramService = scope.ServiceProvider.GetRequiredService<ITelegramService>();
+                            _ = telegramService.NotifyBookingCreatedAsync(
+                                booking.TimeSlot.ExpertId,
+                                booking.Student.FirstName,
+                                booking.Student.LastName,
+                                booking.TimeSlot.StartTime);
+
                             continue; 
                         }
                     }

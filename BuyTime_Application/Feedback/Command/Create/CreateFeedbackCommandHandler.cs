@@ -1,10 +1,11 @@
-﻿using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+﻿using BuyTime_Application.Common.Interfaces.IService;
+using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using ErrorOr;
 using MediatR;
 
 namespace BuyTime_Application.Feedback.Command.Create;
 
-public class CreateFeedbackCommandHandler(IUnitOfWork unitOfWork)
+public class CreateFeedbackCommandHandler(IUnitOfWork unitOfWork, ITelegramService telegramService)
     : IRequestHandler<CreateFeedbackCommand, ErrorOr<CreateFeedbackResult>>
 {
     public async Task<ErrorOr<CreateFeedbackResult>> Handle(CreateFeedbackCommand request, CancellationToken cancellationToken)
@@ -39,6 +40,8 @@ public class CreateFeedbackCommandHandler(IUnitOfWork unitOfWork)
             }
 
             await unitOfWork.CommitAsync();
+            var student = await unitOfWork.User.GetByIdAsync(request.StudentId);
+            _ = telegramService.NotifyNewFeedbackAsync(request.ExpertId, student.FirstName, student.LastName, request.Rating, request.Comment);
 
             return new CreateFeedbackResult(result.Value);
         }

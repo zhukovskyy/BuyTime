@@ -8,7 +8,8 @@ namespace BuyTime_Application.Booking.Command.ConfirmBooking;
 public class ConfirmBookingCommandHandler(
     IUnitOfWork unitOfWork,
     IBookingService bookingService,
-    IDiscordService discordService) 
+    IDiscordService discordService,
+    ITelegramService telegramService) 
     : IRequestHandler<ConfirmBookingCommand, ErrorOr<Unit>>
 {
     public async Task<ErrorOr<Unit>> Handle(ConfirmBookingCommand request, CancellationToken cancellationToken)
@@ -54,6 +55,8 @@ public class ConfirmBookingCommandHandler(
         //{
         //    return Error.Validation("MeetingLink", "Meeting link is required (enter manually or check generate option).");
         //}
+
+        _ = telegramService.NotifyBookingConfirmedAsync(booking.StudentId, expert.FirstName, expert.LastName, timeslot.StartTime, finalMeetingLink);
 
         return await bookingService.ConfirmBookingAsync(
             request.BookingId,

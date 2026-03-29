@@ -1,11 +1,12 @@
-﻿using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+﻿using BuyTime_Application.Common.Interfaces.IService;
+using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Domain.Constants;
 using ErrorOr;
 using MediatR;
 
 namespace BuyTime_Application.Booking.Command.RejectBooking;
 
-public class RejectBookingCommandHandler(IUnitOfWork unitOfWork)
+public class RejectBookingCommandHandler(IUnitOfWork unitOfWork, ITelegramService telegramService)
     : IRequestHandler<RejectBookingCommand, ErrorOr<Unit>>
 {
     public async Task<ErrorOr<Unit>> Handle(RejectBookingCommand request, CancellationToken cancellationToken)
@@ -30,6 +31,9 @@ public class RejectBookingCommandHandler(IUnitOfWork unitOfWork)
         await unitOfWork.Booking.UpdateAsync(booking);
         await unitOfWork.Timeslot.UpdateAsync(timeslot);
         await unitOfWork.CommitAsync();
+
+        var expert = await unitOfWork.User.GetByIdAsync(request.ExpertId);
+        _ = telegramService.NotifyBookingRejectedAsync(booking.StudentId, expert.FirstName, expert.LastName, timeslot.StartTime);
 
         return Unit.Value;
     }

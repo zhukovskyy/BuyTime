@@ -109,7 +109,7 @@ public class TonContractService : ITonContractService
                 .StoreRef(payloadDetailsCell)
                 .Build();
 
-            decimal totalAmount = priceAmount + 0.1m;
+            decimal totalAmount = priceAmount;
 
             string stateInitBase64 = stateInitCell.ToString("base64");
             string payloadBase64 = payloadCell.ToString("base64");

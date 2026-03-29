@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.Configure<ZoomSettings>(configuration.GetSection(ZoomSettings.SectionName));
         services.Configure<DiscordSettings>(configuration.GetSection(DiscordSettings.SectionName));
         services.Configure<TonSettings>(configuration.GetSection(TonSettings.SectionName));
+        services.Configure<TelegramSettings>(configuration.GetSection(TelegramSettings.SectionName));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services

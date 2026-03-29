@@ -27,13 +27,34 @@ namespace BuyTime_Infrastructure.Common.Initializers
                 // ==========================================
                 if (!context.Specializations.Any())
                 {
+                    // Specially made for Viktor the frontend developer, AT HIS VERY STRONG REQUEST
                     var specs = new List<Specialization>
                     {
-                        new Specialization { Id = Guid.NewGuid(), Name = "Математика" },
-                        new Specialization { Id = Guid.NewGuid(), Name = "Програмування" },
-                        new Specialization { Id = Guid.NewGuid(), Name = "Дизайн" },
-                        new Specialization { Id = Guid.NewGuid(), Name = "Маркетинг" },
-                        new Specialization { Id = Guid.NewGuid(), Name = "Англійська мова" }
+                        new Specialization { Id = Guid.NewGuid(), Name = "Mathematics" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "Programming" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "Design" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "Marketing" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "EnglishLanguage" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "WebDevelopment" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "MobileDevelopment" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "DataScience" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "UiUxDesign" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "SeoOptimization" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "Copywriting" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "VideoEditing" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "MotionGraphics" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "ProjectManagement" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "QaTesting" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "DevOps" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "CyberSecurity" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "Blockchain" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "GameDevelopment" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "Accounting" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "LegalConsulting" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "Psychology" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "FitnessCoaching" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "Nutrition" },
+                        new Specialization { Id = Guid.NewGuid(), Name = "MusicProduction" }
                     };
                     context.Specializations.AddRange(specs);
                     await context.SaveChangesAsync();
@@ -79,10 +100,10 @@ namespace BuyTime_Infrastructure.Common.Initializers
                 if (!context.Users.Any())
                 {
                     // 1. Fetch referenced entities (IDs are what matter most)
-                    var mathSpec = await context.Specializations.FirstAsync(s => s.Name == "Математика");
-                    var progSpec = await context.Specializations.FirstAsync(s => s.Name == "Програмування");
-                    var designSpec = await context.Specializations.FirstAsync(s => s.Name == "Дизайн");
-                    var marketingSpec = await context.Specializations.FirstAsync(s => s.Name == "Маркетинг");
+                    var mathSpec = await context.Specializations.FirstAsync(s => s.Name == "Mathematics");
+                    var progSpec = await context.Specializations.FirstAsync(s => s.Name == "Programming");
+                    var designSpec = await context.Specializations.FirstAsync(s => s.Name == "Design");
+                    var marketingSpec = await context.Specializations.FirstAsync(s => s.Name == "Marketing");
 
                     var ukrLang = await context.Languages.FirstAsync(l => l.Code == "uk");
                     var engLang = await context.Languages.FirstAsync(l => l.Code == "en");

@@ -23,7 +23,17 @@ public class CancelBookingCommandHandler(
 
         bool isStudent = request.TriggeredByUserId == booking.StudentId;
 
-        var payloadResult = await tonContractService.GenerateCancelBookingPayloadAsync(isStudent, booking.ContractAddress);
+        ErrorOr<TonConnectPayloadDto> payloadResult;
+        // Якщо експерт ще не підтвердив, а студент хоче скасувати зустріч, повертається 100% через арбітра
+        if (isStudent && booking.Status == Status.Pending)
+        {
+            payloadResult = await tonContractService.GenerateClaimRefundPayloadAsync(booking.ContractAddress);
+        }
+        else
+        {
+            payloadResult = await tonContractService.GenerateCancelBookingPayloadAsync(isStudent, booking.ContractAddress);
+        }
+
         if (payloadResult.IsError) return payloadResult.Errors;
 
         booking.Status = Status.CancelPending;
