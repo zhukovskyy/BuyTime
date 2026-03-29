@@ -1,16 +1,25 @@
 ﻿using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+using BuyTime_Application.Common.Settings;
 using BuyTime_Application.Timeslot.Command.CreateTimeslot;
 using ErrorOr;
 using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace BuyTime_Application.Timeslot.CreateTimeslot;
 
-public class CreateTimeslotCommandHandler(IUnitOfWork unitOfWork)
+public class CreateTimeslotCommandHandler(
+    IUnitOfWork unitOfWork,
+    IOptions<PlatformSettings> platformSettings)
     : IRequestHandler<CreateTimeslotCommand, ErrorOr<CreateTimeslotResult>>
 {
     public async Task<ErrorOr<CreateTimeslotResult>> Handle(CreateTimeslotCommand request,
         CancellationToken cancellationToken)
     {
+        if (request.Currency == "TON" && request.Price < platformSettings.Value.MinTimeslotPriceTon)
+        {
+            return Error.Validation("InvalidPrice", $"Мінімальна вартість таймслота — {platformSettings.Value.MinTimeslotPriceTon} TON.");
+        }
+
         if (request.StartTime >= request.EndTime)
         {
             return Error.Failure("Invalid timeslot. Start time must be before end time.");

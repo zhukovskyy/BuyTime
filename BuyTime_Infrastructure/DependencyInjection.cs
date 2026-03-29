@@ -8,6 +8,7 @@ using BuyTime_Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using BuyTime_Application.Common.Settings;
 
 namespace BuyTime_Infrastructure;
 
@@ -21,7 +22,7 @@ public static class DependencyInjection
         services.Configure<DiscordSettings>(configuration.GetSection(DiscordSettings.SectionName));
         services.Configure<TonSettings>(configuration.GetSection(TonSettings.SectionName));
         services.Configure<TelegramSettings>(configuration.GetSection(TelegramSettings.SectionName));
-
+        services.Configure<PlatformSettings>(configuration.GetSection(PlatformSettings.SectionName));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services
             .AddPersistence(configuration)

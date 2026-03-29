@@ -21,32 +21,17 @@ public class ResolveBookingByArbiterCommandHandler(
         if (string.IsNullOrEmpty(booking.ContractAddress))
             return Error.Validation("Booking.NoContract", "У бронювання немає адреси смарт-контракту.");
 
-        decimal price = booking.TimeSlot.Price;
-        decimal studentAmount = 0;
-        decimal expertAmount = 0;
-
-        if (!request.IsExpertPresent)
-        {
-            studentAmount = price;
-            expertAmount = 0;
-            booking.Status = Status.Cancelled;
-        }
-        else
-        {
-            studentAmount = 0;
-            expertAmount = price;
-            booking.Status = Status.Completed;
-        }
-
         var tonResult = await tonContractService.ResolveBookingByArbiterAsync(
             booking.ContractAddress,
-            request.IsExpertPresent
-        );
+            request.IsExpertPresent);
 
         if (tonResult.IsError)
             return tonResult.Errors;
 
-        booking.Status = request.IsExpertPresent ? Status.Completed : Status.Refunded;
+        booking.Status = request.IsExpertPresent
+            ? Status.CompletionPending
+            : Status.RefundPending;
+
         await unitOfWork.Booking.UpdateAsync(booking);
         await unitOfWork.CommitAsync();
 

@@ -133,88 +133,59 @@ public class TonContractService : ITonContractService
         try
         {
             if (string.IsNullOrWhiteSpace(_settings.ArbiterMnemonic))
-                return Error.Validation("Arbiter.NoMnemonic", "Немає мнемоніки в налаштуваннях.");
+                return Error.Validation("Arbiter.NoMnemonic", "Мнемоніка арбітра відсутня.");
 
+            // 1. ДІЗНАЄМОСЯ ТОЧНУ ЦІНУ, ЯКА ЗАПИСАНА В КОНТРАКТІ (з урахуванням комісії)
             var getPriceResult = await _tonClient.RunGetMethod(new Address(contractAddress), "getPrice", Array.Empty<IStackItem>());
-
             if (getPriceResult == null || getPriceResult.Value.ExitCode != 0)
-                return Error.Failure("Arbiter.GetPriceFailed", "Не вдалося прочитати storage.price з смарт-контракту.");
+                return Error.Failure("Arbiter.GetPriceFailed", "Контракт не повернув ціну.");
 
             var stackItem = getPriceResult.Value.Stack[0];
-            decimal exactPriceDecimal = 0;
+            decimal contractPrice;
+            string priceStr = stackItem.ToString().Replace("0x", "");
+            if (stackItem is System.Numerics.BigInteger bi) contractPrice = (decimal)bi / 1_000_000_000m;
+            else contractPrice = Convert.ToUInt64(priceStr, 16) / 1_000_000_000m;
 
-            if (stackItem is System.Numerics.BigInteger bigIntPrice)
-            {
-                exactPriceDecimal = (decimal)bigIntPrice / 1_000_000_000m;
-            }
-            else
-            {
-                string priceStr = stackItem.ToString().Replace("0x", "");
-
-                if (stackItem.ToString().StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-                {
-                    exactPriceDecimal = Convert.ToUInt64(priceStr, 16) / 1_000_000_000m;
-                }
-                else
-                {
-                    exactPriceDecimal = Convert.ToDecimal(priceStr) / 1_000_000_000m;
-                }
-            }
-
-            decimal studentAmount = 0;
-            decimal expertAmount = 0;
-
-            if (isExpertPresent)
-            {
-                expertAmount = exactPriceDecimal;
-            }
-            else
-            {
-                studentAmount = exactPriceDecimal;
-            }
+            // відправляється вся сума, щоб assert(sum == storage.price) пройшов
+            decimal studentAmount = isExpertPresent ? 0 : contractPrice;
+            decimal expertAmount = isExpertPresent ? contractPrice : 0;
 
             var mnemonic = new Mnemonic(_settings.ArbiterMnemonic.Split(' '));
             var keys = mnemonic.Keys;
-            var walletOptions = new WalletV4Options { PublicKey = keys.PublicKey, Workchain = 0 };
-            var wallet = new WalletV4(walletOptions, 2);
+            var wallet = new WalletV4(new WalletV4Options { PublicKey = keys.PublicKey, Workchain = 0 }, 2);
 
             uint seqno = (await _tonClient.Wallet.GetSeqno(wallet.Address)) ?? 0;
-            uint OP_ARBITER_RESOLVE = 0xA1B2C3D5;
 
             Cell bodyCell = new CellBuilder()
-                .StoreUInt(OP_ARBITER_RESOLVE, 32)
+                .StoreUInt(0xA1B2C3D5, 32) // OP_ARBITER_RESOLVE
                 .StoreCoins(new Coins(studentAmount))
                 .StoreCoins(new Coins(expertAmount))
                 .Build();
-
-            var msgInfoOptions = new IntMsgInfoOptions
-            {
-                Dest = new Address(contractAddress),
-                Value = new Coins("0.01"),
-                Bounce = true,
-            };
 
             var transfer = new WalletTransfer
             {
                 Message = new MessageX(new MessageXOptions
                 {
-                    Info = new IntMsgInfo(msgInfoOptions),
-                    Body = bodyCell,
-                    StateInit = null
+                    Info = new IntMsgInfo(new IntMsgInfoOptions
+                    {
+                        Dest = new Address(contractAddress),
+                        Value = new Coins("0.01"),
+                        Bounce = true
+                    }),
+                    Body = bodyCell
                 }),
                 Mode = 1
             };
 
             var externalMessage = wallet.CreateTransferMessage(new[] { transfer }, seqno);
             externalMessage.Sign(keys.PrivateKey);
-
             await _tonClient.SendBoc(externalMessage.Cell);
 
             return "Success";
         }
         catch (Exception ex)
         {
-            return Error.Failure("Arbiter.ConfirmationFailed", ex.Message);
+            return Error.Failure("Arbiter.ResolveFailed", ex.Message);
         }
     }
 

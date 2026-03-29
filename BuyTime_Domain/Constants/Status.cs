@@ -10,10 +10,12 @@ public class Status
     public const string Rejected = "rejected";
     public const string RefundPending = "refundPending";
     public const string Refunded = "refunded";
+    public const string CompletionPending = "completionPending";
     public const string Completed = "completed";
+
     public static readonly string[] All = new[] { 
         PaymentPending, Pending, Confirmed, 
-        CancelPending, Cancelled, Rejected, 
-        Completed, RefundPending, Refunded 
+        CancelPending, Cancelled, Rejected,
+        CompletionPending, Completed, RefundPending, Refunded 
     };
 }

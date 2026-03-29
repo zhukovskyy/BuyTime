@@ -2,10 +2,12 @@
 using BuyTime_Domain.Constants;
 using BuyTime_Domain.Entities;
 using BuyTime_Infrastructure.Common.Persistence;
+using BuyTime_Infrastructure.Common.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using TonSdk.Client;
 using TonSdk.Core;
 
@@ -26,13 +28,15 @@ public class TonContractMonitorService(
                 using var scope = serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<BuyTimeDbContext>();
 
+                var tonSettings = scope.ServiceProvider.GetRequiredService<IOptions<TonSettings>>().Value;
                 var tonClient = new TonClient(TonClientType.HTTP_TONCENTERAPIV2, new HttpParameters
                 {
-                    Endpoint = "https://testnet.toncenter.com/api/v2/jsonRPC"
+                    Endpoint = "https://testnet.toncenter.com/api/v2/jsonRPC",
+                    ApiKey = tonSettings.ApiKey
                 });
 
                 // =========================================================
-                // МОНІТОРИНГ СКАСУВАННЯ ТА РЕФАНДУ (ОЧІКУВАННЯ ОПЛАТИ)
+                // МОНІТОРИНГ ЗАВЕРШЕННЯ, СКАСУВАННЯ ТА РЕФАНДУ (ОЧІКУВАННЯ ОПЛАТИ)
                 // =========================================================
 
                 var pendingBookings = await dbContext.Bookings
@@ -40,11 +44,11 @@ public class TonContractMonitorService(
                     .Include(b => b.TimeSlot)
                         .ThenInclude(ts => ts.Expert)
                     .Include(b => b.Student)
-                    .Where(b => b.Status == Status.CancelPending || b.Status == Status.RefundPending)
-                    .ToListAsync(stoppingToken);
+                    .Where(b => b.Status == Status.CancelPending || b.Status == Status.RefundPending || b.Status == Status.CompletionPending).ToListAsync(stoppingToken);
 
                 var bookingsToNotifyCancel = new List<Booking>();
                 var bookingsToNotifyRefund = new List<Booking>();
+                var bookingsToNotifyComplete = new List<Booking>();
 
                 foreach (var booking in pendingBookings)
                 {
@@ -64,19 +68,25 @@ public class TonContractMonitorService(
                     if (isContractEmpty)
                     {
                         logger.LogInformation($"Smart contract {booking.ContractAddress} is empty. Confirming cancellation for Booking: {booking.Id}");
-                        if (booking.Status == Status.RefundPending)
+
+                        if (booking.Status == Status.CompletionPending)
+                        {
+                            booking.Status = Status.Completed;
+                            bookingsToNotifyComplete.Add(booking);
+                        }
+                        else if (booking.Status == Status.RefundPending)
                         {
                             booking.Status = Status.Refunded;
                             bookingsToNotifyRefund.Add(booking);
+                            booking.TimeSlot.IsAvailable = true;
                         }
                         else
                         {
                             booking.Status = Status.Cancelled;
                             bookingsToNotifyCancel.Add(booking);
+                            booking.TimeSlot.IsAvailable = true;
                         }
 
-                        booking.TimeSlot.IsAvailable = true;
-                        dbContext.Timeslots.Update(booking.TimeSlot);
                         dbContext.Bookings.Update(booking);
                     }
                     else
@@ -104,10 +114,33 @@ public class TonContractMonitorService(
 
                     var telegramService = scope.ServiceProvider.GetRequiredService<ITelegramService>();
 
+                    foreach (var b in bookingsToNotifyComplete)
+                    {
+                        _ = telegramService.NotifyMeetingResolvedByStudentAsync(
+                            b.TimeSlot.ExpertId,
+                            b.Student.FirstName,
+                            b.Student.LastName,
+                            b.TimeSlot.StartTime,
+                            b.TimeSlot.Price,
+                            b.TimeSlot.Currency,
+                            true);
+                    }
+
                     foreach (var b in bookingsToNotifyRefund)
                     {
                         _ = telegramService.NotifyRefundReceivedAsync(b.StudentId, b.TimeSlot.Price, b.TimeSlot.Currency);
+
+                        // це повідомлення прийде експерту коли студент вибере що зустріч не відбулася
+                        _ = telegramService.NotifyMeetingResolvedByStudentAsync(
+                            b.TimeSlot.ExpertId,
+                            b.Student.FirstName,
+                            b.Student.LastName,
+                            b.TimeSlot.StartTime,
+                            b.TimeSlot.Price,
+                            b.TimeSlot.Currency,
+                            false);
                     }
+
 
                     foreach (var b in bookingsToNotifyCancel)
                     {

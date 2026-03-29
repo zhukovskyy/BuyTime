@@ -1,14 +1,17 @@
 ﻿using BuyTime_Application.Common.Interfaces.IService;
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
-using MediatR;
+using BuyTime_Application.Common.Settings;
 using ErrorOr;
+using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace BuyTime_Application.Booking.Command.CreateBooking;
 
 public class CreateBookingCommandHandler(
     IUnitOfWork unitOfWork,
     IBookingService bookingService,
-    ITonContractService tonContractService)
+    ITonContractService tonContractService,
+    IOptions<PlatformSettings> platformSettings)
     : IRequestHandler<CreateBookingCommand, ErrorOr<CreateBookingResult>>
 {
     public async Task<ErrorOr<CreateBookingResult>> Handle(CreateBookingCommand request, CancellationToken cancellationToken)
@@ -27,12 +30,19 @@ public class CreateBookingCommandHandler(
 
         string studentWalletAddress = studentWallet.Address;
 
+        decimal commissionPercent = platformSettings.Value.CommissionPercent;
+
+        decimal multiplier = 1m - (commissionPercent / 100m);
+        decimal totalAmountToPay = timeslot.Price / multiplier;
+
+        totalAmountToPay = Math.Round(totalAmountToPay, 9);
+
         var payloadResult = await tonContractService.GenerateCreateBookingPayloadAsync(
             studentWalletAddress,
             timeslot.ExpertWalletAddress,
             timeslot.StartTime,
             timeslot.EndTime,
-            timeslot.Price
+            totalAmountToPay
         );
 
         if (payloadResult.IsError) return payloadResult.Errors;

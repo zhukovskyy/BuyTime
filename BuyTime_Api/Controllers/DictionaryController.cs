@@ -1,9 +1,11 @@
 ﻿using BuyTime_Api.Controllers;
+using BuyTime_Application.Common.Settings;
 using BuyTime_Application.Dictionary.Query.GetAllLanguages;
 using BuyTime_Application.Dictionary.Query.GetAllSocialPlatforms;
 using BuyTime_Application.Dictionary.Query.GetAllSpecializations;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace BuyTime_Api.Controllers;
 
@@ -30,5 +32,15 @@ public class DictionaryController(ISender mediatr) : ApiController
     {
         var result = await mediatr.Send(new GetAllLanguagesQuery());
         return result.Match(Ok, Problem);
+    }
+
+    [HttpGet("platform-config")]
+    public IActionResult GetPlatformConfig([FromServices] IOptions<PlatformSettings> platformSettings)
+    {
+        return Ok(new
+        {
+            minTimeslotPriceTon = platformSettings.Value.MinTimeslotPriceTon,
+            commissionPercent = platformSettings.Value.CommissionPercent
+        });
     }
 }

@@ -4,6 +4,7 @@ using BuyTime_Application.Booking.Command.ConfirmBooking;
 using BuyTime_Application.Booking.Command.CreateBooking;
 using BuyTime_Application.Booking.Command.RejectBooking;
 using BuyTime_Application.Booking.Command.ResolveByArbiter;
+using BuyTime_Application.Booking.Command.ResolveByStudent;
 using BuyTime_Application.Booking.Query.GetAll;
 using BuyTime_Application.Booking.Query.GetByExpertId;
 using BuyTime_Application.Booking.Query.GetById;
@@ -164,14 +165,28 @@ public class BookingController(ISender mediatr) : ApiController
         return Ok(result.Value);
     }
 
-    [HttpPost("arbiter-resolve")]
-    public async Task<IActionResult> ArbiterResolve([FromBody] ResolveBookingByArbiterCommand command)
+    //[HttpPost("arbiter-resolve")]
+    //public async Task<IActionResult> ArbiterResolve([FromBody] ResolveBookingByArbiterCommand command)
+    //{
+    //    var result = await mediatr.Send(command);
+
+    //    if (result.IsError)
+    //        return Problem(result.Errors);
+
+    //    return Ok(new { message = "Зустріч успішно вирішена Арбітром, кошти переказано." });
+    //}
+
+    public record ResolveByStudentDto(Guid BookingId, Guid StudentId, bool IsSuccessful);
+    [HttpPost("resolve-by-student")]
+    public async Task<IActionResult> ResolveByStudent([FromBody] ResolveByStudentDto dto)
     {
+        var command = new ResolveByStudentCommand(dto.BookingId, dto.StudentId, dto.IsSuccessful);
+
         var result = await mediatr.Send(command);
 
-        if (result.IsError)
-            return Problem(result.Errors);
-
-        return Ok(new { message = "Зустріч успішно вирішена Арбітром, кошти переказано." });
+        return result.Match(
+            success => Ok(success),
+            errors => Problem(errors)
+        );
     }
 }

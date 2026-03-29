@@ -120,6 +120,23 @@ public class TelegramService : ITelegramService
         return TrySendNotificationAsync(studentId, msg, s => s.NotifyOnFinance);
     }
 
+    public Task NotifyMeetingResolvedByStudentAsync(
+    Guid expertId,
+    string studentFirstName,
+    string studentLastName,
+    DateTime startTime,
+    decimal amount,
+    string currency,
+    bool isSuccessful)
+    {
+        string timeString = startTime.ToString("dd.MM.yyyy HH:mm");
+
+        string msg = isSuccessful
+            ? $"✅ <b>Зустріч успішно завершена!</b>\nСтудент <b>{studentFirstName} {studentLastName}</b> підтвердив проведення зустрічі ({timeString} UTC).\n💸 <b>{amount:0.####} {currency}</b> відправлено на ваш гаманець."
+            : $"⚠️ <b>Зустріч скасована.</b>\nСтудент <b>{studentFirstName} {studentLastName}</b> вказав, що зустріч ({timeString} UTC) не відбулася. Кошти повернуті студенту.";
+
+        return TrySendNotificationAsync(expertId, msg, s => s.NotifyOnBooking);
+    }
     public Task NotifyNewFeedbackAsync(Guid expertId, string studentFirstName, string studentLastName, decimal rating, string? comment)
     {
         var msg = $"⭐ <b>Новий відгук!</b>\nСтудент <b>{studentFirstName} {studentLastName}</b> залишив вам відгук.\nОцінка: {rating}/5\nКоментар: {comment ?? "Без коментаря"}";
