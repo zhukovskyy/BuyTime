@@ -26,6 +26,7 @@ public class UpdateUserProfileCommandHandler(
             LastName = request.LastName,
             ExpertNickname = request.ExpertNickname,
             Email = request.Email,
+            DiscordId = request.DiscordId,
             Description = request.Description,
             AvatarUrl = request.AvatarUrl
         };

@@ -170,6 +170,7 @@ public class UserRepository(BuyTimeDbContext context)
             user.LastName = userChanges.LastName;
             user.ExpertNickname = userChanges.ExpertNickname;
             user.Email = userChanges.Email;
+            user.DiscordId = userChanges.DiscordId;
             user.Description = userChanges.Description;
             user.AvatarUrl = userChanges.AvatarUrl;
 

@@ -11,6 +11,7 @@ public record UpdateUserProfileCommand(
     string LastName,
     string? ExpertNickname,
     string? Email,
+    string? DiscordId,
     string? Description,
     string? AvatarUrl,
 
