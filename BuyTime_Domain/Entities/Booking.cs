@@ -1,4 +1,6 @@
-﻿namespace BuyTime_Domain.Entities;
+﻿using BuyTime_Domain.Enums;
+
+namespace BuyTime_Domain.Entities;
 
 public class Booking
 {
@@ -20,9 +22,10 @@ public class Booking
     public string? ConfirmationMessage { get; set; }
 
     public string? MeetingLink { get; set; }
+    public ICollection<MeetingAttendance> Attendances { get; set; } = new List<MeetingAttendance>();
     public string ContractAddress { get; set; }
 
-    // звязок з скасуванням (буде null, якщо не відмінено)
+    // звязок з скасуванням (буде null, якщо не скасовано)
     public BookingCancellation? Cancellation { get; set; }
 
     private DateTime _createdAt;

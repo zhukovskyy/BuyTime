@@ -1,9 +1,10 @@
 ﻿using ErrorOr;
 
-namespace BuyTime_Application.Common.Interfaces.IService;
+public record DiscordChannelResult(string InviteUrl, ulong ChannelId);
 
 public interface IDiscordService
 {
-    Task<ErrorOr<string>> CreateMeetingAsync(string topic, List<string> discordIds);
+    Task<ErrorOr<DiscordChannelResult>> CreateMeetingAsync(string topic, List<string> discordIds);
     Task FinishMeetingAsync(ulong channelId);
+    Task<bool> IsMeetingEmptyAsync(ulong channelId);
 }

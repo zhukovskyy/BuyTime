@@ -1,5 +1,6 @@
 ﻿using BuyTime_Application.Common.Interfaces.IService;
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+using BuyTime_Domain.Enums;
 using MediatR;
 using ErrorOr;
 
@@ -9,7 +10,7 @@ public class ConfirmBookingCommandHandler(
     IUnitOfWork unitOfWork,
     IBookingService bookingService,
     IDiscordService discordService,
-    ITelegramService telegramService) 
+    ITelegramService telegramService)
     : IRequestHandler<ConfirmBookingCommand, ErrorOr<Unit>>
 {
     public async Task<ErrorOr<Unit>> Handle(ConfirmBookingCommand request, CancellationToken cancellationToken)
@@ -30,6 +31,9 @@ public class ConfirmBookingCommandHandler(
 
         string finalMeetingLink = request.MeetingLink?.Trim() ?? string.Empty;
         bool shouldGenerateLink = request.GenerateMeetingLink || string.IsNullOrEmpty(finalMeetingLink);
+
+        MeetingPlatform platform = MeetingPlatform.Custom;
+        string? externalMeetingId = null;
 
         if (shouldGenerateLink)
         {
@@ -53,13 +57,10 @@ public class ConfirmBookingCommandHandler(
                 return discordResult.Errors;
             }
 
-            finalMeetingLink = discordResult.Value;
+            finalMeetingLink = discordResult.Value.InviteUrl;
+            platform = MeetingPlatform.Discord;
+            externalMeetingId = discordResult.Value.ChannelId.ToString();
         }
-
-        //if (string.IsNullOrEmpty(finalMeetingLink))
-        //{
-        //    return Error.Validation("MeetingLink", "Meeting link is required (enter manually or check generate option).");
-        //}
 
         _ = telegramService.NotifyBookingConfirmedAsync(
             booking.StudentId, student.FirstName, student.LastName,
@@ -71,7 +72,9 @@ public class ConfirmBookingCommandHandler(
         return await bookingService.ConfirmBookingAsync(
             request.BookingId,
             request.ConfirmationMessage,
-            finalMeetingLink
+            finalMeetingLink,
+            platform,
+            externalMeetingId
         );
     }
 }

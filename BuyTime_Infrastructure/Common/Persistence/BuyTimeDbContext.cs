@@ -19,6 +19,7 @@ public class BuyTimeDbContext : DbContext
     public DbSet<Timeslot> Timeslots { get; set; }
     public DbSet<Feedback> Feedbacks { get; set; }
     public DbSet<Booking> Bookings { get; set; }
+    public DbSet<MeetingAttendance> MeetingAttendances { get; set; }
     public DbSet<BookingCancellation> BookingCancellations { get; set; }
     public DbSet<Wallet> Wallets { get; set; }
     public DbSet<Specialization> Specializations { get; set; }
@@ -265,5 +266,7 @@ public class BuyTimeDbContext : DbContext
             entity.Property(e => e.Address).HasMaxLength(150).IsRequired(false);
             entity.Property(e => e.Mnemonic).HasMaxLength(500).IsRequired(false);
         });
+
+
     }
 }

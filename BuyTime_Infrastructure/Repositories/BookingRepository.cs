@@ -24,6 +24,20 @@ public class BookingRepository(BuyTimeDbContext context)
             existingBooking.ConfirmationMessage = booking.ConfirmationMessage;
             existingBooking.MeetingLink = booking.MeetingLink;
 
+            // --- ЗБЕРЕЖЕННЯ МАРКЕРА ---
+            if (booking.Attendances != null && booking.Attendances.Any())
+            {
+                foreach (var attendance in booking.Attendances)
+                {
+                    var exists = await context.MeetingAttendances.AnyAsync(a => a.Id == attendance.Id);
+                    if (!exists)
+                    {
+                        await context.MeetingAttendances.AddAsync(attendance);
+                    }
+                }
+            }
+            // ----------------------------------
+
             if (booking.Cancellation != null)
             {
                 var existingCancellation = await context.BookingCancellations

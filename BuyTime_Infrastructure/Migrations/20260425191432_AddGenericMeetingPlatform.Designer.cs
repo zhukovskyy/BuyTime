@@ -4,6 +4,7 @@ using BuyTime_Infrastructure.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BuyTime_Infrastructure.Migrations
 {
     [DbContext(typeof(BuyTimeDbContext))]
-    partial class BuyTimeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260425191432_AddGenericMeetingPlatform")]
+    partial class AddGenericMeetingPlatform
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,11 +72,17 @@ namespace BuyTime_Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ExternalMeetingId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("MeetingLink")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MessageToExpert")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Platform")
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -236,9 +245,6 @@ namespace BuyTime_Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BookingId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("ExternalMeetingId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -256,8 +262,6 @@ namespace BuyTime_Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BookingId");
 
                     b.ToTable("MeetingAttendances");
                 });
@@ -588,17 +592,6 @@ namespace BuyTime_Infrastructure.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("BuyTime_Domain.Entities.MeetingAttendance", b =>
-                {
-                    b.HasOne("BuyTime_Domain.Entities.Booking", "Booking")
-                        .WithMany("Attendances")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
-                });
-
             modelBuilder.Entity("BuyTime_Domain.Entities.Timeslot", b =>
                 {
                     b.HasOne("BuyTime_Domain.Entities.User", "Expert")
@@ -649,8 +642,6 @@ namespace BuyTime_Infrastructure.Migrations
 
             modelBuilder.Entity("BuyTime_Domain.Entities.Booking", b =>
                 {
-                    b.Navigation("Attendances");
-
                     b.Navigation("Cancellation");
                 });
 

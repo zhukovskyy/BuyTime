@@ -102,6 +102,13 @@ public static class DependencyInjection
                 .ForJob(monitorJobKey)
                 .WithIdentity("ContractMonitorJob-trigger")
                 .WithSimpleSchedule(x => x.WithIntervalInSeconds(5).RepeatForever()));
+
+            var meetingJobKey = new JobKey("MeetingCleanupJob");
+            q.AddJob<MeetingCleanupJob>(opts => opts.WithIdentity(meetingJobKey));
+            q.AddTrigger(opts => opts
+                .ForJob(meetingJobKey)
+                .WithIdentity("MeetingCleanupJob-trigger")
+                .WithSimpleSchedule(x => x.WithIntervalInMinutes(1).RepeatForever()));
         });
 
         

@@ -2,6 +2,7 @@
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Application.Events;
 using BuyTime_Domain.Entities;
+using BuyTime_Domain.Enums;
 using MediatR;
 using ErrorOr;
 using BuyTime_Domain.Constants;
@@ -55,7 +56,12 @@ public class BookingService(
         }
     }
 
-    public async Task<ErrorOr<Unit>> ConfirmBookingAsync(Guid bookingId, string confirmationMessage, string meetingLink)
+    public async Task<ErrorOr<Unit>> ConfirmBookingAsync(
+    Guid bookingId,
+    string confirmationMessage,
+    string meetingLink,
+    MeetingPlatform platform,
+    string? externalMeetingId)
     {
         var booking = await unitOfWork.Booking.GetByIdAsync(bookingId);
         if (booking == null) return Error.Failure("Booking not found.");
@@ -66,6 +72,22 @@ public class BookingService(
         booking.Status = Status.Confirmed;
         booking.ConfirmationMessage = confirmationMessage;
         booking.MeetingLink = meetingLink;
+
+        if (!string.IsNullOrEmpty(externalMeetingId))
+        {
+            var attendanceMarker = new MeetingAttendance
+            {
+                Id = Guid.NewGuid(),
+                BookingId = booking.Id,
+                ExternalMeetingId = externalMeetingId,
+                Platform = platform,
+                ExternalUserId = 0,
+                SystemUserId = null,
+                FirstJoinedAt = DateTime.UtcNow
+            };
+
+            booking.Attendances = new List<MeetingAttendance> { attendanceMarker };
+        }
 
         timeslot.IsAvailable = false;
 
