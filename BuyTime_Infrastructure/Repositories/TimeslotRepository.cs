@@ -66,6 +66,9 @@ public class TimeslotRepository(BuyTimeDbContext context)
             query = query.Where(ts => ts.Id != excludeTimeslotId.Value);
         }
 
-        return await query.AnyAsync(ts => ts.StartTime < endTime && startTime < ts.EndTime);
+        var bufferedStartTime = startTime.AddMinutes(-1);
+        var bufferedEndTime = endTime.AddMinutes(1);
+
+        return await query.AnyAsync(ts => ts.StartTime < bufferedEndTime && ts.EndTime > bufferedStartTime);
     }
 }

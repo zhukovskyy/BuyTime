@@ -20,6 +20,11 @@ public class ConfirmBookingCommandHandler(
         var timeslot = await unitOfWork.Timeslot.GetByIdAsync(booking.TimeslotId);
         if (timeslot == null) return Error.NotFound("Timeslot not found");
 
+        if (timeslot.ExpertId != request.ExpertId)
+        {
+            return Error.Validation("AccessDenied", "Ви не можете підтвердити чуже бронювання.");
+        }
+
         var student = await unitOfWork.User.GetByIdAsync(booking.StudentId);
         var expert = await unitOfWork.User.GetByIdAsync(timeslot.ExpertId);
 

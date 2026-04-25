@@ -5,6 +5,7 @@ namespace BuyTime_Application.Booking.Command.ConfirmBooking;
 
 public record ConfirmBookingCommand(
     Guid BookingId,
+    Guid ExpertId,
     string ConfirmationMessage,
     string? MeetingLink,      // вручну введене посилання
     string? MeetingTitle,     // назва консультації/зустрічі

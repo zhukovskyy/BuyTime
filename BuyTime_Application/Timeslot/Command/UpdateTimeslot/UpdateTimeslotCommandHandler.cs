@@ -14,6 +14,11 @@ public class UpdateTimeslotCommandHandler(IUnitOfWork unitOfWork)
             return Error.Validation("InvalidTime", "Час початку має бути раніше за час закінчення.");
         }
 
+        if (request.StartTime < DateTime.UtcNow)
+        {
+            return Error.Validation("InvalidTime", "Неможливо перенести таймслот у минуле.");
+        }
+
         var timeslot = await unitOfWork.Timeslot.GetByIdAsync(request.TimeslotId);
 
         if (timeslot == null)
