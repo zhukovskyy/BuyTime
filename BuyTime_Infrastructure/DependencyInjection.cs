@@ -67,7 +67,7 @@ public static class DependencyInjection
         services.AddSingleton<IDiscordService>(provider => provider.GetRequiredService<DiscordBotService>());
 
         services.AddScoped<ITonContractService, TonContractService>();
-        services.AddHostedService<TonContractMonitorService>();
+        //services.AddHostedService<TonContractMonitorService>();
 
         return services;
     }
@@ -95,7 +95,16 @@ public static class DependencyInjection
                 .ForJob(jobKey)
                 .WithIdentity("CleanupJob-trigger")
                 .WithSimpleSchedule(x => x.WithIntervalInMinutes(1).RepeatForever()));
+
+            var monitorJobKey = new JobKey("ContractMonitorJob");
+            q.AddJob<ContractMonitorJob>(opts => opts.WithIdentity(monitorJobKey));
+            q.AddTrigger(opts => opts
+                .ForJob(monitorJobKey)
+                .WithIdentity("ContractMonitorJob-trigger")
+                .WithSimpleSchedule(x => x.WithIntervalInSeconds(5).RepeatForever()));
         });
+
+        
 
         services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 

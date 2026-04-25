@@ -21,7 +21,7 @@ public class ResolveByStudentCommandHandler(
 
         if (arbiterResult.IsError) return arbiterResult.Errors;
 
-        booking.Status = request.IsSuccessful ? Status.CompletionPending : Status.RefundPending;
+        booking.Status = request.IsSuccessful ? Status.CompletionPending : Status.FailedMeetingRefundPending;
 
         await unitOfWork.Booking.UpdateAsync(booking);
         await unitOfWork.CommitAsync();

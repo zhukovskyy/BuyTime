@@ -29,6 +29,7 @@ public class CleanupJob(
         {
             logger.LogInformation($"Quartz: Booking {booking.Id} is expired.");
             booking.Status = Status.Expired;
+            dbContext.Bookings.Update(booking);
             // Слот НЕ звільняємо і НЕ видаляємо (IsAvailable залишається false), бо він "заблокований" невдалою угодою
             // це потрібно, щоб у студента була історія букінгів
 
