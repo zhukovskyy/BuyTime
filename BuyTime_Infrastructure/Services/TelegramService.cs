@@ -107,11 +107,22 @@ public class TelegramService : ITelegramService
         return TrySendNotificationAsync(studentId, msg, s => s.NotifyOnBooking);
     }
 
-    public Task NotifyBookingConfirmedAsync(Guid studentId, string expertFirstName, string expertLastName, DateTime startTime, string? meetingLink)
+    public async Task NotifyBookingConfirmedAsync(
+    Guid studentId, string studentFirstName, string studentLastName,
+    Guid expertId, string expertFirstName, string expertLastName,
+    DateTime startTime, string? messageToStudent, string? meetingLink)
     {
-        var linkText = string.IsNullOrEmpty(meetingLink) ? "Посилання буде надано пізніше." : $"Посилання: {meetingLink}";
-        var msg = $"✅ <b>Зустріч підтверджено!</b>\nЕксперт <b>{expertFirstName} {expertLastName}</b> підтвердив зустріч на {startTime:dd.MM HH:mm} (UTC).\n{linkText}";
-        return TrySendNotificationAsync(studentId, msg, s => s.NotifyOnBooking);
+        var linkText = string.IsNullOrEmpty(meetingLink) ? "" : $"Посилання: {meetingLink}";
+        var expertMessageText = string.IsNullOrEmpty(messageToStudent) ? "" : messageToStudent;
+
+        var studentMsg = $"✅ <b>Зустріч підтверджено!</b>\nЕксперт <b>{expertFirstName} {expertLastName}</b> підтвердив зустріч на {startTime:dd.MM HH:mm} (UTC).\nПовідомлення від експерта: {expertMessageText}\n{linkText}";
+
+        var expertMsg = $"✅ <b>Ви підтвердили зустріч!</b>\nЗустріч зі студентом <b>{studentFirstName} {studentLastName}</b> на {startTime:dd.MM HH:mm} (UTC).\n{linkText}";
+
+        var notifyStudentTask = TrySendNotificationAsync(studentId, studentMsg, s => s.NotifyOnBooking);
+        var notifyExpertTask = TrySendNotificationAsync(expertId, expertMsg, s => s.NotifyOnBooking);
+
+        await Task.WhenAll(notifyStudentTask, notifyExpertTask);
     }
 
     public Task NotifyRefundReceivedAsync(Guid studentId, decimal amount, string currency)

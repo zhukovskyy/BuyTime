@@ -56,7 +56,12 @@ public class ConfirmBookingCommandHandler(
         //    return Error.Validation("MeetingLink", "Meeting link is required (enter manually or check generate option).");
         //}
 
-        _ = telegramService.NotifyBookingConfirmedAsync(booking.StudentId, expert.FirstName, expert.LastName, timeslot.StartTime, finalMeetingLink);
+        _ = telegramService.NotifyBookingConfirmedAsync(
+            booking.StudentId, student.FirstName, student.LastName,
+            timeslot.ExpertId, expert.FirstName, expert.LastName,
+            timeslot.StartTime,
+            request.ConfirmationMessage,
+            finalMeetingLink);
 
         return await bookingService.ConfirmBookingAsync(
             request.BookingId,
