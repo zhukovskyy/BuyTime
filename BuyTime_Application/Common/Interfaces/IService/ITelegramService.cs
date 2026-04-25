@@ -12,6 +12,9 @@ public interface ITelegramService
         Guid expertId, string expertFirstName, string expertLastName,
         DateTime startTime, string? messageToStudent, string? meetingLink);
     Task NotifyRefundReceivedAsync(Guid studentId, decimal amount, string currency);
+
+    Task NotifyBookingExpiredAsync(Guid studentId,string expertFirstName, string expertLastName, DateTime startTime);
+
     Task NotifyMeetingResolvedByStudentAsync(
         Guid expertId,
         string studentFirstName,

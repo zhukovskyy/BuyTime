@@ -233,6 +233,8 @@ public class TonContractMonitorService(
                 {
                     await dbContext.SaveChangesAsync(stoppingToken);
                 }
+
+
             }
             catch (Exception ex)
             {

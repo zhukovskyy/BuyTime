@@ -131,6 +131,13 @@ public class TelegramService : ITelegramService
         return TrySendNotificationAsync(studentId, msg, s => s.NotifyOnFinance);
     }
 
+    public Task NotifyBookingExpiredAsync(Guid studentId, string expertFirstName, string expertLastName, DateTime startTime)
+    {
+        var studentMsg = $"⚠️ <b>Зустріч скасовано системою</b>\nЕксперт <b>{expertFirstName} {expertLastName}</b> не підтвердив вашу зустріч на {startTime:dd.MM HH:mm} (UTC). Зайдіть у деталі зустрічі, щоб повернути свої кошти.";
+
+        return TrySendNotificationAsync(studentId, studentMsg, s => s.NotifyOnBooking);
+    }
+
     public Task NotifyMeetingResolvedByStudentAsync(
     Guid expertId,
     string studentFirstName,

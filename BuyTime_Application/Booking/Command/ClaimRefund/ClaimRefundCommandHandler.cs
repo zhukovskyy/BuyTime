@@ -21,8 +21,10 @@ public class ClaimRefundCommandHandler(
         if (booking.StudentId != request.StudentId)
             return Error.Validation("AccessDenied", "Це не ваше бронювання.");
 
-        if (booking.Status != Status.Rejected)
-            return Error.Validation("InvalidStatus", "Повернути кошти можна лише для відхилених бронювань.");
+        if (booking.Status != Status.Rejected && booking.Status != Status.Expired)
+        {
+            return Error.Validation("InvalidStatus", "Повернути кошти можна лише для відхилених або прострочених бронювань.");
+        }
 
         var payloadResult = await tonContractService.GenerateClaimRefundPayloadAsync(booking.ContractAddress);
         if (payloadResult.IsError) return payloadResult.Errors;

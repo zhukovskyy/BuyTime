@@ -13,6 +13,8 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
+      <PackageReference Include="Quartz" Version="3.18.1" />
+      <PackageReference Include="Quartz.Extensions.Hosting" Version="3.18.1" />
       <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
       <PackageReference Include="TonSdk.Client" Version="0.3.11" />
       <PackageReference Include="TonSdk.Contracts" Version="0.4.0" />

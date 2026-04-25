@@ -1,4 +1,6 @@
-﻿using BuyTime_Application.Common.Interfaces.IRepository;
+﻿using Quartz;
+using BuyTime_Infrastructure.Jobs;
+using BuyTime_Application.Common.Interfaces.IRepository;
 using BuyTime_Application.Common.Interfaces.IService;
 using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Infrastructure.Common.Settings;
@@ -27,7 +29,8 @@ public static class DependencyInjection
         services
             .AddPersistence(configuration)
             .AddRepositories()
-            .AddServices();
+            .AddServices()
+            .AddBackgroundJobs();
 
         return services;
     }
@@ -78,6 +81,24 @@ public static class DependencyInjection
         services.AddScoped<IFeedbackRepository, FeedbackRepository>();
         services.AddScoped<IFavoriteExpertRepository, FavoriteExpertRepository>();
         services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
+        return services;
+    }
+
+    private static IServiceCollection AddBackgroundJobs(this IServiceCollection services)
+    {
+        services.AddQuartz(q =>
+        {
+            var jobKey = new JobKey("CleanupJob");
+            q.AddJob<CleanupJob>(opts => opts.WithIdentity(jobKey));
+
+            q.AddTrigger(opts => opts
+                .ForJob(jobKey)
+                .WithIdentity("CleanupJob-trigger")
+                .WithSimpleSchedule(x => x.WithIntervalInMinutes(1).RepeatForever()));
+        });
+
+        services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+
         return services;
     }
 }
