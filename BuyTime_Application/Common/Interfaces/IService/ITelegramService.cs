@@ -23,5 +23,16 @@ public interface ITelegramService
         decimal amount,
         string currency,
         bool isSuccessful);
+
+    Task NotifyMeetingAutoResolvedAsync(
+        Guid expertId,
+        string studentFirstName,
+        string studentLastName,
+        DateTime startTime,
+        decimal amount,
+        string currency,
+        bool isSuccessful);
+
+    Task NotifyStudentAutoRefundAsync(Guid studentId, string expertFirstName, string expertLastName, DateTime startTime, decimal amount, string currency);
     Task NotifyNewFeedbackAsync(Guid expertId, string studentFirstName, string studentLastName, decimal rating, string? comment);
 }

@@ -15,44 +15,44 @@ public class MeetingCleanupJob(
 {
     public async Task Execute(IJobExecutionContext context)
     {
-        var bufferTime = DateTime.UtcNow.AddMinutes(-1);
+        var bufferTime = DateTime.UtcNow.AddMinutes(-15);
 
-        var activeRooms = await dbContext.MeetingAttendances
-            .Include(ma => ma.Booking) 
+        var expiredMarkers = await dbContext.MeetingAttendances
+            .Include(ma => ma.Booking)
                 .ThenInclude(b => b.TimeSlot)
-            .Where(ma => ma.ExternalUserId == 0) // маркер створення
+            .Where(ma => ma.ExternalUserId == 0) // Тільки маркери створення
             .Where(ma => ma.Booking.TimeSlot.EndTime <= bufferTime)
             .ToListAsync();
 
-        foreach (var roomMarker in activeRooms)
+        foreach (var marker in expiredMarkers)
         {
             try
             {
-                if (roomMarker.Platform == MeetingPlatform.Discord)
+                if (marker.Platform == MeetingPlatform.Discord)
                 {
-                    ulong discordId = ulong.Parse(roomMarker.ExternalMeetingId);
-
+                    ulong discordId = ulong.Parse(marker.ExternalMeetingId);
                     bool isEmpty = await discordService.IsMeetingEmptyAsync(discordId);
 
-                    if (!isEmpty)
+                    if (isEmpty)
                     {
-                        logger.LogInformation($"Quartz: Discord channel {discordId} is NOT empty. Skipping deletion.");
-                        continue;
+                        logger.LogInformation($"Quartz [Cleanup]: Discord channel {discordId} is empty. Deleting...");
+                        await discordService.FinishMeetingAsync(discordId);
+
+                        var allEntries = await dbContext.MeetingAttendances
+                            .Where(ma => ma.ExternalMeetingId == marker.ExternalMeetingId)
+                            .ToListAsync();
+
+                        dbContext.MeetingAttendances.RemoveRange(allEntries);
                     }
-
-                    logger.LogInformation($"Quartz: Deleting Discord channel {discordId}");
-                    await discordService.FinishMeetingAsync(discordId);
+                    else
+                    {
+                        logger.LogInformation($"Quartz [Cleanup]: Channel {discordId} still active. Skipping.");
+                    }
                 }
-
-                var relatedAttendances = await dbContext.MeetingAttendances
-                    .Where(ma => ma.ExternalMeetingId == roomMarker.ExternalMeetingId)
-                    .ToListAsync();
-
-                dbContext.MeetingAttendances.RemoveRange(relatedAttendances);
             }
             catch (Exception ex)
             {
-                logger.LogError($"Failed to delete {roomMarker.Platform} meeting {roomMarker.ExternalMeetingId}: {ex.Message}");
+                logger.LogError($"Error cleaning up meeting {marker.ExternalMeetingId}: {ex.Message}");
             }
         }
 

@@ -34,6 +34,7 @@ public class ContractMonitorJob(
         // 1. МОНІТОРИНГ ЗАВЕРШЕННЯ, СКАСУВАННЯ ТА РЕФАНДУ
         // =========================================================
         var pendingBookings = await dbContext.Bookings
+            .AsTracking()
             .Include(b => b.Cancellation)
             .Include(b => b.TimeSlot)
                 .ThenInclude(ts => ts.Expert)
@@ -91,7 +92,6 @@ public class ContractMonitorJob(
                     booking.TimeSlot.IsAvailable = true;
                 }
 
-                dbContext.Bookings.Update(booking);
             }
             else
             {
@@ -105,7 +105,6 @@ public class ContractMonitorJob(
                         logger.LogWarning($"Quartz: Timeout for Booking {booking.Id}. User didn't sign cancel tx. Reverting to Confirmed.");
                         booking.Status = Status.Confirmed;
                         dbContext.BookingCancellations.Remove(booking.Cancellation);
-                        dbContext.Bookings.Update(booking);
                     }
                 }
             }
@@ -117,7 +116,7 @@ public class ContractMonitorJob(
 
             foreach (var b in bookingsToNotifyComplete)
             {
-                _ = telegramService.NotifyMeetingResolvedByStudentAsync(
+                _ = telegramService.NotifyMeetingAutoResolvedAsync(
                     b.TimeSlot.ExpertId, b.Student.FirstName, b.Student.LastName,
                     b.TimeSlot.StartTime, b.TimeSlot.Price, b.TimeSlot.Currency, true);
             }
@@ -131,8 +130,11 @@ public class ContractMonitorJob(
             // (FailedMeetingRefundPending)
             foreach (var b in bookingsToNotifyFailedMeeting)
             {
-                _ = telegramService.NotifyRefundReceivedAsync(b.StudentId, b.TimeSlot.Price, b.TimeSlot.Currency);
-                _ = telegramService.NotifyMeetingResolvedByStudentAsync(
+                _ = telegramService.NotifyStudentAutoRefundAsync(
+                    b.StudentId, b.TimeSlot.Expert.FirstName, b.TimeSlot.Expert.LastName,
+                    b.TimeSlot.StartTime, b.TimeSlot.Price, b.TimeSlot.Currency);
+
+                _ = telegramService.NotifyMeetingAutoResolvedAsync(
                     b.TimeSlot.ExpertId, b.Student.FirstName, b.Student.LastName,
                     b.TimeSlot.StartTime, b.TimeSlot.Price, b.TimeSlot.Currency, false);
             }
@@ -158,6 +160,7 @@ public class ContractMonitorJob(
         // 2. МОНІТОРИНГ СТВОРЕННЯ БУКІНГУ (ОЧІКУВАННЯ ОПЛАТИ)
         // =========================================================
         var unpaidBookings = await dbContext.Bookings
+            .AsTracking()
             .Include(b => b.TimeSlot)
             .Include(b => b.Student)
             .Where(b => b.Status == Status.PaymentPending)
@@ -180,7 +183,7 @@ public class ContractMonitorJob(
                 {
                     logger.LogInformation($"Quartz: Smart contract {booking.ContractAddress} funded! Moving Booking {booking.Id} to Pending.");
                     booking.Status = Status.Pending;
-                    dbContext.Bookings.Update(booking);
+      
                     await dbContext.SaveChangesAsync(ct);
 
                     _ = telegramService.NotifyBookingCreatedAsync(
@@ -194,7 +197,6 @@ public class ContractMonitorJob(
             {
                 logger.LogWarning($"Quartz: Timeout for Booking {booking.Id}. User didn't pay. Deleting booking and freeing timeslot.");
                 booking.TimeSlot.IsAvailable = true;
-                dbContext.Timeslots.Update(booking.TimeSlot);
                 dbContext.Bookings.Remove(booking);
             }
         }

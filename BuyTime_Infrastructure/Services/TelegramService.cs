@@ -155,6 +155,35 @@ public class TelegramService : ITelegramService
 
         return TrySendNotificationAsync(expertId, msg, s => s.NotifyOnBooking);
     }
+
+    public Task NotifyMeetingAutoResolvedAsync(
+        Guid expertId,
+        string studentFirstName,
+        string studentLastName,
+        DateTime startTime,
+        decimal amount,
+        string currency,
+        bool isSuccessful)
+    {
+        string timeString = startTime.ToString("dd.MM.yyyy HH:mm");
+
+        string msg = isSuccessful
+            ? $"✅ <b>Зустріч успішно завершена!</b>\n💸 <b>{amount:0.####} {currency}</b> відправлено на ваш гаманець."
+            : $"⚠️ <b>Зустріч скасована системою.</b>\nНа основі даних Discord виявлено, що експерт був відсутній на зустрічі ({timeString} UTC). Кошти повернуті студенту.";
+
+        return TrySendNotificationAsync(expertId, msg, s => s.NotifyOnBooking);
+    }
+
+    public Task NotifyStudentAutoRefundAsync(
+        Guid studentId, string expertFirstName, string expertLastName,
+        DateTime startTime, decimal amount, string currency)
+    {
+        string timeString = startTime.ToString("dd.MM.yyyy HH:mm");
+
+        var msg = $"⚠️ <b>Зустріч не відбулася</b>\nСистема зафіксувала, що експерт <b>{expertFirstName} {expertLastName}</b> не з'явився на заплановану зустріч ({timeString} UTC) у Discord.\n\n💸 <b>{amount:0.####} {currency}</b> успішно повернуто на ваш гаманець.";
+
+        return TrySendNotificationAsync(studentId, msg, s => s.NotifyOnFinance);
+    }
     public Task NotifyNewFeedbackAsync(Guid expertId, string studentFirstName, string studentLastName, decimal rating, string? comment)
     {
         var msg = $"⭐ <b>Новий відгук!</b>\nСтудент <b>{studentFirstName} {studentLastName}</b> залишив вам відгук.\nОцінка: {rating}/5\nКоментар: {comment ?? "Без коментаря"}";

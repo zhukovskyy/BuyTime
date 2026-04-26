@@ -109,6 +109,13 @@ public static class DependencyInjection
                 .ForJob(meetingJobKey)
                 .WithIdentity("MeetingCleanupJob-trigger")
                 .WithSimpleSchedule(x => x.WithIntervalInMinutes(1).RepeatForever()));
+
+            var resolutionJobKey = new JobKey("BookingResolutionJob");
+            q.AddJob<BookingResolutionJob>(opts => opts.WithIdentity(resolutionJobKey));
+            q.AddTrigger(opts => opts
+                .ForJob(resolutionJobKey)
+                .WithIdentity("BookingResolutionJob-trigger")
+                .WithSimpleSchedule(x => x.WithIntervalInMinutes(1).RepeatForever()));
         });
 
         
