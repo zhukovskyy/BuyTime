@@ -93,6 +93,19 @@ public static class DependencyInjection
                     ? src.Bookings.FirstOrDefault(b => b.Status == Status.Pending || b.Status == Status.Confirmed)
                     : null);
 
+        TypeAdapterConfig<TransactionRecord, TransactionRecordDto>.NewConfig()
+            .Map(dest => dest.BookingDetails, src => src.Booking);
+
+        TypeAdapterConfig<Booking, TransactionBookingSummaryDto>.NewConfig()
+            .Map(dest => dest.Status, src => src.Status)
+            .Map(dest => dest.StartTime, src => src.TimeSlot != null ? src.TimeSlot.StartTime : (DateTime?)null)
+            .Map(dest => dest.EndTime, src => src.TimeSlot != null ? src.TimeSlot.EndTime : (DateTime?)null)
+            .Map(dest => dest.CancellationReason, src => src.Cancellation != null ? src.Cancellation.Reason : null)
+            .Map(dest => dest.CancelledByRole, src =>
+                src.Cancellation != null
+                    ? (src.Cancellation.CancelledByUserId == src.StudentId ? "student" : "expert")
+                    : null);
+
         config.Scan(Assembly.GetExecutingAssembly());
 
         services.AddSingleton(config);

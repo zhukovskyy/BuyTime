@@ -14,7 +14,7 @@ public class GetUserTransactionsQueryHandler(
 {
     public async Task<ErrorOr<List<TransactionRecordDto>>> Handle(GetUserTransactionsQuery request, CancellationToken cancellationToken)
     {
-        var result = await unitOfWork.Transactions.GetByUserIdAsync(request.UserId);
+        var result = await unitOfWork.Transactions.GetByUserIdAsync(request.UserId, request.Network);
 
         if (result.IsError)
             return result.Errors;

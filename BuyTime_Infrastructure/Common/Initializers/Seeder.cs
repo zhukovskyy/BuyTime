@@ -339,6 +339,8 @@ namespace BuyTime_Infrastructure.Common.Initializers
                     var ivan = await context.Users.FirstOrDefaultAsync(u => u.FirstName == "Іван" && u.LastName == "Шевченко");
                     var marina = await context.Users.FirstOrDefaultAsync(u => u.FirstName == "Марина" && u.LastName == "Данилова");
 
+                    var testBooking = await context.Bookings.FirstOrDefaultAsync();
+
                     if (ivan != null && marina != null)
                     {
                         var transactions = new List<TransactionRecord>
@@ -353,9 +355,9 @@ namespace BuyTime_Infrastructure.Common.Initializers
                                 CounterpartyName = $"{marina.FirstName} {marina.LastName}",
                                 ExecutedAt = DateTime.UtcNow.AddDays(-2),
                                 ContractAddress = "0QAi1uwqjwAkBPUPhfF6Guk8Qi6O6xQ-LKcdzBLHY1pJE3OR",
-                                BookingId = null
+                                BookingId = testBooking?.Id
                             },
-                            
+
                             new TransactionRecord
                             {
                                 Id = Guid.NewGuid(),
@@ -363,12 +365,12 @@ namespace BuyTime_Infrastructure.Common.Initializers
                                 Type = BuyTime_Domain.Enums.TransactionType.Refund,
                                 Amount = 5.0m,
                                 Currency = "TON",
-                                CounterpartyName = "Система (Відміна)",
+                                CounterpartyName = $"{marina.FirstName} {marina.LastName}",
                                 ExecutedAt = DateTime.UtcNow.AddDays(-1),
-                                ContractAddress = "0xARBITER_ADDRESS_PLACEHOLDER",
-                                BookingId = null
+                                ContractAddress = "EQC1nh98KAbfw9SgVb5IR9Ot5uNxogB-D4SxsRDnkalFseyN",
+                                BookingId = testBooking?.Id
                             },
-                           
+
                             new TransactionRecord
                             {
                                 Id = Guid.NewGuid(),
@@ -379,7 +381,7 @@ namespace BuyTime_Infrastructure.Common.Initializers
                                 CounterpartyName = $"{ivan.FirstName} {ivan.LastName}",
                                 ExecutedAt = DateTime.UtcNow.AddHours(-5),
                                 ContractAddress = "0QAi1uwqjwAkBPUPhfF6Guk8Qi6O6xQ-LKcdzBLHY1pJE3OR",
-                                BookingId = null
+                                BookingId = testBooking?.Id
                             }
                         };
 

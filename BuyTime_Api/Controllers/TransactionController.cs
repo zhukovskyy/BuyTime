@@ -9,9 +9,9 @@ namespace BuyTime_Api.Controllers;
 public class TransactionController(ISender mediatr) : ApiController
 {
     [HttpGet("get-by-user")]
-    public async Task<IActionResult> GetUserTransactions([FromQuery] Guid userId)
+    public async Task<IActionResult> GetUserTransactions([FromQuery] Guid userId, [FromQuery] string? network)
     {
-        var query = new GetUserTransactionsQuery(userId);
+        var query = new GetUserTransactionsQuery(userId, network);
         var result = await mediatr.Send(query);
 
         if (result.IsError)

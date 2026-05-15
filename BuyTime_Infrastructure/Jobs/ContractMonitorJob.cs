@@ -135,7 +135,7 @@ public class ContractMonitorJob(
                                 Type = TransactionType.Refund,
                                 Amount = refund,
                                 Currency = booking.TimeSlot.Currency,
-                                CounterpartyName = $"{booking.TimeSlot.Expert.FirstName} {booking.TimeSlot.Expert.LastName} (Повернення)",
+                                CounterpartyName = $"{booking.TimeSlot.Expert.FirstName} {booking.TimeSlot.Expert.LastName}",
                                 ExecutedAt = DateTime.UtcNow,
                                 ContractAddress = booking.ContractAddress,
                                 BookingId = booking.Id
@@ -151,7 +151,7 @@ public class ContractMonitorJob(
                                 Type = TransactionType.Received,
                                 Amount = compensation,
                                 Currency = booking.TimeSlot.Currency,
-                                CounterpartyName = $"{booking.Student.FirstName} {booking.Student.LastName} (Штраф за скасування)",
+                                CounterpartyName = $"{booking.Student.FirstName} {booking.Student.LastName}",
                                 ExecutedAt = DateTime.UtcNow,
                                 ContractAddress = booking.ContractAddress,
                                 BookingId = booking.Id

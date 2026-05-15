@@ -4,4 +4,4 @@ using MediatR;
 
 namespace BuyTime_Application.Transaction.Query.GetUserTransactions;
 
-public record GetUserTransactionsQuery(Guid UserId) : IRequest<ErrorOr<List<TransactionRecordDto>>>;
+public record GetUserTransactionsQuery(Guid UserId, string? Network) : IRequest<ErrorOr<List<TransactionRecordDto>>>;
