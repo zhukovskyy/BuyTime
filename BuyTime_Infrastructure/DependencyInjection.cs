@@ -78,6 +78,7 @@ public static class DependencyInjection
         services.AddScoped<ITimeSlotRepository, TimeslotRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IWalletRepository, WalletRepository>();
+        services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IFeedbackRepository, FeedbackRepository>();
         services.AddScoped<IFavoriteExpertRepository, FavoriteExpertRepository>();
         services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();

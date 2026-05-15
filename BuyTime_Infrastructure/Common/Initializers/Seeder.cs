@@ -330,6 +330,63 @@ namespace BuyTime_Infrastructure.Common.Initializers
                     context.BlockchainData.AddRange(blockchainData);
                     await context.SaveChangesAsync();
                 }
+
+                // ==========================================
+                // 10. Transaction Records
+                // ==========================================
+                if (!context.TransactionRecords.Any())
+                {
+                    var ivan = await context.Users.FirstOrDefaultAsync(u => u.FirstName == "Іван" && u.LastName == "Шевченко");
+                    var marina = await context.Users.FirstOrDefaultAsync(u => u.FirstName == "Марина" && u.LastName == "Данилова");
+
+                    if (ivan != null && marina != null)
+                    {
+                        var transactions = new List<TransactionRecord>
+                        {
+                            new TransactionRecord
+                            {
+                                Id = Guid.NewGuid(),
+                                UserId = ivan.Id,
+                                Type = BuyTime_Domain.Enums.TransactionType.Sent,
+                                Amount = 15.5m,
+                                Currency = "TON",
+                                CounterpartyName = $"{marina.FirstName} {marina.LastName}",
+                                ExecutedAt = DateTime.UtcNow.AddDays(-2),
+                                ContractAddress = "0QAi1uwqjwAkBPUPhfF6Guk8Qi6O6xQ-LKcdzBLHY1pJE3OR",
+                                BookingId = null
+                            },
+                            
+                            new TransactionRecord
+                            {
+                                Id = Guid.NewGuid(),
+                                UserId = ivan.Id,
+                                Type = BuyTime_Domain.Enums.TransactionType.Refund,
+                                Amount = 5.0m,
+                                Currency = "TON",
+                                CounterpartyName = "Система (Відміна)",
+                                ExecutedAt = DateTime.UtcNow.AddDays(-1),
+                                ContractAddress = "0xARBITER_ADDRESS_PLACEHOLDER",
+                                BookingId = null
+                            },
+                           
+                            new TransactionRecord
+                            {
+                                Id = Guid.NewGuid(),
+                                UserId = marina.Id,
+                                Type = BuyTime_Domain.Enums.TransactionType.Received,
+                                Amount = 25.0m,
+                                Currency = "TON",
+                                CounterpartyName = $"{ivan.FirstName} {ivan.LastName}",
+                                ExecutedAt = DateTime.UtcNow.AddHours(-5),
+                                ContractAddress = "0QAi1uwqjwAkBPUPhfF6Guk8Qi6O6xQ-LKcdzBLHY1pJE3OR",
+                                BookingId = null
+                            }
+                        };
+
+                        context.TransactionRecords.AddRange(transactions);
+                        await context.SaveChangesAsync();
+                    }
+                }
             }
         }
     }

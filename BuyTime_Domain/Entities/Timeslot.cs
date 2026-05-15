@@ -7,8 +7,19 @@ public class Timeslot
     public Guid ExpertId { get; set; }
     public User Expert { get; set; }
 
-    public DateTime StartTime { get; set; }
-    public DateTime EndTime { get; set; }
+    private DateTime _startTime;
+    public DateTime StartTime
+    {
+        get { return _startTime; }
+        set { _startTime = DateTime.SpecifyKind(value, DateTimeKind.Utc); }
+    }
+
+    private DateTime _endTime;
+    public DateTime EndTime
+    {
+        get { return _endTime; }
+        set { _endTime = DateTime.SpecifyKind(value, DateTimeKind.Utc); }
+    }
 
     public decimal Price { get; set; }
     public string Currency { get; set; } = "TON";

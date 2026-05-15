@@ -12,6 +12,7 @@ public class UnitOfWork : IUnitOfWork
     public IUserRepository User { get; private set; }
     public ITimeSlotRepository Timeslot { get; private set; }
     public IBookingRepository Booking { get; private set; }
+    public ITransactionRepository Transactions { get; private set; }
     public IFeedbackRepository Feedback { get; private set; }
     public IWalletRepository Wallet { get; private set; }
     public IFavoriteExpertRepository Favorite { get; private set; }
@@ -27,6 +28,7 @@ public class UnitOfWork : IUnitOfWork
         User = new UserRepository(_context);
         Timeslot = new TimeslotRepository(_context);
         Booking = new BookingRepository(_context);
+        Transactions = new TransactionRepository(_context);
         Feedback = new FeedbackRepository(_context);
         Wallet = new WalletRepository(_context);
         Favorite = new FavoriteExpertRepository(_context);

@@ -89,8 +89,8 @@ public class TonContractService : ITonContractService
                 .Build();
 
             // збірка Payload
-            long startUnix = ((DateTimeOffset)startTime).ToUnixTimeSeconds();
-            long endUnix = ((DateTimeOffset)endTime).ToUnixTimeSeconds();
+            long startUnix = ((DateTimeOffset)DateTime.SpecifyKind(startTime, DateTimeKind.Utc)).ToUnixTimeSeconds();
+            long endUnix = ((DateTimeOffset)DateTime.SpecifyKind(endTime, DateTimeKind.Utc)).ToUnixTimeSeconds();
 
             Cell payloadDetailsCell = new CellBuilder()
                 .StoreAddress(arbiterAddress)

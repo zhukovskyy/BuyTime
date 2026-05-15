@@ -4,6 +4,7 @@ using BuyTime_Infrastructure.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BuyTime_Infrastructure.Migrations
 {
     [DbContext(typeof(BuyTimeDbContext))]
-    partial class BuyTimeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260513222104_AddTransactionLedger")]
+    partial class AddTransactionLedger
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -110,15 +113,9 @@ namespace BuyTime_Infrastructure.Migrations
                     b.Property<Guid>("CancelledByUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("CompensationAmountToExpert")
-                        .HasColumnType("decimal(18,9)");
-
                     b.Property<string>("Reason")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("RefundAmountToStudent")
-                        .HasColumnType("decimal(18,9)");
 
                     b.HasKey("BookingId");
 

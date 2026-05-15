@@ -7,4 +7,6 @@ public class BookingCancellation
     public string Reason { get; set; }
     public DateTime CancelledAt { get; set; }
     public Guid CancelledByUserId { get; set; }
+    public decimal RefundAmountToStudent { get; set; }
+    public decimal CompensationAmountToExpert { get; set; }
 }

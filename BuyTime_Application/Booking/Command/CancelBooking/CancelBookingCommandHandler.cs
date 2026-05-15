@@ -38,12 +38,41 @@ public class CancelBookingCommandHandler(
 
         booking.Status = Status.CancelPending;
 
+        bool wasConfirmed = !string.IsNullOrEmpty(booking.ConfirmationMessage) || !string.IsNullOrEmpty(booking.MeetingLink);
+        TimeSpan timeBeforeMeeting = booking.TimeSlot.StartTime - DateTime.UtcNow;
+        decimal fullPrice = booking.TimeSlot.Price;
+
+        // TODO var expertSettings = await unitOfWork.UserSettings.GetByUserIdAsync(timeslot.ExpertId);
+
+        decimal refundToStudent = 0;
+        decimal compensationToExpert = 0;
+
+        if (!isStudent || !wasConfirmed || timeBeforeMeeting.TotalHours >= 48)
+        {
+            // Скасував експерт АБО не підтверджено АБО більше 48 годин -> 100% повернення студенту
+            refundToStudent = fullPrice;
+        }
+        else if (timeBeforeMeeting.TotalHours < 48 && timeBeforeMeeting.TotalHours >= 24)
+        {
+            // Від 24 до 48 годин -> 50/50
+            refundToStudent = Math.Round(fullPrice / 2m, 9); // Округлення для TON
+            compensationToExpert = fullPrice - refundToStudent;
+        }
+        else
+        {
+            // Менше 24 годин -> 100% йде експерту
+            compensationToExpert = fullPrice;
+        }
+        // ==========================================
+
         booking.Cancellation = new BuyTime_Domain.Entities.BookingCancellation
         {
             BookingId = request.BookingId,
             Reason = request.CancellationMessage,
             CancelledAt = DateTime.UtcNow,
-            CancelledByUserId = request.TriggeredByUserId
+            CancelledByUserId = request.TriggeredByUserId,
+            RefundAmountToStudent = refundToStudent,
+            CompensationAmountToExpert = compensationToExpert
         };
 
         await unitOfWork.Booking.UpdateAsync(booking);

@@ -1,6 +1,7 @@
 ﻿using BuyTime_Application.Common.Interfaces.IService;
 using BuyTime_Domain.Constants;
 using BuyTime_Domain.Entities;
+using BuyTime_Domain.Enums;
 using BuyTime_Infrastructure.Common.Persistence;
 using BuyTime_Infrastructure.Common.Settings;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,18 @@ public class ContractMonitorJob(
     IOptions<TonSettings> tonSettingsOptions,
     ILogger<ContractMonitorJob> logger) : IJob
 {
+    private TransactionRecord CreateRefundRecord(Booking booking) => new TransactionRecord
+    {
+        Id = Guid.NewGuid(),
+        UserId = booking.StudentId,
+        Type = TransactionType.Refund,
+        Amount = booking.TimeSlot.Price,
+        Currency = booking.TimeSlot.Currency,
+        CounterpartyName = $"{booking.TimeSlot.Expert.FirstName} {booking.TimeSlot.Expert.LastName}",
+        ExecutedAt = DateTime.UtcNow,
+        ContractAddress = booking.ContractAddress,
+        BookingId = booking.Id
+    };
     public async Task Execute(IJobExecutionContext context)
     {
         var ct = context.CancellationToken;
@@ -72,26 +85,80 @@ public class ContractMonitorJob(
                 {
                     booking.Status = Status.Completed;
                     bookingsToNotifyComplete.Add(booking);
+
+                    dbContext.TransactionRecords.Add(new TransactionRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = booking.TimeSlot.ExpertId,
+                        Type = TransactionType.Received,
+                        Amount = booking.TimeSlot.Price,
+                        Currency = booking.TimeSlot.Currency,
+                        CounterpartyName = $"{booking.Student.FirstName} {booking.Student.LastName}",
+                        ExecutedAt = DateTime.UtcNow,
+                        ContractAddress = booking.ContractAddress,
+                        BookingId = booking.Id
+                    });
                 }
                 else if (booking.Status == Status.RefundPending)
                 {
                     booking.Status = Status.Refunded;
                     bookingsToNotifyRefund.Add(booking);
                     booking.TimeSlot.IsAvailable = true;
+
+                    dbContext.TransactionRecords.Add(CreateRefundRecord(booking));
                 }
                 else if (booking.Status == Status.FailedMeetingRefundPending)
                 {
                     booking.Status = Status.Refunded;
                     bookingsToNotifyFailedMeeting.Add(booking);
                     booking.TimeSlot.IsAvailable = true;
+
+                    dbContext.TransactionRecords.Add(CreateRefundRecord(booking));
                 }
                 else
                 {
                     booking.Status = Status.Cancelled;
                     bookingsToNotifyCancel.Add(booking);
                     booking.TimeSlot.IsAvailable = true;
-                }
 
+                    if (booking.Cancellation != null)
+                    {
+                        decimal refund = booking.Cancellation.RefundAmountToStudent;
+                        decimal compensation = booking.Cancellation.CompensationAmountToExpert;
+
+                        if (refund > 0)
+                        {
+                            dbContext.TransactionRecords.Add(new TransactionRecord
+                            {
+                                Id = Guid.NewGuid(),
+                                UserId = booking.StudentId,
+                                Type = TransactionType.Refund,
+                                Amount = refund,
+                                Currency = booking.TimeSlot.Currency,
+                                CounterpartyName = $"{booking.TimeSlot.Expert.FirstName} {booking.TimeSlot.Expert.LastName} (Повернення)",
+                                ExecutedAt = DateTime.UtcNow,
+                                ContractAddress = booking.ContractAddress,
+                                BookingId = booking.Id
+                            });
+                        }
+
+                        if (compensation > 0)
+                        {
+                            dbContext.TransactionRecords.Add(new TransactionRecord
+                            {
+                                Id = Guid.NewGuid(),
+                                UserId = booking.TimeSlot.ExpertId,
+                                Type = TransactionType.Received,
+                                Amount = compensation,
+                                Currency = booking.TimeSlot.Currency,
+                                CounterpartyName = $"{booking.Student.FirstName} {booking.Student.LastName} (Штраф за скасування)",
+                                ExecutedAt = DateTime.UtcNow,
+                                ContractAddress = booking.ContractAddress,
+                                BookingId = booking.Id
+                            });
+                        }
+                    }
+                }
             }
             else
             {
@@ -162,6 +229,7 @@ public class ContractMonitorJob(
         var unpaidBookings = await dbContext.Bookings
             .AsTracking()
             .Include(b => b.TimeSlot)
+                .ThenInclude(ts => ts.Expert)
             .Include(b => b.Student)
             .Where(b => b.Status == Status.PaymentPending)
             .ToListAsync(ct);
@@ -183,7 +251,20 @@ public class ContractMonitorJob(
                 {
                     logger.LogInformation($"Quartz: Smart contract {booking.ContractAddress} funded! Moving Booking {booking.Id} to Pending.");
                     booking.Status = Status.Pending;
-      
+
+                    dbContext.TransactionRecords.Add(new TransactionRecord
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = booking.StudentId,
+                        Type = TransactionType.Sent,
+                        Amount = booking.TimeSlot.Price,
+                        Currency = booking.TimeSlot.Currency,
+                        CounterpartyName = $"{booking.TimeSlot.Expert.FirstName} {booking.TimeSlot.Expert.LastName}",
+                        ExecutedAt = DateTime.UtcNow,
+                        ContractAddress = booking.ContractAddress,
+                        BookingId = booking.Id
+                    });
+
                     await dbContext.SaveChangesAsync(ct);
 
                     _ = telegramService.NotifyBookingCreatedAsync(

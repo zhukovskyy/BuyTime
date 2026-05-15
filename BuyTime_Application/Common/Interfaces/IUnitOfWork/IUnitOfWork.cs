@@ -8,6 +8,7 @@ public interface IUnitOfWork
     IUserRepository User { get; }
     ITimeSlotRepository Timeslot { get; }
     IBookingRepository Booking { get; }
+    ITransactionRepository Transactions { get; }
     IFeedbackRepository Feedback { get; }
     IWalletRepository Wallet { get; }
     IFavoriteExpertRepository Favorite { get; }

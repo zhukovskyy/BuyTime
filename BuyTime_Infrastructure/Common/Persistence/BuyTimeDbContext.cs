@@ -17,6 +17,7 @@ public class BuyTimeDbContext : DbContext
     public DbSet<Language> Languages { get; set; }
     public DbSet<ExpertLanguage> ExpertLanguages { get; set; }
     public DbSet<Timeslot> Timeslots { get; set; }
+    public DbSet<TransactionRecord> TransactionRecords { get; set; }
     public DbSet<Feedback> Feedbacks { get; set; }
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<MeetingAttendance> MeetingAttendances { get; set; }
@@ -155,6 +156,32 @@ public class BuyTimeDbContext : DbContext
                   .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<TransactionRecord>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+
+            entity.Property(t => t.Amount)
+                  .HasColumnType("decimal(18,9)");
+
+            entity.Property(t => t.Currency)
+                  .IsRequired()
+                  .HasMaxLength(20);
+
+            entity.Property(t => t.CounterpartyName)
+                  .IsRequired()
+                  .HasMaxLength(100);
+
+            entity.HasOne(t => t.User)
+                  .WithMany()
+                  .HasForeignKey(t => t.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(t => t.Booking)
+                  .WithMany()
+                  .HasForeignKey(t => t.BookingId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
         // === FEEDBACK ===
         modelBuilder.Entity<Feedback>(entity =>
         {
@@ -231,8 +258,18 @@ public class BuyTimeDbContext : DbContext
         });
 
         // === BOOKING CANCELLATION ===
-        modelBuilder.Entity<BookingCancellation>()
-            .HasKey(bc => bc.BookingId);
+        modelBuilder.Entity<BookingCancellation>(entity =>
+        {
+            entity.HasKey(bc => bc.BookingId);
+
+            entity.Property(bc => bc.RefundAmountToStudent)
+                  .HasColumnType("decimal(18,9)");
+
+            entity.Property(bc => bc.CompensationAmountToExpert)
+                  .HasColumnType("decimal(18,9)");
+        });
+
+
 
         // === WALLET ===
         modelBuilder.Entity<Wallet>(entity =>
