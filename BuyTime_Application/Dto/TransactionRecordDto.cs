@@ -13,5 +13,6 @@ public class TransactionRecordDto
     public DateTime ExecutedAt { get; set; }
 
     public string? ContractAddress { get; set; }
+    public string? ExplorerUrl { get; set; }
     public Guid? BookingId { get; set; }
 }

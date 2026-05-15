@@ -5,6 +5,7 @@ namespace BuyTime_Application.Common.Interfaces.IService;
 
 public interface ITonContractService
 {
+    string GetExplorerUrl(string contractAddress);
     Task<ErrorOr<TonConnectPayloadDto>> GenerateCreateBookingPayloadAsync(
         string studentWalletAddress, 
         string expertWalletAddress, 

@@ -1,4 +1,5 @@
-﻿using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+﻿using BuyTime_Application.Common.Interfaces.IService;
+using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Application.Dto;
 using ErrorOr;
 using Mapster;
@@ -6,7 +7,9 @@ using MediatR;
 
 namespace BuyTime_Application.Transaction.Query.GetUserTransactions;
 
-public class GetUserTransactionsQueryHandler(IUnitOfWork unitOfWork)
+public class GetUserTransactionsQueryHandler(
+    IUnitOfWork unitOfWork,
+    ITonContractService tonContractService)
     : IRequestHandler<GetUserTransactionsQuery, ErrorOr<List<TransactionRecordDto>>>
 {
     public async Task<ErrorOr<List<TransactionRecordDto>>> Handle(GetUserTransactionsQuery request, CancellationToken cancellationToken)
@@ -16,6 +19,16 @@ public class GetUserTransactionsQueryHandler(IUnitOfWork unitOfWork)
         if (result.IsError)
             return result.Errors;
 
-        return result.Value.Adapt<List<TransactionRecordDto>>();
+        var dtos = result.Value.Adapt<List<TransactionRecordDto>>();
+
+        foreach (var dto in dtos)
+        {
+            if (dto.Currency == "TON" && !string.IsNullOrEmpty(dto.ContractAddress))
+            {
+                dto.ExplorerUrl = tonContractService.GetExplorerUrl(dto.ContractAddress);
+            }
+        }
+
+        return dtos;
     }
 }

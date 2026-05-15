@@ -36,6 +36,27 @@ public class TonContractService : ITonContractService
         });
     }
 
+    public string GetExplorerUrl(string contractAddress)
+    {
+        if (string.IsNullOrEmpty(contractAddress)) return string.Empty;
+
+        string baseUrl = _settings.IsTestnet ? "https://testnet.tonviewer.com/" : "https://tonviewer.com/";
+
+        try
+        {
+            var address = new Address(contractAddress);
+
+            var options = new AddressStringifyOptions(true, _settings.IsTestnet, true);
+
+            string normalizedAddress = address.ToString(AddressType.Base64, options);
+
+            return $"{baseUrl}{normalizedAddress}";
+        }
+        catch
+        {
+            return $"{baseUrl}{contractAddress}";
+        }
+    }
     public async Task<ErrorOr<TonConnectPayloadDto>> GenerateCreateBookingPayloadAsync(
         string studentWalletAddress,
         string expertWalletAddress,
