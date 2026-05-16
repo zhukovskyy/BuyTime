@@ -10,7 +10,7 @@ public class ConfirmBookingCommandHandler(
     IUnitOfWork unitOfWork,
     IBookingService bookingService,
     IDiscordService discordService,
-    ITelegramService telegramService)
+    INotificationService notificationService)
     : IRequestHandler<ConfirmBookingCommand, ErrorOr<Unit>>
 {
     public async Task<ErrorOr<Unit>> Handle(ConfirmBookingCommand request, CancellationToken cancellationToken)
@@ -62,7 +62,7 @@ public class ConfirmBookingCommandHandler(
             externalMeetingId = discordResult.Value.ChannelId.ToString();
         }
 
-        _ = telegramService.NotifyBookingConfirmedAsync(
+        _ = notificationService.NotifyBookingConfirmedAsync(
             booking.StudentId, student.FirstName, student.LastName,
             timeslot.ExpertId, expert.FirstName, expert.LastName,
             timeslot.StartTime,

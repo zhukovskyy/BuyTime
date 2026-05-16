@@ -16,5 +16,6 @@ public interface IUnitOfWork
     IRepository<Language> Languages { get; }
     IRepository<Specialization> Specializations { get; }
     IRepository<SocialMediaPlatform> SocialMediaPlatforms { get; }
+    IRepository<Notification> Notifications { get; }
     Task CommitAsync();
 }

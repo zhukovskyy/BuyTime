@@ -54,6 +54,7 @@ public static class DependencyInjection
 
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
+        services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<ITelegramService, TelegramService>();
         services.AddTransient<TelegramService>();
         services.AddScoped<IBookingService, BookingService>();
@@ -117,6 +118,13 @@ public static class DependencyInjection
                 .ForJob(resolutionJobKey)
                 .WithIdentity("BookingResolutionJob-trigger")
                 .WithSimpleSchedule(x => x.WithIntervalInMinutes(1).RepeatForever()));
+
+            var notifCleanupJobKey = new JobKey("NotificationCleanupJob");
+            q.AddJob<NotificationCleanupJob>(opts => opts.WithIdentity(notifCleanupJobKey));
+            q.AddTrigger(opts => opts
+                .ForJob(notifCleanupJobKey)
+                .WithIdentity("NotificationCleanupJob-trigger")
+                .WithSimpleSchedule(x => x.WithIntervalInHours(1).RepeatForever()));
         });
 
         

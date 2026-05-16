@@ -20,6 +20,7 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<Language> Languages { get; private set; }
     public IRepository<Specialization> Specializations { get; private set; }
     public IRepository<SocialMediaPlatform> SocialMediaPlatforms { get; private set; }
+    public IRepository<Notification> Notifications { get; private set; }
 
 
     public UnitOfWork(BuyTimeDbContext context)
@@ -36,6 +37,7 @@ public class UnitOfWork : IUnitOfWork
         Languages = new Repository<Language>(_context);
         Specializations = new Repository<Specialization>(_context);
         SocialMediaPlatforms = new Repository<SocialMediaPlatform>(_context);
+        Notifications = new Repository<Notification>(_context);
     }
     
     public async Task CommitAsync()

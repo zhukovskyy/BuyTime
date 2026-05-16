@@ -32,7 +32,7 @@ public class BookingResolutionJob(
                 bool isExpertPresent = await dbContext.MeetingAttendances
                     .AnyAsync(ma => ma.BookingId == booking.Id && ma.SystemUserId == booking.TimeSlot.ExpertId);
 
-                booking.Status = isExpertPresent ? Status.CompletionPending : Status.RefundPending;
+                booking.Status = isExpertPresent ? Status.CompletionPending : Status.FailedMeetingRefundPending;
 
                 var resolveResult = await tonContractService.ResolveBookingByArbiterAsync(
                     booking.ContractAddress,
@@ -40,7 +40,7 @@ public class BookingResolutionJob(
 
                 if (!resolveResult.IsError)
                 {
-                    booking.Status = isExpertPresent ? Status.CompletionPending : Status.RefundPending;
+                    booking.Status = isExpertPresent ? Status.CompletionPending : Status.FailedMeetingRefundPending;
                     dbContext.Bookings.Update(booking);
                     logger.LogInformation($"Quartz [Payment]: Payment triggered for {booking.Id}. Expert present: {isExpertPresent}");
                 }

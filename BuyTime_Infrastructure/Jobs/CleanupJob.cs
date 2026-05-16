@@ -10,7 +10,7 @@ namespace BuyTime_Infrastructure.Jobs;
 [DisallowConcurrentExecution]
 public class CleanupJob(
     BuyTimeDbContext dbContext,
-    ITelegramService telegramService,
+    INotificationService notificationService,
     ILogger<CleanupJob> logger) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
@@ -33,7 +33,7 @@ public class CleanupJob(
             // Слот НЕ звільняємо і НЕ видаляємо (IsAvailable залишається false), бо він "заблокований" невдалою угодою
             // це потрібно, щоб у студента була історія букінгів
 
-            _ = telegramService.NotifyBookingExpiredAsync(booking.StudentId, booking.TimeSlot.Expert.FirstName, 
+            _ = notificationService.NotifyBookingExpiredAsync(booking.StudentId, booking.TimeSlot.Expert.FirstName, 
                 booking.TimeSlot.Expert.LastName,booking.TimeSlot.StartTime);
         }
 

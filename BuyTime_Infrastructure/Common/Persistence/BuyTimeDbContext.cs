@@ -30,6 +30,7 @@ public class BuyTimeDbContext : DbContext
     public DbSet<FavoriteExpert> FavoriteExperts { get; set; }
     public DbSet<BlockchainData> BlockchainData { get; set; }
     public DbSet<UserSettings> UserSettings { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -304,6 +305,20 @@ public class BuyTimeDbContext : DbContext
             entity.Property(e => e.Mnemonic).HasMaxLength(500).IsRequired(false);
         });
 
+
+        // === NOTIFICATIONS ===
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(n => n.Id);
+            entity.Property(n => n.Title).IsRequired().HasMaxLength(150);
+            entity.Property(n => n.Message).IsRequired().HasMaxLength(500);
+            entity.Property(n => n.Type).IsRequired().HasMaxLength(50);
+
+            entity.HasOne(n => n.User)
+                  .WithMany()
+                  .HasForeignKey(n => n.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
 
     }
 }

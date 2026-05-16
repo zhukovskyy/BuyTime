@@ -16,7 +16,7 @@ namespace BuyTime_Infrastructure.Jobs;
 [DisallowConcurrentExecution]
 public class ContractMonitorJob(
     BuyTimeDbContext dbContext,
-    ITelegramService telegramService,
+    INotificationService notificationService,
     IOptions<TonSettings> tonSettingsOptions,
     ILogger<ContractMonitorJob> logger) : IJob
 {
@@ -103,7 +103,7 @@ public class ContractMonitorJob(
                 {
                     booking.Status = Status.Refunded;
                     bookingsToNotifyRefund.Add(booking);
-                    booking.TimeSlot.IsAvailable = true;
+                    
 
                     dbContext.TransactionRecords.Add(CreateRefundRecord(booking));
                 }
@@ -111,7 +111,7 @@ public class ContractMonitorJob(
                 {
                     booking.Status = Status.Refunded;
                     bookingsToNotifyFailedMeeting.Add(booking);
-                    booking.TimeSlot.IsAvailable = true;
+                    
 
                     dbContext.TransactionRecords.Add(CreateRefundRecord(booking));
                 }
@@ -119,7 +119,10 @@ public class ContractMonitorJob(
                 {
                     booking.Status = Status.Cancelled;
                     bookingsToNotifyCancel.Add(booking);
-                    booking.TimeSlot.IsAvailable = true;
+                    if (booking.TimeSlot.StartTime > DateTime.UtcNow)
+                    {
+                        booking.TimeSlot.IsAvailable = true;
+                    }
 
                     if (booking.Cancellation != null)
                     {
@@ -183,7 +186,7 @@ public class ContractMonitorJob(
 
             foreach (var b in bookingsToNotifyComplete)
             {
-                _ = telegramService.NotifyMeetingAutoResolvedAsync(
+                _ = notificationService.NotifyMeetingAutoResolvedAsync(
                     b.TimeSlot.ExpertId, b.Student.FirstName, b.Student.LastName,
                     b.TimeSlot.StartTime, b.TimeSlot.Price, b.TimeSlot.Currency, true);
             }
@@ -191,17 +194,17 @@ public class ContractMonitorJob(
             // (Expired / Rejected)
             foreach (var b in bookingsToNotifyRefund)
             {
-                _ = telegramService.NotifyRefundReceivedAsync(b.StudentId, b.TimeSlot.Price, b.TimeSlot.Currency);
+                _ = notificationService.NotifyRefundReceivedAsync(b.StudentId, b.TimeSlot.Price, b.TimeSlot.Currency);
             }
 
             // (FailedMeetingRefundPending)
             foreach (var b in bookingsToNotifyFailedMeeting)
             {
-                _ = telegramService.NotifyStudentAutoRefundAsync(
+                _ = notificationService.NotifyStudentAutoRefundAsync(
                     b.StudentId, b.TimeSlot.Expert.FirstName, b.TimeSlot.Expert.LastName,
                     b.TimeSlot.StartTime, b.TimeSlot.Price, b.TimeSlot.Currency);
 
-                _ = telegramService.NotifyMeetingAutoResolvedAsync(
+                _ = notificationService.NotifyMeetingAutoResolvedAsync(
                     b.TimeSlot.ExpertId, b.Student.FirstName, b.Student.LastName,
                     b.TimeSlot.StartTime, b.TimeSlot.Price, b.TimeSlot.Currency, false);
             }
@@ -217,7 +220,7 @@ public class ContractMonitorJob(
                     decimal? refundToStudent = !isStudent ? b.TimeSlot.Price : null;
                     string? currency = !isStudent ? b.TimeSlot.Currency : null;
 
-                    _ = telegramService.NotifyBookingCancelledAsync(
+                    _ = notificationService.NotifyBookingCancelledAsync(
                         targetUserId, roleStr, cancelledByName, b.TimeSlot.StartTime, b.Cancellation.Reason, refundToStudent, currency);
                 }
             }
@@ -267,7 +270,7 @@ public class ContractMonitorJob(
 
                     await dbContext.SaveChangesAsync(ct);
 
-                    _ = telegramService.NotifyBookingCreatedAsync(
+                    _ = notificationService.NotifyBookingCreatedAsync(
                         booking.TimeSlot.ExpertId, booking.Student.FirstName, booking.Student.LastName, booking.TimeSlot.StartTime);
                     continue;
                 }

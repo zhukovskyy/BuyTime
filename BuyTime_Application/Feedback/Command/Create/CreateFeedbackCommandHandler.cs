@@ -5,7 +5,7 @@ using MediatR;
 
 namespace BuyTime_Application.Feedback.Command.Create;
 
-public class CreateFeedbackCommandHandler(IUnitOfWork unitOfWork, ITelegramService telegramService)
+public class CreateFeedbackCommandHandler(IUnitOfWork unitOfWork, INotificationService notificationService)
     : IRequestHandler<CreateFeedbackCommand, ErrorOr<CreateFeedbackResult>>
 {
     public async Task<ErrorOr<CreateFeedbackResult>> Handle(CreateFeedbackCommand request, CancellationToken cancellationToken)
@@ -51,7 +51,7 @@ public class CreateFeedbackCommandHandler(IUnitOfWork unitOfWork, ITelegramServi
             }
 
             var student = await unitOfWork.User.GetByIdAsync(request.StudentId);
-            _ = telegramService.NotifyNewFeedbackAsync(request.ExpertId, student.FirstName, student.LastName, request.Rating, request.Comment);
+            _ = notificationService.NotifyNewFeedbackAsync(request.ExpertId, student.FirstName, student.LastName, request.Rating, request.Comment);
 
             return new CreateFeedbackResult(result.Value);
         }
