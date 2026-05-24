@@ -1,7 +1,7 @@
-﻿using MediatR;
+﻿using BuyTime_Application.Dto;
 using ErrorOr;
-using BuyTime_Application.Dto;
+using MediatR;
 
 namespace BuyTime_Application.User.Query.GetById;
 
-public record GetUserByIdQuery(Guid Id) : IRequest<ErrorOr<BuyTime_Domain.Entities.User>>;
+public record GetUserByIdQuery(Guid Id) : IRequest<ErrorOr<UserProfileDto>>;

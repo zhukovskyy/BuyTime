@@ -19,6 +19,7 @@ public interface IUserRepository : IRepository<BuyTime_Domain.Entities.User>
 
     Task<ErrorOr<IEnumerable<BuyTime_Domain.Entities.User>>> SearchExpertsAsync(SearchExpertRequest filter);
 
+    Task<ErrorOr<UserProfileDto>> GetUserProfileAsync(Guid id);
     Task<ErrorOr<BuyTime_Domain.Entities.User>> RegisterUserAsync(
         BuyTime_Domain.Entities.User userEntity,
         List<LanguageSkillDto> languageDtos,

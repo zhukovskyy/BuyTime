@@ -1,4 +1,4 @@
-using BuyTime_Api;
+﻿using BuyTime_Api;
 using BuyTime_Application;
 using BuyTime_Infrastructure;
 using BuyTime_Infrastructure.Common.Initializers;
@@ -13,6 +13,8 @@ builder.Services
 
 
 var app = builder.Build();
+
+
 
 app.UseSwagger();
 app.UseSwaggerUI();

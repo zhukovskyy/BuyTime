@@ -66,7 +66,8 @@ public static class DependencyInjection
         TypeAdapterConfig<User, UserDto>.NewConfig()
             .Map(dest => dest.LanguageSkills, src => src.ExpertLanguages)
             .Map(dest => dest.Specializations, src => src.Specializations)
-            .Map(dest => dest.SocialLinks, src => src.SocialLinks);
+            .Map(dest => dest.SocialLinks, src => src.SocialLinks)
+            .Map(dest => dest.Feedbacks, src => src.ReceivedFeedbacks);
 
         TypeAdapterConfig<Booking, TimeslotBookingSummaryDto>.NewConfig()
             .Map(dest => dest.StudentFirstName, src => src.Student.FirstName)

@@ -22,6 +22,9 @@ public class UserRepository(BuyTimeDbContext context)
                 .Include(u => u.SocialLinks)
                     .ThenInclude(sl => sl.Platform)
                 .Include(u => u.Specializations)
+                .Include(u => u.ReceivedFeedbacks)
+                .Include(u => u.TimeSlots)
+                .Include(u => u.Bookings)
                 .FirstOrDefaultAsync(user => user.Id == id);
             if (user == null)
                 return Error.NotFound("User not found");
@@ -45,6 +48,69 @@ public class UserRepository(BuyTimeDbContext context)
         catch (Exception ex)
         {
             return Error.Failure(ex.Message);
+        }
+    }
+
+    public async Task<ErrorOr<UserProfileDto>> GetUserProfileAsync(Guid id)
+    {
+        try
+        {
+            var profile = await dbSet
+                .Where(u => u.Id == id)
+                .Select(u => new UserProfileDto
+                {
+                    Id = u.Id,
+                    IsExpert = u.IsExpert,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    AvatarUrl = u.AvatarUrl,
+                    TelegramChatId = u.TelegramChatId,
+                    DiscordId = u.DiscordId,
+                    Email = u.Email,
+
+                    ExpertNickname = u.ExpertNickname,
+                    Description = u.Description,
+                    Rating = u.Rating,
+
+                    // SQL COUNT
+                    ReviewCount = u.ReceivedFeedbacks.Count(),
+                    HappyStudentsCount = u.ReceivedFeedbacks.Count(f => f.Rating >= 4),
+
+                    // SQL SUM + DATEDIFF
+                    TotalHoursConducted = u.TimeSlots
+                        .Where(ts => ts.Bookings.Any(b => b.Status == Status.Completed))
+                        .Sum(ts => (double)EF.Functions.DateDiffMinute(ts.StartTime, ts.EndTime) / 60.0),
+
+                    // Проекції списків
+                    Specializations = u.Specializations.Select(s => new SpecializationDto
+                    {
+                        Id = s.Id,
+                        Name = s.Name
+                    }).ToList(),
+
+                    LanguageSkills = u.ExpertLanguages.Select(l => new LanguageSkillDto
+                    {
+                        LanguageCode = l.Language.Code,
+                        Level = l.Level
+                    }).ToList(),
+
+                    SocialLinks = u.SocialLinks.Select(sl => new SocialLinkDto
+                    {
+                        Platform = sl.Platform.Name,
+                        LogoUrl = sl.Platform.LogoUrl,
+                        UrlOrHandle = sl.UrlOrHandle
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            if (profile == null)
+                return Error.NotFound("User.NotFound", "Користувача не знайдено");
+
+            return profile;
+        }
+        catch (Exception ex)
+        {
+            return Error.Failure("Database.Error", ex.Message);
         }
     }
 
