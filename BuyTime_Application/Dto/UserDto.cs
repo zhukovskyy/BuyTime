@@ -20,7 +20,4 @@ public class UserDto
     public List<SpecializationDto> Specializations { get; set; }
     public decimal? Rating { get; set; }
     public string? AvatarUrl { get; set; }
-    public List<TimeslotDto> TimeSlots { get; set; }
-    public List<FeedbackDto> Feedbacks { get; set; }
-    public List<BookingDto> Bookings { get; set; }
 }

@@ -1,4 +1,4 @@
-using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+﻿using BuyTime_Application.Common.Interfaces.IUnitOfWork;
 using BuyTime_Application.Dto;
 using ErrorOr;
 using Mapster;
@@ -22,8 +22,8 @@ public class GetUserByEmailQueryHandler(IUnitOfWork unitOfWork)
             
             var userDto = users.Value.Adapt<UserDto>();
 
-            userDto.Feedbacks = new List<FeedbackDto>();
-            userDto.Bookings = new List<BookingDto>();
+            //userDto.Feedbacks = new List<FeedbackDto>();
+            //userDto.Bookings = new List<BookingDto>();
 
             return new List<UserDto> { userDto };
         }
