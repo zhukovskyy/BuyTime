@@ -22,6 +22,7 @@ public class BuyTimeDbContext : DbContext
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<MeetingAttendance> MeetingAttendances { get; set; }
     public DbSet<BookingCancellation> BookingCancellations { get; set; }
+    public DbSet<RefundRequest> RefundRequests { get; set; }
     public DbSet<Wallet> Wallets { get; set; }
     public DbSet<Specialization> Specializations { get; set; }
 
@@ -268,6 +269,20 @@ public class BuyTimeDbContext : DbContext
 
             entity.Property(bc => bc.CompensationAmountToExpert)
                   .HasColumnType("decimal(18,9)");
+        });
+
+        // === REFUND REQUEST ===
+        modelBuilder.Entity<RefundRequest>(entity =>
+        {
+            entity.HasKey(rr => rr.BookingId);
+
+            entity.Property(rr => rr.Amount)
+                  .HasColumnType("decimal(18,9)");
+
+            entity.HasOne(rr => rr.Booking)
+                  .WithOne(b => b.RefundRequest)
+                  .HasForeignKey<RefundRequest>(rr => rr.BookingId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
 

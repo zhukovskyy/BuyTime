@@ -27,6 +27,7 @@ public class Booking
 
     // звязок з скасуванням (буде null, якщо не скасовано)
     public BookingCancellation? Cancellation { get; set; }
+    public RefundRequest? RefundRequest { get; set; }
 
     private DateTime _createdAt;
     public DateTime CreatedAt

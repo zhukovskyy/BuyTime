@@ -49,6 +49,7 @@ public class ContractMonitorJob(
         var pendingBookings = await dbContext.Bookings
             .AsTracking()
             .Include(b => b.Cancellation)
+            .Include(b => b.RefundRequest)
             .Include(b => b.TimeSlot)
                 .ThenInclude(ts => ts.Expert)
             .Include(b => b.Student)
@@ -102,17 +103,25 @@ public class ContractMonitorJob(
                 else if (booking.Status == Status.RefundPending)
                 {
                     booking.Status = Status.Refunded;
-                    bookingsToNotifyRefund.Add(booking);
-                    
 
+                    if (booking.RefundRequest != null)
+                    {
+                        dbContext.RefundRequests.Remove(booking.RefundRequest);
+                    }
+
+                    bookingsToNotifyRefund.Add(booking);
                     dbContext.TransactionRecords.Add(CreateRefundRecord(booking));
                 }
                 else if (booking.Status == Status.FailedMeetingRefundPending)
                 {
                     booking.Status = Status.Refunded;
-                    bookingsToNotifyFailedMeeting.Add(booking);
-                    
 
+                    if (booking.RefundRequest != null)
+                    {
+                        dbContext.RefundRequests.Remove(booking.RefundRequest);
+                    }
+
+                    bookingsToNotifyFailedMeeting.Add(booking);
                     dbContext.TransactionRecords.Add(CreateRefundRecord(booking));
                 }
                 else
@@ -165,16 +174,26 @@ public class ContractMonitorJob(
             }
             else
             {
-                if (booking.Cancellation != null)
+                if (booking.Status == Status.CancelPending && booking.Cancellation != null)
                 {
                     var timeSinceCancelRequest = DateTime.UtcNow - booking.Cancellation.CancelledAt;
-                    // якщо підтвердження немає більше 5 хв або користувач взагалі закрив ТОН гаманець
-                    // TODO: може це якось гарніше можна буде зробити
                     if (timeSinceCancelRequest.TotalMinutes > 5)
                     {
                         logger.LogWarning($"Quartz: Timeout for Booking {booking.Id}. User didn't sign cancel tx. Reverting to Confirmed.");
                         booking.Status = Status.Confirmed;
                         dbContext.BookingCancellations.Remove(booking.Cancellation);
+                    }
+                }
+                else if (booking.Status == Status.RefundPending && booking.RefundRequest != null)
+                {
+                    var timeSinceRefundRequest = DateTime.UtcNow - booking.RefundRequest.RequestedAt;
+                    if (timeSinceRefundRequest.TotalMinutes > 5)
+                    {
+                        logger.LogWarning($"Quartz: Timeout for Booking {booking.Id}. User didn't sign refund tx. Reverting to {booking.RefundRequest.PreviousStatus}.");
+
+                        booking.Status = booking.RefundRequest.PreviousStatus;
+
+                        dbContext.RefundRequests.Remove(booking.RefundRequest);
                     }
                 }
             }

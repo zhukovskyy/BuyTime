@@ -29,6 +29,14 @@ public class ClaimRefundCommandHandler(
         var payloadResult = await tonContractService.GenerateClaimRefundPayloadAsync(booking.ContractAddress);
         if (payloadResult.IsError) return payloadResult.Errors;
 
+        booking.RefundRequest = new BuyTime_Domain.Entities.RefundRequest
+        {
+            BookingId = booking.Id,
+            Amount = booking.TimeSlot.Price,
+            RequestedAt = DateTime.UtcNow,
+            PreviousStatus = booking.Status
+        };
+
         booking.Status = Status.RefundPending;
 
         await unitOfWork.Booking.UpdateAsync(booking);

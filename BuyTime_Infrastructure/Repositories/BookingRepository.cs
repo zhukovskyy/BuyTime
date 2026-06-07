@@ -49,6 +49,17 @@ public class BookingRepository(BuyTimeDbContext context)
                 }
             }
 
+            if (booking.RefundRequest != null)
+            {
+                var existingRefund = await context.RefundRequests
+                    .FirstOrDefaultAsync(rr => rr.BookingId == booking.Id);
+
+                if (existingRefund == null)
+                {
+                    await context.RefundRequests.AddAsync(booking.RefundRequest);
+                }
+            }
+
             context.Bookings.Update(existingBooking);
             await context.SaveChangesAsync();
 
@@ -68,6 +79,7 @@ public class BookingRepository(BuyTimeDbContext context)
                 .Where(b => b.TimeslotId == timeSlotId)
                 .Include(b => b.TimeSlot)
                 .Include(b => b.Cancellation)
+                .Include(b => b.RefundRequest)
                 .ToListAsync();
 
             return bookings;
@@ -86,7 +98,8 @@ public class BookingRepository(BuyTimeDbContext context)
                 .Include(b => b.TimeSlot)        
                 .ThenInclude(t => t.Expert)     
                 .Include(b => b.Student)         
-                .Include(b => b.Cancellation)    
+                .Include(b => b.Cancellation)
+                .Include(b => b.RefundRequest)
                 .Where(b => b.TimeSlot.ExpertId == expertId) 
                 .OrderByDescending(b => b.TimeSlot.StartTime)
                 .ToListAsync();
@@ -103,7 +116,8 @@ public class BookingRepository(BuyTimeDbContext context)
     {
         return await dbSet
             .Include(b => b.TimeSlot)
-            .Include(b => b.Cancellation) 
+            .Include(b => b.Cancellation)
+            .Include(b => b.RefundRequest)
             .FirstOrDefaultAsync(b => b.Id == id);
     }
 
@@ -133,6 +147,7 @@ public class BookingRepository(BuyTimeDbContext context)
                     .ThenInclude(ts => ts.Expert)
                 .Include(b => b.Student)
                 .Include(b => b.Cancellation)
+                .Include(b => b.RefundRequest)
                 .Where(b => b.StudentId == studentId)
                 .OrderByDescending(b => b.TimeSlot.StartTime)
                 .ToListAsync();
