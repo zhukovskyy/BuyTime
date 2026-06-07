@@ -235,12 +235,27 @@ public class ContractMonitorJob(
                     bool isStudent = b.Cancellation.CancelledByUserId == b.StudentId;
                     var targetUserId = isStudent ? b.TimeSlot.ExpertId : b.StudentId;
                     var roleStr = isStudent ? "student" : "expert";
-                    var cancelledByName = isStudent ? $"{b.Student.FirstName} {b.Student.LastName}" : $"{b.TimeSlot.Expert.FirstName} {b.TimeSlot.Expert.LastName}";
-                    decimal? refundToStudent = !isStudent ? b.TimeSlot.Price : null;
-                    string? currency = !isStudent ? b.TimeSlot.Currency : null;
+                    var cancelledByName = isStudent
+                        ? $"{b.Student.FirstName} {b.Student.LastName}"
+                        : $"{b.TimeSlot.Expert.FirstName} {b.TimeSlot.Expert.LastName}";
+
+                    decimal refundAmount = b.Cancellation.RefundAmountToStudent;
+                    decimal compensationAmount = b.Cancellation.CompensationAmountToExpert;
+                    string currency = b.TimeSlot.Currency;
+
+                    var timeBeforeMeeting = b.TimeSlot.StartTime - b.Cancellation.CancelledAt;
+                    double hoursBefore = timeBeforeMeeting.TotalHours > 0 ? timeBeforeMeeting.TotalHours : 0;
 
                     _ = notificationService.NotifyBookingCancelledAsync(
-                        targetUserId, roleStr, cancelledByName, b.TimeSlot.StartTime, b.Cancellation.Reason, refundToStudent, currency);
+                        targetUserId,
+                        roleStr,
+                        cancelledByName,
+                        b.TimeSlot.StartTime,
+                        b.Cancellation.Reason,
+                        refundAmount,
+                        compensationAmount,
+                        currency,
+                        hoursBefore);
                 }
             }
         }

@@ -70,14 +70,40 @@ public class NotificationService : INotificationService
         return DispatchNotificationAsync(expertId, title, msg, "BookingCreated", s => s.NotifyOnBooking);
     }
 
-    public Task NotifyBookingCancelledAsync(Guid targetUserId, string cancelledByRole, string cancelledByName, DateTime startTime, string reason, decimal? refundAmount = null, string? currency = null)
+    public Task NotifyBookingCancelledAsync(
+        Guid targetUserId,
+        string cancelledByRole,
+        string cancelledByName,
+        DateTime startTime,
+        string reason,
+        decimal? refundAmount = null,
+        decimal? compensationAmount = null,
+        string? currency = null,
+        double? hoursBefore = null)
     {
-        var roleName = cancelledByRole.ToLower() == "student" ? "Студент" : "Експерт";
+        bool targetIsExpert = cancelledByRole.ToLower() == "student";
+        var roleName = targetIsExpert ? "Студент" : "Експерт";
         var title = "⚠️ Бронювання скасовано";
-        var msg = $"{roleName} {cancelledByName} скасував зустріч на {startTime:dd.MM HH:mm} (UTC).\nПричина: {reason}";
 
-        if (refundAmount.HasValue && !string.IsNullOrEmpty(currency))
-            msg += $"\n\n💸 Повернення коштів: {refundAmount.Value} {currency} успішно повернуто на ваш гаманець.";
+        string timeInfo = "";
+        if (hoursBefore.HasValue)
+        {
+            int hours = (int)hoursBefore.Value;
+            timeInfo = hours > 0
+                ? $" (за {hours} год. до початку)"
+                : " (менш ніж за годину до початку)";
+        }
+
+        var msg = $"{roleName} {cancelledByName} скасував зустріч на {startTime:dd.MM HH:mm} (UTC){timeInfo}.\nПричина: {reason}";
+
+        if (targetIsExpert && compensationAmount.HasValue && compensationAmount.Value > 0 && !string.IsNullOrEmpty(currency))
+        {
+            msg += $"\n\n💸 Компенсація: {compensationAmount.Value:0.####} {currency} успішно зараховано на ваш гаманець.";
+        }
+        else if (!targetIsExpert && refundAmount.HasValue && refundAmount.Value > 0 && !string.IsNullOrEmpty(currency))
+        {
+            msg += $"\n\n💸 Повернення коштів: {refundAmount.Value:0.####} {currency} успішно повернуто на ваш гаманець.";
+        }
 
         return DispatchNotificationAsync(targetUserId, title, msg, "BookingCancelled", s => s.NotifyOnBooking);
     }
