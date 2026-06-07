@@ -17,7 +17,7 @@ public interface IUserRepository : IRepository<BuyTime_Domain.Entities.User>
     Task<ErrorOr<IEnumerable<BuyTime_Domain.Entities.User>>> GetAllUsersAsync();
     Task<ErrorOr<BuyTime_Domain.Entities.User>> AddUserDetailsAsync(BuyTime_Domain.Entities.User user);
 
-    Task<ErrorOr<IEnumerable<BuyTime_Domain.Entities.User>>> SearchExpertsAsync(SearchExpertRequest filter);
+    Task<ErrorOr<(IEnumerable<BuyTime_Domain.Entities.User> Items, int TotalCount)>> SearchExpertsAsync(SearchExpertRequest filter);
 
     Task<ErrorOr<UserProfileDto>> GetUserProfileAsync(Guid id);
     Task<ErrorOr<BuyTime_Domain.Entities.User>> RegisterUserAsync(

@@ -7,27 +7,24 @@ using MediatR;
 namespace BuyTime_Application.Expert.Query.Search;
 
 public class SearchExpertsQueryHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<SearchExpertsQuery, ErrorOr<IEnumerable<ExpertProfileDto>>>
+    : IRequestHandler<SearchExpertsQuery, ErrorOr<PagedResult<ExpertProfileDto>>>
 {
-    public async Task<ErrorOr<IEnumerable<ExpertProfileDto>>> Handle(SearchExpertsQuery request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<PagedResult<ExpertProfileDto>>> Handle(SearchExpertsQuery request, CancellationToken cancellationToken)
     {
-        // 1. Отримуємо експертів з репозиторію
         var expertsResult = await unitOfWork.User.SearchExpertsAsync(request.Filter);
 
         if (expertsResult.IsError)
             return expertsResult.Errors;
 
-        // 2. Мапимо в DTO
-        var dtos = expertsResult.Value.Adapt<List<ExpertProfileDto>>();
+        var (items, totalCount) = expertsResult.Value;
 
-        // 3. Додаткова логіка: проставляємо IsFavorite
+        var dtos = items.Adapt<List<ExpertProfileDto>>();
+
         if (request.Filter.CurrentUserId.HasValue)
         {
-            // Оптимізація: завантажуємо всі лайки цього студента одним запитом
             var favoriteIds = await unitOfWork.Favorite
                 .GetExpertIdsByStudentIdAsync(request.Filter.CurrentUserId.Value);
 
-            // Перевіряємо кожного експерта, чи є він у списку лайкнутих
             foreach (var dto in dtos)
             {
                 if (favoriteIds.Contains(dto.Id))
@@ -37,6 +34,13 @@ public class SearchExpertsQueryHandler(IUnitOfWork unitOfWork)
             }
         }
 
-        return dtos;
+        var pagedResult = new PagedResult<ExpertProfileDto>(
+            items: dtos,
+            totalCount: totalCount,
+            pageNumber: request.Filter.PageNumber,
+            pageSize: request.Filter.PageSize
+        );
+
+        return pagedResult;
     }
 }

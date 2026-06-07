@@ -4,4 +4,4 @@ using MediatR;
 
 namespace BuyTime_Application.Expert.Query.Search;
 
-public record SearchExpertsQuery(SearchExpertRequest Filter) : IRequest<ErrorOr<IEnumerable<ExpertProfileDto>>>;
+public record SearchExpertsQuery(SearchExpertRequest Filter) : IRequest<ErrorOr<PagedResult<ExpertProfileDto>>>;

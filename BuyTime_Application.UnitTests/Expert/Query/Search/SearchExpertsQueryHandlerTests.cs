@@ -44,7 +44,7 @@ public class SearchExpertsQueryHandlerTests
     [Fact]
     public async Task Handle_ShouldMapAllNestedProperties_WhenRepositoryReturnsExpert()
     {
-        var request = new SearchExpertRequest { SearchQuery = "Test" };
+        var request = new SearchExpertRequest { SearchQuery = "Test", PageNumber = 1, PageSize = 10 };
         var query = new SearchExpertsQuery(request);
 
         var expertId = Guid.NewGuid();
@@ -92,12 +92,13 @@ public class SearchExpertsQueryHandlerTests
         var dbResult = new List<DomainUser> { mockExpert };
 
         _unitOfWorkMock.Setup(u => u.User.SearchExpertsAsync(request))
-            .ReturnsAsync((ErrorOr<IEnumerable<DomainUser>>)dbResult);
+            .ReturnsAsync((ErrorOr<(IEnumerable<DomainUser> Items, int TotalCount)>)(dbResult, dbResult.Count));
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
         result.IsError.Should().BeFalse();
-        var expertDto = result.Value.First();
+
+        var expertDto = result.Value.Items.First();
 
         expertDto.Id.Should().Be(expertId);
 
@@ -121,7 +122,9 @@ public class SearchExpertsQueryHandlerTests
         var request = new SearchExpertRequest
         {
             Language = "en",
-            MinRating = 4.5m
+            MinRating = 4.5m,
+            PageNumber = 1,
+            PageSize = 10
         };
         var query = new SearchExpertsQuery(request);
 
@@ -143,14 +146,19 @@ public class SearchExpertsQueryHandlerTests
 
         var dbResult = new List<DomainUser> { expert1, expert2 };
 
+        var filteredResult = dbResult.Where(e => e.Rating >= request.MinRating &&
+                                                 e.ExpertLanguages.Any(l => l.Language.Code == request.Language))
+                                     .ToList();
+
         _unitOfWorkMock.Setup(u => u.User.SearchExpertsAsync(It.IsAny<SearchExpertRequest>()))
-            .ReturnsAsync(dbResult.Where(e => e.Rating >= request.MinRating &&
-                                          e.ExpertLanguages.Any(l => l.Language.Code == request.Language)).ToList());
+            .ReturnsAsync((ErrorOr<(IEnumerable<DomainUser> Items, int TotalCount)>)(filteredResult, filteredResult.Count));
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
         result.IsError.Should().BeFalse();
-        result.Value.Should().HaveCount(1);
-        result.Value.First().FirstName.Should().Be("English");
+        
+        result.Value.TotalCount.Should().Be(1);
+        result.Value.Items.Should().HaveCount(1);
+        result.Value.Items.First().FirstName.Should().Be("English");
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace BuyTime_Application.Expert.Query.Search;
 
-public class SearchExpertRequest // це для фільтра
+public class SearchExpertRequest
 {
     public string? SearchQuery { get; set; } // FirstName, LastName, ExpertNickname
     public string? Language { get; set; }
@@ -15,4 +15,7 @@ public class SearchExpertRequest // це для фільтра
 
     public bool OnlyFavorites { get; set; } = false;
     public Guid? CurrentUserId { get; set; }
+
+    public int PageNumber { get; set; } = 1;
+    public int PageSize { get; set; } = 10;
 }

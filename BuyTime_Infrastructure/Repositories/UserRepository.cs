@@ -449,7 +449,7 @@ public class UserRepository(BuyTimeDbContext context)
         }
     }
 
-    public async Task<ErrorOr<IEnumerable<User>>> SearchExpertsAsync(SearchExpertRequest filter)
+    public async Task<ErrorOr<(IEnumerable<User> Items, int TotalCount)>> SearchExpertsAsync(SearchExpertRequest filter)
     {
         try
         {
@@ -461,9 +461,8 @@ public class UserRepository(BuyTimeDbContext context)
                     .ThenInclude(sl => sl.Platform)
                 .Include(u => u.ReceivedFeedbacks)
                 .Include(u => u.Specializations)
-
                 .Include(u => u.TimeSlots.Where(ts =>
-                    (ts.Bookings != null && ts.Bookings.Any(b=>b.Status == Status.Completed)) ||
+                    (ts.Bookings != null && ts.Bookings.Any(b => b.Status == Status.Completed)) ||
                     (ts.IsAvailable && (string.IsNullOrEmpty(filter.Currency) || ts.Currency == filter.Currency))
                 ))
                 .ThenInclude(ts => ts.Bookings)
@@ -486,14 +485,11 @@ public class UserRepository(BuyTimeDbContext context)
                 );
             }
 
-            // =================================================================================
-            // Мова 
-            // =================================================================================
             if (!string.IsNullOrWhiteSpace(filter.Language))
             {
                 var languages = filter.Language
                     .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(l => l.Trim().ToLower()) 
+                    .Select(l => l.Trim().ToLower())
                     .Distinct()
                     .ToList();
 
@@ -537,8 +533,16 @@ public class UserRepository(BuyTimeDbContext context)
                 }
             }
 
-            var experts = await query.ToListAsync();
-            return experts;
+            int totalCount = await query.CountAsync();
+
+            query = query.OrderByDescending(u => u.Rating).ThenBy(u => u.Id);
+
+            var experts = await query
+                .Skip((filter.PageNumber - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync();
+
+            return (experts, totalCount);
         }
         catch (Exception ex)
         {
