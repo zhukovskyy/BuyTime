@@ -86,7 +86,8 @@ public static class DependencyInjection
             .Map(dest => dest.CancelledByRole, src =>
                 src.Cancellation != null
                     ? (src.Cancellation.CancelledByUserId == src.StudentId ? "student" : "expert")
-                    : null);
+                    : (src.Status == Status.Expired ? "system" :
+                       src.Status == Status.Rejected ? "expert" : null));
 
         TypeAdapterConfig<Timeslot, TimeslotDto>.NewConfig()
             .Map(dest => dest.Booking, src =>
@@ -105,7 +106,8 @@ public static class DependencyInjection
             .Map(dest => dest.CancelledByRole, src =>
                 src.Cancellation != null
                     ? (src.Cancellation.CancelledByUserId == src.StudentId ? "student" : "expert")
-                    : null);
+                    : (src.Status == Status.Expired ? "system" :
+                       src.Status == Status.Rejected ? "expert" : null));
 
         config.Scan(Assembly.GetExecutingAssembly());
 

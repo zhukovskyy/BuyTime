@@ -152,7 +152,7 @@ public class NotificationService : INotificationService
         var title = isSuccessful ? "✅ Зустріч успішно завершена!" : "⚠️ Зустріч скасована";
         var msg = isSuccessful
             ? $"Студент {studentFirstName} {studentLastName} підтвердив проведення зустрічі ({timeString} UTC).\n💸 {amount:0.####} {currency} відправлено на ваш гаманець."
-            : $"Студент {studentFirstName} {studentLastName} вказав, що зустріч ({timeString} UTC) не відбулася. Кошти повернуті студенту.";
+            : $"Студент {studentFirstName} {studentLastName} вказав, що зустріч ({timeString} UTC) не відбулася.\n💸 {amount:0.####} {currency} повернуто студенту.";
 
         return DispatchNotificationAsync(expertId, title, msg, "MeetingResolved", s => s.NotifyOnBooking);
     }
@@ -163,7 +163,7 @@ public class NotificationService : INotificationService
         var title = isSuccessful ? "✅ Зустріч успішно завершена!" : "⚠️ Зустріч скасована системою";
         var msg = isSuccessful
             ? $"💸 {amount:0.####} {currency} відправлено на ваш гаманець."
-            : $"На основі даних Discord виявлено, що експерт був відсутній на зустрічі ({timeString} UTC). Кошти повернуті студенту.";
+            : $"На основі даних Discord виявлено, що Ви були відсутні на зустрічі ({timeString} UTC).\n💸 {amount:0.####} {currency} повернуто студенту.";
 
         return DispatchNotificationAsync(expertId, title, msg, "MeetingAutoResolved", s => s.NotifyOnBooking);
     }

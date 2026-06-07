@@ -38,11 +38,7 @@ public class MeetingCleanupJob(
                         logger.LogInformation($"Quartz [Cleanup]: Discord channel {discordId} is empty. Deleting...");
                         await discordService.FinishMeetingAsync(discordId);
 
-                        var allEntries = await dbContext.MeetingAttendances
-                            .Where(ma => ma.ExternalMeetingId == marker.ExternalMeetingId)
-                            .ToListAsync();
-
-                        dbContext.MeetingAttendances.RemoveRange(allEntries);
+                        dbContext.MeetingAttendances.Remove(marker);
                     }
                     else
                     {
