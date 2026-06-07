@@ -1,5 +1,6 @@
 ﻿using BuyTime_Application.Common.Interfaces.IService;
 using BuyTime_Domain.Constants;
+using BuyTime_Domain.Entities;
 using BuyTime_Infrastructure.Common.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -39,15 +40,38 @@ public class CleanupJob(
 
         // ВИДАЛЕННЯ НІКОЛИ НЕ ЗАБРОНЬОВАНИХ СЛОТІВ
         // Видаляються слоти, які: закінчилися, вільні ТА не мають жодного запису в таблиці Bookings
-        var ghostSlots = await dbContext.Timeslots
-            .Where(ts => ts.EndTime < now && ts.IsAvailable)
-            .Where(ts => !dbContext.Bookings.Any(b => b.TimeslotId == ts.Id))
+        var outdatedSlots = await dbContext.Timeslots
+            .Include(ts => ts.Bookings)
+            .Where(ts => ts.StartTime <= now && ts.IsAvailable)
             .ToListAsync();
 
-        if (ghostSlots.Any())
+        var slotsToDelete = new List<Timeslot>();
+        var slotsToDisable = new List<Timeslot>();
+
+        foreach (var slot in outdatedSlots)
         {
-            logger.LogInformation($"Quartz: Deleting {ghostSlots.Count} unused ghost slots.");
-            dbContext.Timeslots.RemoveRange(ghostSlots);
+            if (!slot.Bookings.Any())
+            {
+                slotsToDelete.Add(slot);
+            }
+            else
+            {
+                // Якщо є історія (відхилені, скасовані тощо) — просто робимо недоступним для нових бронювань
+                slot.IsAvailable = false;
+                slotsToDisable.Add(slot);
+            }
+        }
+
+        if (slotsToDelete.Any())
+        {
+            logger.LogInformation($"Quartz: Deleting {slotsToDelete.Count} unused ghost slots.");
+            dbContext.Timeslots.RemoveRange(slotsToDelete);
+        }
+
+        if (slotsToDisable.Any())
+        {
+            logger.LogInformation($"Quartz: Disabling {slotsToDisable.Count} outdated slots with history.");
+            dbContext.Timeslots.UpdateRange(slotsToDisable);
         }
 
         await dbContext.SaveChangesAsync();

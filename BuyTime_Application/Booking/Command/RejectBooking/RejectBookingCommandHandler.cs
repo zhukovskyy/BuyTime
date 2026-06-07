@@ -26,7 +26,7 @@ public class RejectBookingCommandHandler(IUnitOfWork unitOfWork, INotificationSe
             return Error.Conflict("InvalidStatus", "Можна відхилити лише бронювання, яке очікує на підтвердження.");
 
         booking.Status = Status.Rejected;
-        timeslot.IsAvailable = true;
+        timeslot.IsAvailable = timeslot.StartTime > DateTime.UtcNow;
 
         await unitOfWork.Booking.UpdateAsync(booking);
         await unitOfWork.Timeslot.UpdateAsync(timeslot);
