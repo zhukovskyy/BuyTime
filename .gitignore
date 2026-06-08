@@ -5,6 +5,9 @@ BuyTime_Application/obj/
 BuyTime_Api/appsettings.json
 BuyTime_Api/appsettings.Development.json
 
+coveragereport/
+**/TestResults/
+
 # Rider / VS Code / VS
 .idea/
 .vscode/

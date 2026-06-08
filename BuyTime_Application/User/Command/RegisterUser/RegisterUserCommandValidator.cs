@@ -14,6 +14,8 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
             .MaximumLength(1000);
 
         RuleFor(x => x.Email)
-            .EmailAddress().When(x => !string.IsNullOrEmpty(x.Email));
+            .Matches(@"^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$")
+            .WithMessage("Некоректний формат електронної пошти.")
+            .When(x => !string.IsNullOrEmpty(x.Email));
     }
 }

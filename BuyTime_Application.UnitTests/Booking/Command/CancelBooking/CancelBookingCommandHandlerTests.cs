@@ -103,4 +103,56 @@ public class CancelBookingCommandHandlerTests
         booking.Cancellation.Should().NotBeNull();
         booking.Cancellation.CancelledByUserId.Should().Be(expertId);
     }
+
+    [Fact]
+    public async Task Handle_ShouldSplitFunds5050_WhenStudentCancelsConfirmedBookingBetween24And48Hours()
+    {
+        var studentId = Guid.NewGuid();
+        var expertId = Guid.NewGuid();
+        var bookingId = Guid.NewGuid();
+        decimal timeslotPrice = 100m;
+
+        var command = new CancelBookingCommand(
+            BookingId: bookingId,
+            CancellationMessage: "Не виходить приєднатися",
+            TriggeredByUserId: studentId
+        );
+
+        var timeslot = new BuyTime_Domain.Entities.Timeslot
+        {
+            Id = Guid.NewGuid(),
+            ExpertId = expertId,
+            Price = timeslotPrice,
+            StartTime = DateTime.UtcNow.AddHours(30)
+        };
+
+        var booking = new BuyTime_Domain.Entities.Booking
+        {
+            Id = bookingId,
+            StudentId = studentId,
+            TimeslotId = timeslot.Id,
+            TimeSlot = timeslot,
+            Status = BuyTime_Domain.Constants.Status.Confirmed,
+            ConfirmationMessage = "Чекаю на вас",
+            ContractAddress = "EQ_TestContract"
+        };
+
+        var expectedPayload = new TonConnectPayloadDto { ContractAddress = "EQ_TestContract" };
+
+        _unitOfWorkMock.Setup(u => u.Booking.GetByIdAsync(bookingId))
+            .ReturnsAsync(booking);
+
+        // скасовує студент
+        _tonContractServiceMock.Setup(t => t.GenerateCancelBookingPayloadAsync(true, booking.ContractAddress))
+            .ReturnsAsync(expectedPayload);
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsError.Should().BeFalse("Handler should successfully process the cancellation");
+        result.Value.Should().BeEquivalentTo(expectedPayload);
+
+        booking.Cancellation.Should().NotBeNull();
+        booking.Cancellation.RefundAmountToStudent.Should().Be(50m, "Student should get 50% back if cancelled between 24 and 48 hours");
+        booking.Cancellation.CompensationAmountToExpert.Should().Be(50m, "Expert should get 50% compensation if student cancels between 24 and 48 hours");
+    }
 }
