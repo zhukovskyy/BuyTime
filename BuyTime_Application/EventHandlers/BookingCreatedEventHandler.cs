@@ -24,7 +24,8 @@ public class BookingCreatedEventHandler(ITelegramService telegramService, IUnitO
                       $"Час: {timeslot.StartTime} - {timeslot.EndTime}\n" +
                       $"Повідомлення: {booking.MessageToExpert}";
 
-            await telegramService.SendMessageAsync(expert.TelegramChatId, msg);
+            // коли небудь це буде по людськи зроблено
+            // await telegramService.SendMessageAsync(expert.TelegramChatId, msg);
         }
     }
 }
