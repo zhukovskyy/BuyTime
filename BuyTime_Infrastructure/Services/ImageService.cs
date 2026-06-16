@@ -11,6 +11,16 @@ public class ImageService : IImageService
     {
         try
         {
+            if (folderName.Contains("..") || Path.IsPathRooted(folderName) || folderName.Contains('/') || folderName.Contains('\\'))
+            {
+                return Error.Validation("InvalidFolder", "Недопустима назва папки.");
+            }
+            var allowedFolders = new[] { "avatars", "proofs", "portfolio" };
+            if (!allowedFolders.Contains(folderName.ToLower()))
+            {
+                return Error.Validation("InvalidFolder", "Цільова папка заборонена.");
+            }
+
             var baseFolder = Path.Combine(Directory.GetCurrentDirectory(), "images", folderName);
             if (!Directory.Exists(baseFolder)) Directory.CreateDirectory(baseFolder);
 
@@ -37,6 +47,9 @@ public class ImageService : IImageService
     public void DeleteImage(string? relativePath)
     {
         if (string.IsNullOrEmpty(relativePath)) return;
+
+        if (relativePath.Contains("..") || Path.IsPathRooted(relativePath)) return;
+        if (!relativePath.StartsWith("/images/")) return;
 
         var path = Path.Combine(Directory.GetCurrentDirectory(), relativePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
         if (File.Exists(path)) File.Delete(path);

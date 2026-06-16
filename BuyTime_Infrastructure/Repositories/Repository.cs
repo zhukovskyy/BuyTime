@@ -33,17 +33,18 @@ public class Repository<T> : IRepository<T>
     
     virtual public async Task<T> GetByIdAsync(Guid id)
     {
-        try
-        {
-            var entity = await dbSet.FindAsync(id);
-            if (entity == null)
-                throw new Exception("Entity not found");
-            return entity;
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message);
-        }
+        //try
+        //{
+        //    var entity = await dbSet.FindAsync(id);
+        //    if (entity == null)
+        //        throw new Exception("Entity not found");
+        //    return entity;
+        //}
+        //catch (Exception ex)
+        //{
+        //    throw new Exception(ex.Message);
+        //}
+        return await dbSet.FindAsync(id);
     }
 
     public async Task<ErrorOr<T>> GetByFirstAndLastNameAsync(string firstName, string lastName)

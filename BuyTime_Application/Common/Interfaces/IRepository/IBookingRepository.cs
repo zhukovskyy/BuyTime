@@ -10,4 +10,5 @@ public interface IBookingRepository : IRepository<BuyTime_Domain.Entities.Bookin
     Task<ErrorOr<List<BuyTime_Domain.Entities.Booking>>> GetBookingsByTimeSlotIdAsync(Guid timeSlotId);
     Task<ErrorOr<List<Booking>>> GetBookingsByExpertIdAsync(Guid expertId);
     Task<ErrorOr<List<BuyTime_Domain.Entities.Booking>>> GetBookingsByStudentIdAsync(Guid studentId);
+    Task<bool> HasCompletedBookingAsync(Guid studentId, Guid expertId);
 }

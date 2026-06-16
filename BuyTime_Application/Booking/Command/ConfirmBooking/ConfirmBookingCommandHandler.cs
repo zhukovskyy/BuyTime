@@ -18,6 +18,11 @@ public class ConfirmBookingCommandHandler(
         var booking = await unitOfWork.Booking.GetByIdAsync(request.BookingId);
         if (booking == null) return Error.NotFound("Booking not found");
 
+        if (booking.Status != BuyTime_Domain.Constants.Status.Pending)
+        {
+            return Error.Conflict("InvalidStatus", "Підтвердити можна лише бронювання, яке очікує на підтвердження (Pending).");
+        }
+
         var timeslot = await unitOfWork.Timeslot.GetByIdAsync(booking.TimeslotId);
         if (timeslot == null) return Error.NotFound("Timeslot not found");
 

@@ -12,6 +12,17 @@ public class CreateFeedbackCommandHandler(IUnitOfWork unitOfWork, INotificationS
     {
         try
         {
+            if (request.StudentId == request.ExpertId)
+            {
+                return Error.Validation("SelfFeedback", "You cannot rate yourself.");
+            }
+
+            bool hasCompletedBooking = await unitOfWork.Booking.HasCompletedBookingAsync(request.StudentId, request.ExpertId);
+            if (!hasCompletedBooking)
+            {
+                return Error.Forbidden("Feedback.NotAllowed", "Ви можете залишити відгук лише після завершеної зустрічі з цим експертом.");
+            }
+
             if (request.Rating < 1 || request.Rating > 10)
             {
                 return Error.Validation("InvalidRating", "Rating must be between 1 and 10.");

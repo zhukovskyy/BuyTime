@@ -17,6 +17,11 @@ public class ResolveByStudentCommandHandler(
         if (booking == null) return Error.NotFound("Booking.NotFound");
         if (booking.StudentId != request.StudentId) return Error.Unauthorized("Unauthorized");
 
+        if (booking.Status != BuyTime_Domain.Constants.Status.Confirmed)
+        {
+            return Error.Conflict("InvalidStatus", "Завершити можна лише підтверджені зустрічі.");
+        }
+
         var arbiterResult = await tonContractService.ResolveBookingByArbiterAsync(booking.ContractAddress, request.IsSuccessful);
 
         if (arbiterResult.IsError) return arbiterResult.Errors;

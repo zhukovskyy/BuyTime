@@ -19,6 +19,9 @@ public class CreateBookingCommandHandler(
         var timeslot = await unitOfWork.Timeslot.GetByIdAsync(request.TimeslotId);
         if (timeslot == null) return Error.NotFound("Timeslot.NotFound", "Таймслот не знайдено.");
 
+        if (!timeslot.IsAvailable)
+            return Error.Conflict("TimeslotBooked", "Таймслот вже зайнято.");
+
         var studentWalletsResult = await unitOfWork.Wallet.GetAllByUserIdAsync(request.StudentId);
         if (studentWalletsResult.IsError)
             return studentWalletsResult.Errors;
@@ -29,13 +32,18 @@ public class CreateBookingCommandHandler(
             return Error.Validation("StudentWallet.Missing", $"У вас не прив'язаний гаманець для мережі {timeslot.Currency}. Будь ласка, додайте його в налаштуваннях гаманцч.");
 
         string studentWalletAddress = studentWallet.Address;
-
         decimal commissionPercent = platformSettings.Value.CommissionPercent;
-
         decimal multiplier = 1m - (commissionPercent / 100m);
         decimal totalAmountToPay = timeslot.Price / multiplier;
-
         totalAmountToPay = Math.Round(totalAmountToPay, 9);
+
+        var existingBookings = await unitOfWork.Booking.GetBookingsByTimeSlotIdAsync(request.TimeslotId);
+        if (!existingBookings.IsError && existingBookings.Value.Any(b =>
+            b.Status != BuyTime_Domain.Constants.Status.Cancelled &&
+            b.Status != BuyTime_Domain.Constants.Status.Rejected))
+        {
+            return Error.Conflict("TimeslotBooked", "Таймслот щойно був заброньований кимось іншим.");
+        }
 
         var payloadResult = await tonContractService.GenerateCreateBookingPayloadAsync(
             studentWalletAddress,

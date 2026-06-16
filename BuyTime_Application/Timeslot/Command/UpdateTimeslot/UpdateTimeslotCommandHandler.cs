@@ -1,14 +1,22 @@
 ﻿using BuyTime_Application.Common.Interfaces.IUnitOfWork;
+using BuyTime_Application.Common.Settings;
 using ErrorOr;
 using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace BuyTime_Application.Timeslot.Command.UpdateTimeslot;
 
-public class UpdateTimeslotCommandHandler(IUnitOfWork unitOfWork)
+public class UpdateTimeslotCommandHandler(IUnitOfWork unitOfWork,
+    IOptions<PlatformSettings> platformSettings)
     : IRequestHandler<UpdateTimeslotCommand, ErrorOr<Unit>>
 {
     public async Task<ErrorOr<Unit>> Handle(UpdateTimeslotCommand request, CancellationToken cancellationToken)
     {
+        if (request.Currency == "TON" && request.Price < platformSettings.Value.MinTimeslotPriceTon)
+        {
+            return Error.Validation("InvalidPrice", $"Мінімальна вартість таймслота — {platformSettings.Value.MinTimeslotPriceTon} TON.");
+        }
+
         if (request.StartTime >= request.EndTime)
         {
             return Error.Validation("InvalidTime", "Час початку має бути раніше за час закінчення.");

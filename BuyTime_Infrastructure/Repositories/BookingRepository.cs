@@ -159,4 +159,12 @@ public class BookingRepository(BuyTimeDbContext context)
             return Error.Failure($"Error while retrieving student bookings: {ex.Message}");
         }
     }
+
+    public async Task<bool> HasCompletedBookingAsync(Guid studentId, Guid expertId)
+    {
+        return await dbSet.AnyAsync(b =>
+            b.StudentId == studentId &&
+            b.TimeSlot.ExpertId == expertId &&
+            b.Status == BuyTime_Domain.Constants.Status.Completed);
+    }
 }

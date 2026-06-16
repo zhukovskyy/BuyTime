@@ -18,6 +18,12 @@ public class CancelBookingCommandHandler(
 
         if (booking == null) return Error.NotFound("Booking.NotFound", "Бронювання не знайдено.");
 
+        var uncancelableStatuses = new[] { Status.Completed, Status.Cancelled, Status.Refunded, Status.Rejected, Status.Expired };
+        if (uncancelableStatuses.Contains(booking.Status))
+        {
+            return Error.Conflict("InvalidStatus", $"Неможливо скасувати бронювання зі статусом {booking.Status}.");
+        }
+
         if (string.IsNullOrEmpty(booking.ContractAddress))
             return Error.Validation("Booking.NoContract", "У бронювання немає адреси смарт-контракту.");
 

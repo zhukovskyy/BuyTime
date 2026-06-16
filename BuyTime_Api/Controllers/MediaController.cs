@@ -1,10 +1,12 @@
 ﻿using BuyTime_Application.Media.Command.UploadMedia;
-using Microsoft.AspNetCore.Mvc;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BuyTime_Api.Controllers;
 
 [Route("api/media")]
+[Authorize]
 [ApiController]
 public class MediaController(ISender mediatr) : ApiController
 {
