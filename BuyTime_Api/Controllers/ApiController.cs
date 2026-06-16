@@ -1,11 +1,28 @@
-using ErrorOr;
+﻿using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BuyTime_Api.Controllers;
 
 [ApiController]
 public abstract class ApiController : ControllerBase
 {
+    protected Guid CurrentUserId
+    {
+        get
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                            ?? User.FindFirst("sub")?.Value;
+
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+            {
+                throw new InvalidOperationException("User ID missing or invalid in JWT claims. Ensure [Authorize] is applied to the endpoint.");
+            }
+
+            return userId;
+        }
+    }
+
     protected IActionResult Problem(List<Error> errors)
     {
         HttpContext.Items["errors"] = errors;

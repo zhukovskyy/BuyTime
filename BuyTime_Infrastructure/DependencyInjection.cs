@@ -70,6 +70,9 @@ public static class DependencyInjection
         services.AddScoped<ITonContractService, TonContractService>();
         //services.AddHostedService<TonContractMonitorService>();
 
+        services.AddScoped<IJwtProvider, JwtProvider>();
+        services.AddScoped<ITelegramAuthService, TelegramAuthService>();
+
         return services;
     }
 

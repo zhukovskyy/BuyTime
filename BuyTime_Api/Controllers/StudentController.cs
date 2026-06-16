@@ -1,6 +1,7 @@
 ﻿using BuyTime_Application.Student.Command.ToggleFavorite;
 using BuyTime_Application.Student.Query.GetAll;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BuyTime_Api.Controllers;
@@ -9,26 +10,30 @@ namespace BuyTime_Api.Controllers;
 [ApiController]
 public class StudentController(ISender mediatr) : ApiController
 {
-    [HttpGet("get-all")]
-    public async Task<IActionResult> GetAll()
-    {
-        try
-        {
-            var query = new GetAllStudentsQuery();
-            var students = await mediatr.Send(query);
-            if (students.IsError)
-                return NoContent(); 
-            return Ok(students.Value);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "An error occurred while fetching students.");
-        }
-    }
+    public record ToggleFavoriteRequest(Guid ExpertId);
 
-    [HttpPost("toggle-favorite")]
-    public async Task<IActionResult> ToggleFavorite([FromBody] ToggleFavoriteCommand command)
+    //[HttpGet("get-all")]
+    //public async Task<IActionResult> GetAll()
+    //{
+    //    try
+    //    {
+    //        var query = new GetAllStudentsQuery();
+    //        var students = await mediatr.Send(query);
+    //        if (students.IsError)
+    //            return NoContent(); 
+    //        return Ok(students.Value);
+    //    }
+    //    catch (Exception)
+    //    {
+    //        return StatusCode(500, "An error occurred while fetching students.");
+    //    }
+    //}
+
+    [HttpPost("toggle-favorite")] // TODO: rename
+    [Authorize]
+    public async Task<IActionResult> ToggleFavorite([FromBody] ToggleFavoriteRequest request)
     {
+        var command = new ToggleFavoriteCommand(CurrentUserId, request.ExpertId);
         var result = await mediatr.Send(command);
 
         if (result.IsError)

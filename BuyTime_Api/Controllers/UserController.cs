@@ -8,6 +8,7 @@ using BuyTime_Application.User.Query.GetUserByChatId;
 using BuyTime_Application.User.Query.GetUserByEmail;
 using BuyTime_Application.User.Query.GetUserByFirstAndLastName;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BuyTime_Api.Controllers;
@@ -16,6 +17,23 @@ namespace BuyTime_Api.Controllers;
 [Route("api/user")]
 public class UserController(ISender mediatr) : ApiController
 {
+    public record UpdateProfileRequest(
+        string FirstName, string LastName, string? ExpertNickname, string? Email,
+        string? DiscordId, string? Description, string? AvatarUrl,
+        List<BuyTime_Application.Dto.LanguageSkillDto> LanguageSkills,
+        List<SocialLinkInput> SocialLinks, List<string> SpecializationNames);
+
+    [HttpGet("profile")]
+    [Authorize]
+    public async Task<IActionResult> GetCurrentProfile()
+    {
+        var query = new GetUserByIdQuery(CurrentUserId);
+        var result = await mediatr.Send(query);
+        if (result.IsError)
+            return NotFound(result.Errors);
+        return Ok(result.Value);
+    }
+
     [HttpGet("get-by-id")]
     public async Task<IActionResult> GetById([FromQuery] Guid id)
     {
@@ -100,17 +118,18 @@ public class UserController(ISender mediatr) : ApiController
             return StatusCode(500, "An error occurred while fetching user.");
         }
     }
-    
+
     [HttpPut("toggle-is-expert")]
-    public async Task<IActionResult> ToggleIsTeacher([FromQuery] Guid userId)
+    [Authorize]
+    public async Task<IActionResult> ToggleIsTeacher()
     {
         try
         {
-            var command = new ToggleIsExpertCommand(userId);
+            var command = new ToggleIsExpertCommand(CurrentUserId);
             var result = await mediatr.Send(command);
             if (result.IsError)
-                return StatusCode(409, result.IsError);
-            return Ok();
+                return StatusCode(409, result.Errors);
+            return Ok(new { message = "Роль успішно змінено." });
         }
         catch (Exception)
         {
@@ -140,14 +159,20 @@ public class UserController(ISender mediatr) : ApiController
     }
 
     [HttpPost("update-profile")]
-
-    public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserProfileCommand command)
+    [Authorize]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
         try
         {
+            var command = new UpdateUserProfileCommand(
+                CurrentUserId, request.FirstName, request.LastName, request.ExpertNickname,
+                request.Email, request.DiscordId, request.Description, request.AvatarUrl,
+                request.LanguageSkills, request.SocialLinks, request.SpecializationNames
+            );
+
             var result = await mediatr.Send(command);
 
             if (result.IsError)

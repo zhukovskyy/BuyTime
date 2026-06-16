@@ -4,6 +4,7 @@ using BuyTime_Application.Timeslot.Query.GetByExpertId;
 using BuyTime_Application.Timeslot.Command.UpdateTimeslot;
 using BuyTime_Application.Timeslot.Command.DeleteTimeslot;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BuyTime_Api.Controllers;
@@ -12,18 +13,36 @@ namespace BuyTime_Api.Controllers;
 [ApiController]
 public class TimeslotController(ISender mediatr) : ApiController
 {
+    public record CreateTimeslotRequest(DateTime StartTime, DateTime EndTime, decimal Price, string Currency = "TON");
+    public record UpdateTimeslotRequest(Guid TimeslotId, DateTime StartTime, DateTime EndTime, decimal Price, string Currency);
+
     [HttpPost("create")]
-    public async Task<IActionResult> CreateTimeslot([FromBody] CreateTimeslotCommand command)
+    [Authorize]
+    public async Task<IActionResult> CreateTimeslot([FromBody] CreateTimeslotRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+        var command = new CreateTimeslotCommand(CurrentUserId, request.StartTime, request.EndTime, request.Price, request.Currency);
         var result = await mediatr.Send(command);
 
         if (result.IsError)
             return BadRequest(result.Errors);
 
         return CreatedAtAction(nameof(CreateTimeslot), new { id = result.Value.TimeslotId }, result.Value);
+    }
+
+    [HttpGet("my-slots")]
+    [Authorize]
+    public async Task<IActionResult> GetMyTimeslots()
+    {
+        var query = new GetTimeslotsByExpertIdQuery(CurrentUserId);
+        var result = await mediatr.Send(query);
+
+        if (result.IsError)
+            return Problem(result.Errors);
+
+        return Ok(result.Value);
     }
 
     [HttpGet("get-by-expert-id")]
@@ -46,11 +65,13 @@ public class TimeslotController(ISender mediatr) : ApiController
     }
 
     [HttpPut("update")]
-    public async Task<IActionResult> UpdateTimeslot([FromBody] UpdateTimeslotCommand command)
+    [Authorize]
+    public async Task<IActionResult> UpdateTimeslot([FromBody] UpdateTimeslotRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+        var command = new UpdateTimeslotCommand(request.TimeslotId, CurrentUserId, request.StartTime, request.EndTime, request.Price, request.Currency);
         var result = await mediatr.Send(command);
 
         if (result.IsError)
@@ -60,9 +81,10 @@ public class TimeslotController(ISender mediatr) : ApiController
     }
 
     [HttpDelete("delete")]
-    public async Task<IActionResult> DeleteTimeslot([FromQuery] Guid id, [FromQuery] Guid expertId)
+    [Authorize]
+    public async Task<IActionResult> DeleteTimeslot([FromQuery] Guid id)
     {
-        var command = new DeleteTimeslotCommand(id, expertId);
+        var command = new DeleteTimeslotCommand(id, CurrentUserId);
         var result = await mediatr.Send(command);
 
         if (result.IsError)

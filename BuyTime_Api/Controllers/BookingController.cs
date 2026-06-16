@@ -11,60 +11,65 @@ using BuyTime_Application.Booking.Query.GetById;
 using BuyTime_Application.Booking.Query.GetByStudentId;
 using BuyTime_Application.Booking.Query.GetByTimeSlotId;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BuyTime_Api.Controllers;
 
 [Route("api/booking")]
+[Authorize]
 [ApiController]
 public class BookingController(ISender mediatr) : ApiController
 {
-    [HttpPost("confirm")]
-    public async Task<IActionResult> ConfirmBooking([FromBody] ConfirmBookingCommand command)
-    {
-        var result = await mediatr.Send(command);
-        if (result.IsError)
-            return BadRequest(result.Errors);
+    public record ConfirmBookingRequest(Guid BookingId, string ConfirmationMessage, string? MeetingLink, string? MeetingTitle, bool GenerateMeetingLink);
+    public record CancelBookingRequest(Guid BookingId, string CancellationMessage);
+    public record RejectBookingRequest(Guid BookingId);
+    public record CreateBookingRequest(Guid TimeslotId, string MessageToExpert);
+    public record ClaimRefundRequest(Guid BookingId);
+    public record ResolveByStudentRequest(Guid BookingId, bool IsSuccessful);
 
+    [HttpPost("confirm")]
+    public async Task<IActionResult> ConfirmBooking([FromBody] ConfirmBookingRequest request)
+    {
+        var command = new ConfirmBookingCommand(request.BookingId, CurrentUserId, request.ConfirmationMessage, request.MeetingLink, request.MeetingTitle, request.GenerateMeetingLink);
+        var result = await mediatr.Send(command);
+
+        if (result.IsError) return BadRequest(result.Errors);
         return Ok("Booking confirmed successfully.");
     }
 
     [HttpPost("cancel")]
-    public async Task<IActionResult> CancelBooking([FromBody] CancelBookingCommand command)
+    public async Task<IActionResult> CancelBooking([FromBody] CancelBookingRequest request)
     {
+        var command = new CancelBookingCommand(request.BookingId, request.CancellationMessage, CurrentUserId);
         var result = await mediatr.Send(command);
 
-        if (result.IsError)
-            return BadRequest(result.Errors);
-
+        if (result.IsError) return BadRequest(result.Errors);
         return Ok(result.Value);
     }
 
     [HttpPost("reject")]
-    public async Task<IActionResult> RejectBooking([FromBody] RejectBookingCommand command)
+    public async Task<IActionResult> RejectBooking([FromBody] RejectBookingRequest request)
     {
+        var command = new RejectBookingCommand(request.BookingId, CurrentUserId);
         var result = await mediatr.Send(command);
 
-        if (result.IsError)
-            return Problem(result.Errors);
-
+        if (result.IsError) return Problem(result.Errors);
         return Ok(new { message = "Booking rejected successfully." });
     }
 
     [HttpPost("create")]
-    public async Task<IActionResult> CreateBooking([FromBody] CreateBookingCommand command)
+    public async Task<IActionResult> CreateBooking([FromBody] CreateBookingRequest request)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        if (!ModelState.IsValid) return BadRequest(ModelState);
 
+        var command = new CreateBookingCommand(CurrentUserId, request.TimeslotId, request.MessageToExpert);
         var result = await mediatr.Send(command);
 
-        if (result.IsError)
-            return BadRequest(result.Errors);
-
+        if (result.IsError) return BadRequest(result.Errors);
         return CreatedAtAction(nameof(CreateBooking), new { id = result.Value.BookingId }, result.Value);
     }
-    
+
     //[HttpGet("get-all")]
     //public async Task<IActionResult> GetAll()
     //{
@@ -81,7 +86,7 @@ public class BookingController(ISender mediatr) : ApiController
     //        return StatusCode(500, "An error occurred while fetching bookings.");
     //    }
     //}
-    
+
     //[HttpGet("get-by-id")]
     //public async Task<IActionResult> GetById([FromQuery] Guid id)
     //{
@@ -99,17 +104,15 @@ public class BookingController(ISender mediatr) : ApiController
     //    }
     //}
 
-    [HttpGet("get-by-student-id")]
-    public async Task<IActionResult> GetByStudentId([FromQuery] Guid studentId)
+    [HttpGet("get-by-student-id")] // TODO: переименовать
+    public async Task<IActionResult> GetByStudentId()
     {
         try
         {
-            var query = new GetBookingsByStudentIdQuery(studentId);
+            var query = new GetBookingsByStudentIdQuery(CurrentUserId);
             var result = await mediatr.Send(query);
 
-            if (result.IsError)
-                return Problem(result.Errors);
-
+            if (result.IsError) return Problem(result.Errors);
             return Ok(result.Value);
         }
         catch (Exception)
@@ -155,13 +158,12 @@ public class BookingController(ISender mediatr) : ApiController
     //}
 
     [HttpPost("claim-refund")]
-    public async Task<IActionResult> ClaimRefund([FromBody] ClaimRefundCommand command)
+    public async Task<IActionResult> ClaimRefund([FromBody] ClaimRefundRequest request)
     {
+        var command = new ClaimRefundCommand(request.BookingId, CurrentUserId);
         var result = await mediatr.Send(command);
 
-        if (result.IsError)
-            return Problem(result.Errors);
-
+        if (result.IsError) return Problem(result.Errors);
         return Ok(result.Value);
     }
 
@@ -176,17 +178,12 @@ public class BookingController(ISender mediatr) : ApiController
     //    return Ok(new { message = "Зустріч успішно вирішена Арбітром, кошти переказано." });
     //}
 
-    public record ResolveByStudentDto(Guid BookingId, Guid StudentId, bool IsSuccessful);
     [HttpPost("resolve-by-student")]
-    public async Task<IActionResult> ResolveByStudent([FromBody] ResolveByStudentDto dto)
+    public async Task<IActionResult> ResolveByStudent([FromBody] ResolveByStudentRequest request)
     {
-        var command = new ResolveByStudentCommand(dto.BookingId, dto.StudentId, dto.IsSuccessful);
-
+        var command = new ResolveByStudentCommand(request.BookingId, CurrentUserId, request.IsSuccessful);
         var result = await mediatr.Send(command);
 
-        return result.Match(
-            success => Ok(success),
-            errors => Problem(errors)
-        );
+        return result.Match(success => Ok(success), errors => Problem(errors));
     }
 }
