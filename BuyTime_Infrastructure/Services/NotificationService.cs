@@ -18,10 +18,33 @@ public class NotificationService : INotificationService
         _logger = logger;
     }
 
+    private string FormatLocalTime(DateTime utcTime, UserSettings? settings)
+    {
+        if (settings == null || string.IsNullOrEmpty(settings.Timezone) || settings.Timezone == "UTC")
+        {
+            return $"{utcTime:dd.MM.yyyy HH:mm} (UTC)";
+        }
+
+        try
+        {
+            var tzInfo = TimeZoneInfo.FindSystemTimeZoneById(settings.Timezone);
+            var localTime = TimeZoneInfo.ConvertTimeFromUtc(utcTime, tzInfo);
+
+            var parts = settings.Timezone.Split('/');
+            var cityName = parts.Last().Replace("_", " ");
+
+            return $"{localTime:dd.MM.yyyy HH:mm} ({cityName})";
+        }
+        catch
+        {
+            return $"{utcTime:dd.MM.yyyy HH:mm} (UTC)";
+        }
+    }
+
     private async Task DispatchNotificationAsync(
         Guid userId,
         string title,
-        string message,
+        Func<UserSettings?, string> messageGenerator,
         string type,
         Func<UserSettings, bool> settingPredicate)
     {
@@ -39,12 +62,14 @@ public class NotificationService : INotificationService
 
             if (user.Settings != null && !settingPredicate(user.Settings)) return;
 
+            string generatedMessage = messageGenerator(user.Settings);
+
             var notification = new Notification
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
                 Title = title,
-                Message = message,
+                Message = generatedMessage,
                 Type = type,
                 CreatedAt = DateTime.UtcNow,
                 IsRead = false
@@ -54,7 +79,7 @@ public class NotificationService : INotificationService
 
             if (user.Settings != null && user.Settings.NotifyInTelegram && !string.IsNullOrEmpty(user.TelegramChatId))
             {
-                await telegramService.SendMessageAsync(user.TelegramChatId, $"<b>{title}</b>\n{message}");
+                await telegramService.SendMessageAsync(user.TelegramChatId, $"<b>{title}</b>\n{generatedMessage}");
             }
         }
         catch (Exception ex)
@@ -66,8 +91,9 @@ public class NotificationService : INotificationService
     public Task NotifyBookingCreatedAsync(Guid expertId, string studentFirstName, string studentLastName, DateTime startTime)
     {
         var title = "📅 Нове бронювання!";
-        var msg = $"Студент {studentFirstName} {studentLastName} забронював зустріч на {startTime:dd.MM HH:mm} (UTC).";
-        return DispatchNotificationAsync(expertId, title, msg, "BookingCreated", s => s.NotifyOnBooking);
+        return DispatchNotificationAsync(expertId, title,
+            settings => $"Студент {studentFirstName} {studentLastName} забронював зустріч на {FormatLocalTime(startTime, settings)}.",
+            "BookingCreated", s => s.NotifyOnBooking);
     }
 
     public Task NotifyBookingCancelledAsync(
@@ -94,25 +120,28 @@ public class NotificationService : INotificationService
                 : " (менш ніж за годину до початку)";
         }
 
-        var msg = $"{roleName} {cancelledByName} скасував зустріч на {startTime:dd.MM HH:mm} (UTC){timeInfo}.\nПричина: {reason}";
-
-        if (targetIsExpert && compensationAmount.HasValue && compensationAmount.Value > 0 && !string.IsNullOrEmpty(currency))
+        return DispatchNotificationAsync(targetUserId, title, settings =>
         {
-            msg += $"\n\n💸 Компенсація: {compensationAmount.Value:0.####} {currency} успішно зараховано на ваш гаманець.";
-        }
-        else if (!targetIsExpert && refundAmount.HasValue && refundAmount.Value > 0 && !string.IsNullOrEmpty(currency))
-        {
-            msg += $"\n\n💸 Повернення коштів: {refundAmount.Value:0.####} {currency} успішно повернуто на ваш гаманець.";
-        }
+            var msg = $"{roleName} {cancelledByName} скасував зустріч на {FormatLocalTime(startTime, settings)}{timeInfo}.\nПричина: {reason}";
 
-        return DispatchNotificationAsync(targetUserId, title, msg, "BookingCancelled", s => s.NotifyOnBooking);
+            if (targetIsExpert && compensationAmount.HasValue && compensationAmount.Value > 0 && !string.IsNullOrEmpty(currency))
+            {
+                msg += $"\n\n💸 Компенсація: {compensationAmount.Value:0.####} {currency} успішно зараховано на ваш гаманець.";
+            }
+            else if (!targetIsExpert && refundAmount.HasValue && refundAmount.Value > 0 && !string.IsNullOrEmpty(currency))
+            {
+                msg += $"\n\n💸 Повернення коштів: {refundAmount.Value:0.####} {currency} успішно повернуто на ваш гаманець.";
+            }
+            return msg;
+        }, "BookingCancelled", s => s.NotifyOnBooking);
     }
 
     public Task NotifyBookingRejectedAsync(Guid studentId, string expertFirstName, string expertLastName, DateTime startTime)
     {
         var title = "❌ Зустріч відхилено";
-        var msg = $"Експерт {expertFirstName} {expertLastName} не зміг підтвердити зустріч на {startTime:dd.MM HH:mm} (UTC). Ви можете повернути кошти в деталях цієї зустрічі.";
-        return DispatchNotificationAsync(studentId, title, msg, "BookingRejected", s => s.NotifyOnBooking);
+        return DispatchNotificationAsync(studentId, title,
+            settings => $"Експерт {expertFirstName} {expertLastName} не зміг підтвердити зустріч на {FormatLocalTime(startTime, settings)}. Ви можете повернути кошти в деталях цієї зустрічі.",
+            "BookingRejected", s => s.NotifyOnBooking);
     }
 
     public Task NotifyBookingConfirmedAsync(Guid studentId, string studentFirstName, string studentLastName, Guid expertId, string expertFirstName, string expertLastName, DateTime startTime, string? messageToStudent, string? meetingLink)
@@ -121,13 +150,15 @@ public class NotificationService : INotificationService
         var expertMessageText = string.IsNullOrEmpty(messageToStudent) ? "" : messageToStudent;
 
         var studentTitle = "✅ Зустріч підтверджено!";
-        var studentMsg = $"Експерт {expertFirstName} {expertLastName} підтвердив зустріч на {startTime:dd.MM HH:mm} (UTC).\nПовідомлення від експерта: {expertMessageText}\n{linkText}";
-
         var expertTitle = "✅ Ви підтвердили зустріч!";
-        var expertMsg = $"Зустріч зі студентом {studentFirstName} {studentLastName} на {startTime:dd.MM HH:mm} (UTC).\n{linkText}";
 
-        var task1 = DispatchNotificationAsync(studentId, studentTitle, studentMsg, "BookingConfirmed", s => s.NotifyOnBooking);
-        var task2 = DispatchNotificationAsync(expertId, expertTitle, expertMsg, "BookingConfirmed", s => s.NotifyOnBooking);
+        var task1 = DispatchNotificationAsync(studentId, studentTitle,
+            settings => $"Експерт {expertFirstName} {expertLastName} підтвердив зустріч на {FormatLocalTime(startTime, settings)}.\nПовідомлення від експерта: {expertMessageText}\n{linkText}",
+            "BookingConfirmed", s => s.NotifyOnBooking);
+
+        var task2 = DispatchNotificationAsync(expertId, expertTitle,
+            settings => $"Зустріч зі студентом {studentFirstName} {studentLastName} на {FormatLocalTime(startTime, settings)}.\n{linkText}",
+            "BookingConfirmed", s => s.NotifyOnBooking);
 
         return Task.WhenAll(task1, task2);
     }
@@ -135,51 +166,56 @@ public class NotificationService : INotificationService
     public Task NotifyRefundReceivedAsync(Guid studentId, decimal amount, string currency)
     {
         var title = "💸 Повернення коштів";
-        var msg = $"Сума {amount:0.####} {currency} була успішно повернута на ваш гаманець.";
-        return DispatchNotificationAsync(studentId, title, msg, "FinanceRefund", s => s.NotifyOnFinance);
+        return DispatchNotificationAsync(studentId, title,
+            _ => $"Сума {amount:0.####} {currency} була успішно повернута на ваш гаманець.",
+            "FinanceRefund", s => s.NotifyOnFinance);
     }
 
     public Task NotifyBookingExpiredAsync(Guid studentId, string expertFirstName, string expertLastName, DateTime startTime)
     {
         var title = "⚠️ Зустріч скасовано системою";
-        var msg = $"Експерт {expertFirstName} {expertLastName} не підтвердив вашу зустріч на {startTime:dd.MM HH:mm} (UTC). Зайдіть у деталі зустрічі, щоб повернути свої кошти.";
-        return DispatchNotificationAsync(studentId, title, msg, "BookingExpired", s => s.NotifyOnBooking);
+        return DispatchNotificationAsync(studentId, title,
+            settings => $"Експерт {expertFirstName} {expertLastName} не підтвердив вашу зустріч на {FormatLocalTime(startTime, settings)}. Зайдіть у деталі зустрічі, щоб повернути свої кошти.",
+            "BookingExpired", s => s.NotifyOnBooking);
     }
 
     public Task NotifyMeetingResolvedByStudentAsync(Guid expertId, string studentFirstName, string studentLastName, DateTime startTime, decimal amount, string currency, bool isSuccessful)
     {
-        string timeString = startTime.ToString("dd.MM.yyyy HH:mm");
         var title = isSuccessful ? "✅ Зустріч успішно завершена!" : "⚠️ Зустріч скасована";
-        var msg = isSuccessful
-            ? $"Студент {studentFirstName} {studentLastName} підтвердив проведення зустрічі ({timeString} UTC).\n💸 {amount:0.####} {currency} відправлено на ваш гаманець."
-            : $"Студент {studentFirstName} {studentLastName} вказав, що зустріч ({timeString} UTC) не відбулася.\n💸 {amount:0.####} {currency} повернуто студенту.";
-
-        return DispatchNotificationAsync(expertId, title, msg, "MeetingResolved", s => s.NotifyOnBooking);
+        return DispatchNotificationAsync(expertId, title, settings =>
+        {
+            string timeString = FormatLocalTime(startTime, settings);
+            return isSuccessful
+                ? $"Студент {studentFirstName} {studentLastName} підтвердив проведення зустрічі ({timeString}).\n💸 {amount:0.####} {currency} відправлено на ваш гаманець."
+                : $"Студент {studentFirstName} {studentLastName} вказав, що зустріч ({timeString}) не відбулася.\n💸 {amount:0.####} {currency} повернуто студенту.";
+        }, "MeetingResolved", s => s.NotifyOnBooking);
     }
 
     public Task NotifyMeetingAutoResolvedAsync(Guid expertId, string studentFirstName, string studentLastName, DateTime startTime, decimal amount, string currency, bool isSuccessful)
     {
-        string timeString = startTime.ToString("dd.MM.yyyy HH:mm");
         var title = isSuccessful ? "✅ Зустріч успішно завершена!" : "⚠️ Зустріч скасована системою";
-        var msg = isSuccessful
-            ? $"💸 {amount:0.####} {currency} відправлено на ваш гаманець."
-            : $"На основі даних Discord виявлено, що Ви були відсутні на зустрічі ({timeString} UTC).\n💸 {amount:0.####} {currency} повернуто студенту.";
-
-        return DispatchNotificationAsync(expertId, title, msg, "MeetingAutoResolved", s => s.NotifyOnBooking);
+        return DispatchNotificationAsync(expertId, title, settings =>
+        {
+            string timeString = FormatLocalTime(startTime, settings);
+            return isSuccessful
+                ? $"💸 {amount:0.####} {currency} відправлено на ваш гаманець."
+                : $"На основі даних Discord виявлено, що Ви були відсутні на зустрічі ({timeString}).\n💸 {amount:0.####} {currency} повернуто студенту.";
+        }, "MeetingAutoResolved", s => s.NotifyOnBooking);
     }
 
     public Task NotifyStudentAutoRefundAsync(Guid studentId, string expertFirstName, string expertLastName, DateTime startTime, decimal amount, string currency)
     {
-        string timeString = startTime.ToString("dd.MM.yyyy HH:mm");
         var title = "⚠️ Зустріч не відбулася";
-        var msg = $"Система зафіксувала, що експерт {expertFirstName} {expertLastName} не з'явився на заплановану зустріч ({timeString} UTC) у Discord.\n\n💸 {amount:0.####} {currency} успішно повернуто на ваш гаманець.";
-        return DispatchNotificationAsync(studentId, title, msg, "StudentAutoRefund", s => s.NotifyOnFinance);
+        return DispatchNotificationAsync(studentId, title,
+            settings => $"Система зафіксувала, що експерт {expertFirstName} {expertLastName} не з'явився на заплановану зустріч ({FormatLocalTime(startTime, settings)}) у Discord.\n\n💸 {amount:0.####} {currency} успішно повернуто на ваш гаманець.",
+            "StudentAutoRefund", s => s.NotifyOnFinance);
     }
 
     public Task NotifyNewFeedbackAsync(Guid expertId, string studentFirstName, string studentLastName, decimal rating, string? comment)
     {
         var title = "⭐ Новий відгук!";
-        var msg = $"Студент {studentFirstName} {studentLastName} залишив вам відгук.\nОцінка: {rating}/5\nКоментар: {comment ?? "Без коментаря"}";
-        return DispatchNotificationAsync(expertId, title, msg, "NewFeedback", s => s.NotifyOnNewFeedback);
+        return DispatchNotificationAsync(expertId, title,
+            _ => $"Студент {studentFirstName} {studentLastName} залишив вам відгук.\nОцінка: {rating}/5\nКоментар: {comment ?? "Без коментаря"}",
+            "NewFeedback", s => s.NotifyOnNewFeedback);
     }
 }

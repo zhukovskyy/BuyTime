@@ -10,7 +10,6 @@
       <PackageReference Include="Mapster" Version="10.0.8" />
       <PackageReference Include="Mapster.DependencyInjection" Version="10.0.8" />
       <PackageReference Include="MediatR" Version="14.1.0" />
-      <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
       <PackageReference Include="TonSdk.Core" Version="0.3.9" />

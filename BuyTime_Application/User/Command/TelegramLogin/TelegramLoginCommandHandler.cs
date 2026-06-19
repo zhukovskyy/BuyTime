@@ -26,8 +26,16 @@ public class TelegramLoginCommandHandler(
         }
 
         var user = userResult.Value;
-        var token = jwtProvider.GenerateToken(user);
 
+        var settings = await unitOfWork.UserSettings.GetByUserIdAsync(user.Id);
+        if (settings != null && settings.Timezone != request.Timezone)
+        {
+            settings.Timezone = request.Timezone;
+            await unitOfWork.UserSettings.UpdateAsync(settings);
+            await unitOfWork.CommitAsync();
+        }
+
+        var token = jwtProvider.GenerateToken(user);
         return new TelegramLoginResult(token, user.IsExpert);
     }
 }

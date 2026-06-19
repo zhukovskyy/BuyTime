@@ -12,7 +12,7 @@ public class AuthController(ISender mediatr) : ApiController
     [HttpPost("telegram")]
     public async Task<IActionResult> TelegramLogin([FromBody] TelegramAuthRequest request)
     {
-        var command = new TelegramLoginCommand(request.InitData);
+        var command = new TelegramLoginCommand(request.InitData, request.Timezone);
         var result = await mediatr.Send(command);
 
         if (result.IsError)

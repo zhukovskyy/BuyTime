@@ -15,6 +15,9 @@ public class UserSettings
     [MaxLength(10)]
     public string Language { get; set; } = "uk"; // en
 
+    [MaxLength(50)]
+    public string Timezone { get; set; } = "UTC";
+
     public bool ShowCurrencyEquivalent { get; set; } = false;
 
     [MaxLength(10)]

@@ -15,6 +15,18 @@ public class CreateTimeslotCommandHandler(
     public async Task<ErrorOr<CreateTimeslotResult>> Handle(CreateTimeslotCommand request,
         CancellationToken cancellationToken)
     {
+        var user = await unitOfWork.User.GetByIdAsync(request.ExpertId);
+
+        if (user == null)
+        {
+            return Error.NotFound("User.NotFound", "Користувача не знайдено.");
+        }
+
+        if (!user.IsExpert)
+        {
+            return Error.Forbidden("AccessDenied", "Створення таймслотів доступне виключно для користувачів з роллю Експерта.");
+        }
+
         if (request.Currency == "TON" && request.Price < platformSettings.Value.MinTimeslotPriceTon)
         {
             return Error.Validation("InvalidPrice", $"Мінімальна вартість таймслота — {platformSettings.Value.MinTimeslotPriceTon} TON.");
