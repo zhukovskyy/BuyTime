@@ -186,8 +186,8 @@ public class NotificationService : INotificationService
         {
             string timeString = FormatLocalTime(startTime, settings);
             return isSuccessful
-                ? $"Студент {studentFirstName} {studentLastName} підтвердив проведення зустрічі ({timeString}).\n💸 {amount:0.####} {currency} відправлено на ваш гаманець."
-                : $"Студент {studentFirstName} {studentLastName} вказав, що зустріч ({timeString}) не відбулася.\n💸 {amount:0.####} {currency} повернуто студенту.";
+                ? $"Студент {studentFirstName} {studentLastName} підтвердив проведення зустрічі {timeString}.\n💸 {amount:0.####} {currency} відправлено на ваш гаманець."
+                : $"Студент {studentFirstName} {studentLastName} вказав, що зустріч {timeString} не відбулася.\n💸 {amount:0.####} {currency} повернуто студенту.";
         }, "MeetingResolved", s => s.NotifyOnBooking);
     }
 
@@ -199,7 +199,7 @@ public class NotificationService : INotificationService
             string timeString = FormatLocalTime(startTime, settings);
             return isSuccessful
                 ? $"💸 {amount:0.####} {currency} відправлено на ваш гаманець."
-                : $"На основі даних Discord виявлено, що Ви були відсутні на зустрічі ({timeString}).\n💸 {amount:0.####} {currency} повернуто студенту.";
+                : $"На основі даних Discord виявлено, що Ви були відсутні на зустрічі {timeString}.\n💸 {amount:0.####} {currency} повернуто студенту.";
         }, "MeetingAutoResolved", s => s.NotifyOnBooking);
     }
 
@@ -207,7 +207,7 @@ public class NotificationService : INotificationService
     {
         var title = "⚠️ Зустріч не відбулася";
         return DispatchNotificationAsync(studentId, title,
-            settings => $"Система зафіксувала, що експерт {expertFirstName} {expertLastName} не з'явився на заплановану зустріч ({FormatLocalTime(startTime, settings)}) у Discord.\n\n💸 {amount:0.####} {currency} успішно повернуто на ваш гаманець.",
+            settings => $"Система зафіксувала, що експерт {expertFirstName} {expertLastName} не з'явився на заплановану зустріч {FormatLocalTime(startTime, settings)} у Discord.\n\n💸 {amount:0.####} {currency} успішно повернуто на ваш гаманець.",
             "StudentAutoRefund", s => s.NotifyOnFinance);
     }
 
