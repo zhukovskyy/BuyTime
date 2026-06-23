@@ -33,6 +33,11 @@ public class NotificationService : INotificationService
             var parts = settings.Timezone.Split('/');
             var cityName = parts.Last().Replace("_", " ");
 
+            if (cityName.Equals("Kiev", StringComparison.OrdinalIgnoreCase))
+            {
+                cityName = "Kyiv";
+            }
+
             return $"{localTime:dd.MM.yyyy HH:mm} ({cityName})";
         }
         catch
